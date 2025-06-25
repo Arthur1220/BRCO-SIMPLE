@@ -5,8 +5,8 @@ const logger = require('../lib/logger');
 
 const requirementInputSchema = z.object({
     especieId: z.number().int().min(1),
-    sexoId: z.number().int().min(1),
-    categoriaAnimalId: z.number().int().min(1),
+    categoriaAnimalId: z.number().int().min(1).nullable(), 
+    sexoId: z.number().int().min(1).nullable(),
     pesoInicial: z.number().positive(),
     pesoFinal: z.number().positive(),
     GMD: z.number().positive(),

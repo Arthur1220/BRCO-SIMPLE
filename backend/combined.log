@@ -90,3 +90,33 @@
 {"level":"info","message":"Servidor rodando na porta 3000"}
 {"issues":[{"code":"invalid_type","expected":"number","message":"Expected number, received string","path":["especieId"],"received":"string"}],"level":"error","name":"ZodError"}
 {"issues":[{"code":"invalid_type","expected":"number","message":"Expected number, received string","path":["especieId"],"received":"string"}],"level":"error","name":"ZodError"}
+{"level":"info","message":"Requirement calculation for especie 1 successful"}
+{"level":"info","message":"Requirement calculation for especie 1 successful"}
+{"level":"info","message":"Requirement calculation for especie 1 successful"}
+{"level":"info","message":"NDT calculation successful"}
+{"level":"error"}
+{"level":"error"}
+{"issues":[{"code":"invalid_type","expected":"number","message":"Expected number, received null","path":["categoriaAnimalId"],"received":"null"}],"level":"error","name":"ZodError"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"error"}
+{"level":"error"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"error"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}

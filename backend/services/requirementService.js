@@ -184,6 +184,7 @@ function _calculateMinerais(params) {
         const CAM_REQ = C.Ca_m.F * pesoMedio / 1000;
         const sexoConfCa = _getSexoConfig(C.Ca_g, input.sexoId);
         const CAG_REQ = GPCV * (sexoConfCa.F * (PCVZ ** sexoConfCa.E));
+        const CLT_REQ = CAM_REQ + CAG_REQ;
         const CAD_REQ = (CAM_REQ + CAG_REQ) / C.Ca_d.DIV;
         const CAT_MS_REQ = CAD_REQ * 1000 / CMS_REQ;
 
@@ -191,6 +192,7 @@ function _calculateMinerais(params) {
         const FM_REQ = C.P_m.F * pesoMedio / 1000;
         const sexoConfP = _getSexoConfig(C.P_g, input.sexoId);
         const FG_REQ = GPCV * (sexoConfP.F * (PCVZ ** sexoConfP.E));
+        const FLT_REQ = FM_REQ + FG_REQ;
         const FD_REQ = (FM_REQ + FG_REQ) / C.P_d.DIV;
         const FT_MS_REQ = FD_REQ * 1000 / CMS_REQ;
         const REL_CA_P_REQ = CAT_MS_REQ / FT_MS_REQ;
@@ -207,6 +209,7 @@ function _calculateMinerais(params) {
         const NAM_REQ = C.Na_m.F * pesoMedio / 1000;
         const sexoConfNa = _getSexoConfig(C.Na_g, input.sexoId);
         const NAG_REQ = GPCV * (sexoConfNa.F * (PCVZ ** sexoConfNa.E));
+        const NALT_REQ = NAM_REQ + NAG_REQ;
         const NAD_REQ = (NAM_REQ + NAG_REQ) / C.Na_d.DIV;
         const NAT_MS_REQ = NAD_REQ * 1000 / CMS_REQ;
 
@@ -214,6 +217,7 @@ function _calculateMinerais(params) {
         const KM_REQ = C.K_m.F * pesoMedio / 1000;
         const KG_REQ = GPCV * (C.K_g.F * (PCVZ ** C.K_g.E));
         const KD_REQ = (KM_REQ + KG_REQ) / C.K_d.DIV;
+        const KLT_REQ = KM_REQ + KG_REQ;
         const KT_MS_REQ = KD_REQ * 1000 / CMS_REQ;
         
         // --- Cobre (Cu) ---
