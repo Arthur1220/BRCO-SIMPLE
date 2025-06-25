@@ -1,0 +1,50 @@
+/* src/assets/main.css */
+
+/* Definição de Variáveis de Cor Globais */
+:root {
+  --orange: #f58220;
+  --light-orange: #ff9d47;
+  --black: #2c3e50;
+  --black-light: #5a5a5a;
+  --white: #ffffff;
+  --grey: #bdc3c7;
+  --grey-light: #ecf0f1;
+  --blue: #3498db;
+  --blue-dark: #2980b9;
+  --red-error: #e74c3c;
+}
+
+/* Reset Básico e Fontes */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--white);
+  color: var(--black);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Estilos para links */
+a {
+  text-decoration: none;
+  color: var(--orange);
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--light-orange);
+}
+
+/* Estilos para contêiner principal para centralizar conteúdo */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}

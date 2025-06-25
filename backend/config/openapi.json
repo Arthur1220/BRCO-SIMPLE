@@ -1,0 +1,125 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Cálculos de Exigências e NDT",
+    "version": "1.0.0",
+    "description": "Uma API para realizar cálculos nutricionais para ovinos e caprinos, e gerar relatórios em PDF."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de Desenvolvimento Local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Cálculos",
+      "description": "Endpoints para realizar os cálculos nutricionais."
+    },
+    {
+      "name": "Relatórios",
+      "description": "Endpoints para geração de arquivos."
+    }
+  ],
+  "paths": {
+    "/api/calculate/requirements": {
+      "post": {
+        "tags": ["Cálculos"],
+        "summary": "Calcula as exigências nutricionais para um animal.",
+        "description": "Recebe os parâmetros de um animal e retorna um objeto detalhado com os cálculos de exigências.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "especieId": { "type": "integer", "example": 1 },
+                  "sexoId": { "type": "integer", "example": 1 },
+                  "categoriaAnimalId": { "type": "integer", "example": 1 },
+                  "pesoInicial": { "type": "number", "example": 20 },
+                  "pesoFinal": { "type": "number", "example": 30 },
+                  "GMD": { "type": "number", "example": 150 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sucesso. Retorna o resultado completo do cálculo." },
+          "400": { "description": "Erro de validação nos dados de entrada." },
+          "500": { "description": "Erro interno no servidor." }
+        }
+      }
+    },
+    "/api/calculate/ndt": {
+      "post": {
+        "tags": ["Cálculos"],
+        "summary": "Calcula o NDT de um alimento.",
+        "description": "Recebe a composição de um alimento e retorna o NDT e valores energéticos calculados.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "PB": { "type": "number", "example": 12.5 },
+                  "PIDN": { "type": "number", "example": 0.5 },
+                  "PIDA": { "type": "number", "example": 0.2 },
+                  "MO": { "type": "number", "example": 90 },
+                  "EE": { "type": "number", "example": 3.5 },
+                  "FDN": { "type": "number", "example": 45 },
+                  "Ligrina": { "type": "number", "example": 5.0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sucesso. Retorna o resultado completo do cálculo de NDT." },
+          "400": { "description": "Erro de validação nos dados de entrada." },
+          "500": { "description": "Erro interno no servidor." }
+        }
+      }
+    },
+    "/api/generate-pdf": {
+      "post": {
+        "tags": ["Relatórios"],
+        "summary": "Gera um relatório em PDF a partir de um resultado de cálculo.",
+        "description": "Recebe um objeto com os dados de um resultado de cálculo e retorna um arquivo PDF para download.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "example": "ndt" },
+                  "data": { 
+                    "type": "object", 
+                    "example": { 
+                      "Nutrientes digestíveis totais": { "tipo": "%", "valor": 68.32 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso. Retorna o arquivo PDF.",
+            "content": {
+              "application/pdf": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": { "description": "Dados do relatório insuficientes ou inválidos." },
+          "500": { "description": "Erro interno ao gerar o PDF." }
+        }
+      }
+    }
+  }
+}
