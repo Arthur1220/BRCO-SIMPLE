@@ -29,6 +29,7 @@ function _calculateEnergia(params) {
         const sexoConf = _getSexoConfig(C.ELg, input.sexoId);
         
         ELm_REQ = C.ELm_FACTOR * (PCVZ ** 0.75);
+        // A fórmula original para ovinos usa GPCV, não GPCVZ
         ELg_REQ = sexoConf.F * (PCVZ ** 0.75) * (GPCV ** sexoConf.E);
         EMm_REQ = ELm_REQ / C.EMm_DIV;
         EMg_REQ = ELg_REQ / C.EMg_DIV;
@@ -37,9 +38,12 @@ function _calculateEnergia(params) {
     const ELT_REQ = ELm_REQ + ELg_REQ;
     const EMT_REQ = EMm_REQ + EMg_REQ;
     const EMT_MS_REQ = EMT_REQ / (CMS_REQ / 1000);
-    const EDT_REQ = EMT_REQ / (especie === 'CAPRINOS' ? C.EDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.EDT_DIV);
-    const NDT_REQ = EDT_REQ / (especie === 'CAPRINOS' ? C.NDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.NDT_DIV) * 1000;
+    const EDT_REQ = EMT_REQ / (especie === 'CAPRINOS' ? REQUIREMENTS.CAPRINOS.ENERGIA.EDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.EDT_DIV);
+    const NDT_REQ = EDT_REQ / (especie === 'CAPRINOS' ? REQUIREMENTS.CAPRINOS.ENERGIA.NDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.NDT_DIV) * 1000;
     const NDT_MS_REQ = NDT_REQ * 1000 / CMS_REQ;
+    const ED_MS_REQ = (especie === 'CAPRINOS')
+        ? ((EMT_REQ / (CMS_REQ / 1000) * 1000 - 0.0862) / 0.899) / 1000
+        : (EDT_REQ / (CMS_REQ / 1000));
 
     return {
         'Energia líquida de mantença': { tipo: 'Mcal/d', valor_requerido: round(ELm_REQ, D), valor_maximo: round(ELm_REQ * 1.05, D) },
@@ -48,8 +52,11 @@ function _calculateEnergia(params) {
         'Energia metabolizável de mantença': { tipo: 'Mcal/d', valor_requerido: round(EMm_REQ, D), valor_maximo: round(EMm_REQ * 1.05, D) },
         'Energia metabolizável de ganho': { tipo: 'Mcal/d', valor_requerido: round(EMg_REQ, D), valor_maximo: round(EMg_REQ * 1.05, D) },
         'Energia metabolizável total': { tipo: 'Mcal/d', valor_requerido: round(EMT_REQ, D), valor_maximo: round(EMT_REQ * 1.05, D) },
-        'Nutrientes digestíveis totais (g/dia)': { tipo: 'g/d', valor_requerido: round(NDT_REQ, D), valor_maximo: round(NDT_REQ * 1.05, D) },
-        'Nutrientes digestíveis totais (g/kgMS)': { tipo: 'g/kgMS', valor_requerido: round(NDT_MS_REQ, D), valor_maximo: round(NDT_MS_REQ * 1.05, D) },
+        'Energia metabolizável': { tipo: 'Mcal/kg MS', valor_requerido: round(EMT_MS_REQ, D), valor_maximo: round(EMT_MS_REQ * 1.05, D) },
+        'Energia digestível': { tipo: 'Mcal/kg MS', valor_requerido: round(ED_MS_REQ, D), valor_maximo: round(ED_MS_REQ * 1.05, D) },
+        'Energia digestível total': { tipo: 'Mcal/d', valor_requerido: round(EDT_REQ, D), valor_maximo: round(EDT_REQ * 1.05, D) },
+        'Nutrientes digestíveis totais1': { tipo: 'g/d', valor_requerido: round(NDT_REQ, D), valor_maximo: round(NDT_REQ * 1.05, D) },
+        'Nutrientes digestíveis totais': { tipo: 'g/kgMS', valor_requerido: round(NDT_MS_REQ, D), valor_maximo: round(NDT_MS_REQ * 1.05, D) },
     };
 }
 
@@ -63,7 +70,6 @@ function _calculateProteina(params) {
         let conf = C.LEITEIRO;
         if (input.categoriaAnimalId === 2) conf = C.NATIVA;
         if (input.categoriaAnimalId === 3) conf = C.CORTE;
-
         const sexoConf = _getSexoConfig(conf.PLG, input.sexoId);
         PLM_REQ = conf.PLM_FACTOR * (PCV ** 0.75);
         PLG_REQ = sexoConf.FACTOR * (PCV ** sexoConf.EXP) * GPCVZ;
@@ -79,7 +85,7 @@ function _calculateProteina(params) {
     
     const PLT_REQ = PLM_REQ + PLG_REQ;
     const PMT_REQ = PMM_REQ + PMG_REQ;
-    const NDT_g_d = resultadosAnteriores['Nutrientes digestíveis totais (g/dia)'].valor_requerido;
+    const NDT_g_d = resultadosAnteriores['Nutrientes digestíveis totais1'].valor_requerido; // Usando a chave correta
     const PDR_REQ = C.PDR_BASE + (C.PDR_FACTOR * (NDT_g_d / 1000));
     const PNDR_REQ = (PMT_REQ - (PDR_REQ * C.PNDR_FACTOR1)) / C.PNDR_FACTOR2;
     const PB_REQ = PDR_REQ + PNDR_REQ;
@@ -94,8 +100,8 @@ function _calculateProteina(params) {
         'Proteína metabolizável total': { tipo: 'g/dia', valor_requerido: round(PMT_REQ, D), valor_maximo: round(PMT_REQ * 1.1, D) },
         'Proteína degradável no rúmen': { tipo: 'g/dia', valor_requerido: round(PDR_REQ, D), valor_maximo: round(PDR_REQ * 1.1, D) },
         'Proteína não degradável no rúmen': { tipo: 'g/dia', valor_requerido: round(PNDR_REQ, D), valor_maximo: round(PNDR_REQ * 1.1, D) },
-        'Proteína bruta (g/dia)': { tipo: 'g/dia', valor_requerido: round(PB_REQ, D), valor_maximo: round(PB_REQ * 1.1, D) },
-        'Proteína bruta (g/kgMS)': { tipo: 'g/kgMS', valor_requerido: round(PB_MS_REQ, D), valor_maximo: round(PB_MS_REQ * 1.1, D) },
+        'Proteína bruta 1': { tipo: 'g/dia', valor_requerido: round(PB_REQ, D), valor_maximo: round(PB_REQ * 1.1, D) },
+        'Proteína bruta': { tipo: 'g/kgMS', valor_requerido: round(PB_MS_REQ, D), valor_maximo: round(PB_MS_REQ * 1.1, D) },
     };
 }
 
@@ -366,10 +372,11 @@ function calculateAllRequirements(input) {
         const sexoConfProteina = _getSexoConfig(confProteina.PLG, input.sexoId);
         const PLG_REQ_temp = sexoConfProteina.FACTOR * (PCV ** sexoConfProteina.EXP) * GPCVZ;
 
-        const ERP = (PLG_REQ_temp / 1000 * 5.686) / ELg_REQ_temp;
+        // Evitar divisão por zero se ELg_REQ_temp for 0
+        const ERP = ELg_REQ_temp !== 0 ? (PLG_REQ_temp / 1000 * 5.686) / ELg_REQ_temp : 0;
         const KG = 17 / (21 + ERP * 60);
 
-        commonParams = { input, pesoMedio, PCV, GPCVZ, CMS_REQ, KG, especie: 'CAPRINOS' };
+        commonParams = { input, pesoMedio, PCV, GPCV: GPCVZ, GPCVZ, CMS_REQ, KG, especie: 'CAPRINOS' }; // Passando GPCVZ como GPCV para os minerais
 
     } else { // Ovinos
         const O = R.OVINOS;
@@ -382,8 +389,8 @@ function calculateAllRequirements(input) {
     }
 
     const cmsResult = {
-        'Consumo de matéria seca': { tipo: 'g/d', valor_requerido: round(commonParams.CMS_REQ, D), valor_maximo: round(commonParams.CMS_REQ * 1.1, D) },
-        'Consumo de matéria seca (%PV)': { tipo: '%PV', valor_requerido: round(commonParams.CMS_REQ / pesoMedio / 10, D), valor_maximo: round((commonParams.CMS_REQ / pesoMedio / 10) * 1.1, D) }
+        'Consumo de matéria seca 1': { tipo: 'g/d', valor_requerido: round(commonParams.CMS_REQ, D), valor_maximo: round(commonParams.CMS_REQ * 1.1, D) },
+        'Consumo de matéria seca': { tipo: 'g/kgMS', valor_requerido: round((commonParams.CMS_REQ / pesoMedio) * 1000, D), valor_maximo: round((commonParams.CMS_REQ / pesoMedio) * 1000 * 1.1, D) }
     };
 
     const energiaResult = _calculateEnergia(commonParams);
