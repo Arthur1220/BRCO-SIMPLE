@@ -48,3 +48,15 @@ a:hover {
     margin: 0 auto;
     padding: 0 2rem;
 }
+
+/* Damos um nome diferente ('page-fade') para não conflitar com outras transições */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  /* Duração da transição. 0.2s é rápido e sutil para trocas de página */
+  transition: opacity 0.2s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}

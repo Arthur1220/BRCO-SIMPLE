@@ -14,8 +14,8 @@
         </div>
         
         <div class="form-section">
-          <label for="FDN">FDN (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.FDN" required placeholder="Fibra em detergente neutro">
+          <label for="FDN">Fibra em Detergente Neutro (FDN, %MS):</label>
+          <input type="number" step="0.01" v-model.number="formData.FDN" required placeholder="Ex: 60.0">
         </div>
 
         <div class="form-section">
@@ -44,12 +44,12 @@
       <div v-if="option === 'sim'" class="grid-2-cols">
         <div class="form-section">
           <label for="PIDN">PIDN (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.PIDN" placeholder="Proteína insolúvel em detergente neutro">
+          <input type="number" step="0.01" v-model.number="formData.PIDN" placeholder="Ex: 2.5">
         </div>
 
         <div class="form-section">
           <label for="PIDA">PIDA (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.PIDA" placeholder="Proteína insolúvel em detergente ácido">
+          <input type="number" step="0.01" v-model.number="formData.PIDA" placeholder="Ex: 1.0">
         </div>
       </div>
 
@@ -78,20 +78,27 @@ const formData = reactive({
 });
 
 const handleSubmit = async () => {
-  if (option.value === 'nao') {
-    formData.PIDN = 0;
-    formData.PIDA = 0;
-  }
-  
-  store.results = null;
-  store.error = null;
+  // AJUSTE: Garante que todos os dados são numéricos antes de enviar para o store.
+  // Isso cria um objeto limpo para a API, prevenindo que valores nulos ou vazios
+  // causem problemas.
+  const payload = {
+    PB: Number(formData.PB) || 0,
+    EE: Number(formData.EE) || 0,
+    FDN: Number(formData.FDN) || 0,
+    Ligrina: Number(formData.Ligrina) || 0,
+    MO: Number(formData.MO) || 0,
+    // Lógica condicional para PIDN e PIDA
+    PIDN: option.value === 'sim' ? (Number(formData.PIDN) || 0) : 0,
+    PIDA: option.value === 'sim' ? (Number(formData.PIDA) || 0) : 0,
+  };
 
-  await store.performCalculation('ndt', formData);
+  // Chama a action do store com o payload seguro
+  await store.performCalculation('ndt', payload);
 };
 </script>
 
 <style scoped>
-/* Estilos similares ao ExigenciasForm para consistência */
+/* Estilos permanecem os mesmos, pois já estão bem estruturados */
 .form-container {
   background: var(--white);
   padding: 2rem;
@@ -111,6 +118,8 @@ label {
   display: block;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--black-light);
 }
 input[type="number"] {
   width: 100%;
@@ -153,6 +162,9 @@ button:not(:disabled):hover {
   .grid-2-cols {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+  .form-section {
+    margin-bottom: 1rem;
   }
 }
 </style>

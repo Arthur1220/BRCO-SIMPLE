@@ -40,7 +40,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; {{ new Date().getFullYear() }} BRCO - Todos os direitos reservados. Desenvolvido com base no livro "Exigências Nutricionais de Caprinos e Ovinos de Corte - BR-CORTE".</p>
+        <p>&copy; {{ new Date().getFullYear() }} BRCO - Todos os direitos reservados. Desenvolvido com base no livro "Exigências Nutricionais de Caprinos e Ovinos - BR-Caprinos e Ovinos".</p>
       </div>
     </div>
   </footer>

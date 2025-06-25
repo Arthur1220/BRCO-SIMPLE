@@ -70,8 +70,6 @@ const formData = reactive({
 
 const handleSubmit = async () => {
   // Limpa o estado anterior antes de um novo cálculo
-  store.results = null;
-  store.error = null;
   
   await store.performCalculation('requirements', formData);
 };

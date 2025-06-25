@@ -1,30 +1,36 @@
-import axios from 'axios';
+import apiClient from './axiosSetup.js';
 
-// Configura a URL base da nossa API.
-// Em desenvolvimento, vai usar o proxy do Vite. Em produção, a variável de ambiente.
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Função para chamar o cálculo de exigências
+/**
+ * Envia os dados para o cálculo de exigências.
+ * @param {object} data - O objeto com os dados do formulário.
+ * @returns {Promise<object>} - A promessa com os resultados do cálculo.
+ */
 export const calculateRequirements = async (data) => {
+  // apiClient já sabe a URL base, então só precisamos do caminho do endpoint.
   const response = await apiClient.post('/calculate/requirements', data);
-  return response.data;
+  return response.data; // Retornamos apenas os dados da resposta
 };
 
-// Função para chamar o cálculo de NDT
+/**
+ * Envia os dados para o cálculo de NDT.
+ * @param {object} data - O objeto com os dados do formulário.
+ * @returns {Promise<object>} - A promessa com os resultados do cálculo.
+ */
 export const calculateNdt = async (data) => {
   const response = await apiClient.post('/calculate/ndt', data);
   return response.data;
 };
 
-// Função para gerar o PDF
+/**
+ * Envia os dados de um resultado para gerar um PDF.
+ * @param {object} data - O objeto com o tipo e os dados do resultado.
+ * @returns {Promise<Blob>} - A promessa com o arquivo PDF em formato Blob.
+ */
 export const generatePdf = async (data) => {
-    const response = await apiClient.post('/generate-pdf', data, {
-        responseType: 'blob', // Importante para receber o arquivo
-    });
-    return response.data;
+  const response = await apiClient.post('/generate-pdf', data, {
+    // Esta configuração é específica para esta chamada, por isso fica aqui.
+    // Ela diz ao Axios para tratar a resposta como um arquivo binário (Blob).
+    responseType: 'blob', 
+  });
+  return response.data;
 };

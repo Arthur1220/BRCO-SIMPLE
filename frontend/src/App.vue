@@ -8,7 +8,13 @@ import AppFooter from '@/components/AppFooter.vue'
   <div class="app-container">
     <AppHeader />
     <main class="content">
-      <RouterView />
+      
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="page-fade" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </RouterView>
+
     </main>
     <AppFooter />
   </div>

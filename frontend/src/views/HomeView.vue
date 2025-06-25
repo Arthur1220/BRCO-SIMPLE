@@ -71,14 +71,16 @@
               <h3>Baseado em Ciência</h3>
             </div>
             <p class="source-text">
-              Toda a base de conhecimento, incluindo fórmulas e valores de referência, foi extraída diretamente da publicação <strong>"Exigências Nutricionais de Caprinos e Ovinos de Corte - BR-CORTE"</strong>.
+              Toda a base de conhecimento, incluindo fórmulas e valores de referência, foi extraída diretamente da publicação <strong>"Exigências Nutricionais de Caprinos e Ovinos - BR-Caprinos e Ovinos"</strong>.
             </p>
             <p>
               Isso garante que os resultados fornecidos pela nossa ferramenta estejam alinhados com as mais recentes pesquisas e padrões validados pela comunidade científica brasileira.
             </p>
           </div>
-           <div class="book-cover">
-            <img src="@/assets/images/BRCO.jpg" alt="Capa do livro BR-CORTE">
+          <div class="book-cover">
+            <a href="https://brcaprinoseovinos.ufc.br/pt/pagina-de-introducao/" target="_blank" rel="noopener noreferrer">
+              <img src="@/assets/images/BRCO.jpg" alt="Capa do livro BR-CORTE" style="cursor: pointer;">
+            </a>
           </div>
         </div>
       </section>
@@ -196,15 +198,21 @@
 .book-section { background-color: #fdfdfd; }
 .book-container { display: flex; align-items: center; gap: 4rem; }
 .book-details { flex: 1.2; }
-.book-cover { flex: 1; perspective: 1500px; }
+.book-cover {
+  flex-shrink: 0;
+}
 .book-cover img {
   max-width: 300px;
   margin: 0 auto;
   display: block;
-  transition: transform 0.4s ease-out;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  /* A transição é a chave para a suavidade */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 .book-cover:hover img {
-  transform: rotateY(-18deg) scale(1.05);
+  transform: scale(1.05); /* Aumenta o tamanho em 5% */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* Sombra um pouco maior */
 }
 .book-details .source-text {
   font-size: 1.2rem;

@@ -1,142 +1,204 @@
 <template>
-  <div class="container">
-    <div class="calculator-wrapper">
-      <aside class="sidebar">
-        <h2>Cálculos</h2>
-        <nav>
-          <router-link to="/calcular/exigencias" class="nav-item" active-class="active">Exigências Nutricionais</router-link>
-          <router-link to="/calcular/ndt" class="nav-item" active-class="active">Nutrientes Digestíveis Totais (NDT)</router-link>
-        </nav>
-      </aside>
+  <div class="results-wrapper">
+    <div class="results-header">
+      <h2>Resultados do Cálculo</h2>
+      <div class="export-buttons">
+        <button @click="exportToPdf" class="btn-export pdf">Gerar PDF</button>
+        <button @click="exportToCsv" class="btn-export csv" disabled title="Em breve">Exportar CSV</button>
+      </div>
+    </div>
 
-      <div class="content-area">
-        <section class="form-section">
-          <div v-if="type === 'exigencias'">
-            <div class="info-header">
-              <h1>Calcular Exigências</h1>
-              <p>Utilize esta ferramenta para determinar as exigências nutricionais específicas de ovinos e caprinos.</p>
-            </div>
-            <ExigenciasForm />
-          </div>
-          <div v-if="type === 'ndt'">
-            <div class="info-header">
-              <h1>Calcular NDT</h1>
-              <p>O NDT é um parâmetro para expressar a energia de um alimento. É a soma de todos os nutrientes orgânicos digestíveis.</p>
-            </div>
-            <NDTForm />
-          </div>
-        </section>
+    <div class="highlight-grid">
+      <div class="highlight-card" v-for="item in highlightedResults" :key="item.label">
+        <span class="highlight-label">{{ item.label }}</span>
+        <span class="highlight-value">{{ item.value }}<small>{{ item.unit }}</small></span>
+      </div>
+    </div>
 
-        <section class="results-section">
-            <LoadingSpinner v-if="store.isLoading" />
-            <div v-if="store.error" class="error-message">
-              <h3>Ocorreu um Erro</h3>
-              <p>{{ store.error }}</p>
-            </div>
-            <ResultsDisplay v-if="store.results" />
-        </section>
+    <div class="details-section">
+      <h4 class="details-title">Todos os Parâmetros</h4>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parâmetro</th>
+              <th class="center" v-if="!hasMaxValue">Valor</th>
+              <th class="center" v-if="hasMaxValue">Valor Requerido</th>
+              <th class="center" v-if="hasMaxValue">Valor Máximo</th>
+              <th class="center">Unidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(result, key) in store.results" :key="key">
+              <td>{{ key }}</td>
+              <td class="center data-value">{{ result.valor ?? result.valor_requerido ?? 'N/A' }}</td>
+              <td v-if="hasMaxValue" class="center data-value">{{ result.valor_maximo ?? 'N/A' }}</td>
+              <td class="center">{{ result.tipo }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import ExigenciasForm from '@/components/ExigenciasForm.vue';
-import NDTForm from '@/components/NDTForm.vue';
-import ResultsDisplay from '@/components/ResultsDisplay.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { computed } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
+import { generatePdf } from '@/services/apiService';
+import { saveAs } from 'file-saver';
 
 const store = useCalculationStore();
 
-defineProps({
-  type: {
-    type: String,
-    required: true
-  }
+// Checa se é um resultado de Exigências (que tem 'valor_maximo')
+const hasMaxValue = computed(() => {
+  if (!store.results) return false;
+  return Object.values(store.results).some(item => typeof item.valor_maximo !== 'undefined');
 });
+
+// Computed property para extrair os resultados principais para os cards
+const highlightedResults = computed(() => {
+  if (!store.results) return [];
+
+  const highlights = [];
+  
+  if (store.results['Nutrientes digestíveis totais']) {
+    const ndtResult = store.results['Nutrientes digestíveis totais'];
+    highlights.push({
+      label: 'Nutrientes Digestíveis Totais',
+      value: ndtResult.valor,
+      unit: ndtResult.tipo
+    });
+  }
+
+  if (store.results['Energia digestivel']) {
+    const edResult = store.results['Energia digestivel'];
+    highlights.push({
+      label: 'Energia Digestível',
+      value: edResult.valor,
+      unit: edResult.tipo
+    });
+  }
+  
+  // Adicione outras lógicas aqui para os resultados de Exigências se desejar
+  // Ex: if (store.results['Proteína bruta']) ...
+
+  return highlights;
+});
+
+const exportToPdf = async () => {
+  if (!store.results) return;
+  try {
+    const blob = await generatePdf({ type: store.calculationType, data: store.results });
+    saveAs(blob, `relatorio_${store.calculationType}.pdf`);
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    alert('Não foi possível gerar o PDF.');
+  }
+};
+
+const exportToCsv = () => {
+  alert('Funcionalidade de exportação para CSV será implementada em breve.');
+};
 </script>
 
 <style scoped>
-.calculator-wrapper {
+.results-wrapper {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(180deg, var(--white) 0%, #fdfdfd 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+  border: 1px solid var(--grey-light);
+}
+.results-header {
   display: flex;
-  gap: 3rem;
-  align-items: flex-start;
-}
-.sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 100px; /* Distância do topo da página */
-}
-.sidebar h2 {
-  font-size: 1.5rem;
-  color: var(--black);
-  margin-top: 0;
-  border-bottom: 2px solid var(--grey-light);
-  padding-bottom: 1rem;
-}
-.sidebar .nav-item {
-  display: block;
-  padding: 0.8rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--black-light);
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-.sidebar .nav-item:hover {
-  background-color: var(--grey-light);
-  color: var(--black);
-}
-.sidebar .nav-item.active {
-  background-color: var(--orange);
-  color: var(--white);
-  font-weight: bold;
-}
-.content-area {
-  flex-grow: 1;
-  min-width: 0;
-}
-.info-header {
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--grey-light);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
-.info-header h1 {
+h2 {
   color: var(--orange);
-  margin-top: 0;
-}
-.results-section {
-  margin-top: 2rem;
-}
-.error-message {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  border: 1px solid var(--red-error);
-  background-color: #fbecec;
-  color: #a82323;
-  border-radius: 8px;
+  margin: 0;
 }
 
-@media (max-width: 992px) {
-  .calculator-wrapper {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .sidebar {
-    width: 100%;
-    position: static;
-    border-bottom: 2px solid var(--grey-light);
-    padding-bottom: 1rem;
-    margin-bottom: 2rem;
-  }
-  .sidebar nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 1rem;
-  }
-  .sidebar .nav-item {
-    flex-shrink: 0;
-  }
+/* --- Estilos dos Cards de Destaque --- */
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
+.highlight-card {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--grey-light);
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+.highlight-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--black-light);
+  margin-bottom: 0.5rem;
+}
+.highlight-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--black);
+  line-height: 1;
+}
+.highlight-value small {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--black-light);
+  margin-left: 0.5rem;
+}
+
+/* --- Estilos da Tabela de Detalhes --- */
+.details-section .details-title {
+  font-size: 1.2rem;
+  color: var(--black);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+.table-container { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  border: 1px solid var(--grey-light);
+  padding: 0.8rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+tbody tr:nth-child(odd) { background-color: #fdfdfd; }
+.center { text-align: center; }
+.data-value { font-weight: 500; }
+
+/* Botões de Exportação */
+.export-buttons { display: flex; gap: 1rem; }
+.btn-export {
+  padding: 0.6rem 1.2rem;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+.btn-export:hover { transform: translateY(-2px); }
+.btn-export.pdf { background-color: #e74c3c; }
+.btn-export.pdf:hover { background-color: #c0392b; }
+.btn-export.csv { background-color: #27ae60; }
+.btn-export:disabled { background-color: var(--grey); cursor: not-allowed; transform: none; }
 </style>
