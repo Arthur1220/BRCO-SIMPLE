@@ -4,7 +4,7 @@
       <h2>Resultados do Cálculo</h2>
       <div class="export-buttons">
         <button @click="exportToPdf" class="btn-export pdf">Gerar PDF</button>
-        <button @click="exportToCsv" class="btn-export csv" disabled title="Em breve">Exportar CSV</button>
+        <button @click="exportToCsv" class="btn-export csv">Exportar CSV</button>
       </div>
     </div>
 
@@ -45,7 +45,8 @@
 <script setup>
 import { computed } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
-import { generatePdf } from '@/services/apiService';
+// Importa TODAS as funções de exportação necessárias
+import { generatePdf, generateCsv } from '@/services/apiService'; 
 import { saveAs } from 'file-saver';
 
 const store = useCalculationStore();
@@ -56,40 +57,66 @@ const hasMaxValue = computed(() => {
   return Object.values(store.results).some(item => typeof item.valor_maximo !== 'undefined');
 });
 
-// Computed property para extrair os resultados principais para os cards
+// Computed property ATUALIZADA para extrair os resultados principais para os cards
 const highlightedResults = computed(() => {
   if (!store.results) return [];
 
   const highlights = [];
-  
-  if (store.results['Nutrientes digestíveis totais']) {
-    const ndtResult = store.results['Nutrientes digestíveis totais'];
-    highlights.push({
-      label: 'Nutrientes Digestíveis Totais',
-      value: ndtResult.valor,
-      unit: ndtResult.tipo
-    });
-  }
+  const results = store.results;
 
-  if (store.results['Energia digestivel']) {
-    const edResult = store.results['Energia digestivel'];
-    highlights.push({
-      label: 'Energia Digestível',
-      value: edResult.valor,
-      unit: edResult.tipo
-    });
+  if (store.calculationType === 'ndt') {
+    // Destaques para NDT
+    if (results['Nutrientes digestíveis totais']) {
+      highlights.push({
+        label: 'Nutrientes Digestíveis Totais',
+        value: results['Nutrientes digestíveis totais'].valor,
+        unit: results['Nutrientes digestíveis totais'].tipo
+      });
+    }
+    if (results['Energia digestivel']) {
+      highlights.push({
+        label: 'Energia Digestível',
+        value: results['Energia digestivel'].valor,
+        unit: results['Energia digestivel'].tipo
+      });
+    }
+  } else if (store.calculationType === 'requirements') {
+    // Destaques para Exigências
+    if (results['Consumo de matéria seca']) {
+      highlights.push({
+        label: 'Consumo de Matéria Seca',
+        value: results['Consumo de matéria seca'].valor_requerido,
+        unit: results['Consumo de matéria seca'].tipo
+      });
+    }
+    if (results['Energia metabolizável total']) {
+      highlights.push({
+        label: 'Energia Metabolizável Total',
+        value: results['Energia metabolizável total'].valor_requerido,
+        unit: results['Energia metabolizável total'].tipo
+      });
+    }
+    if (results['Proteína bruta (g/dia)']) {
+      highlights.push({
+        label: 'Proteína Bruta',
+        value: results['Proteína bruta (g/dia)'].valor_requerido,
+        unit: results['Proteína bruta (g/dia)'].tipo
+      });
+    }
   }
   
-  // Adicione outras lógicas aqui para os resultados de Exigências se desejar
-  // Ex: if (store.results['Proteína bruta']) ...
-
   return highlights;
 });
 
 const exportToPdf = async () => {
   if (!store.results) return;
   try {
-    const blob = await generatePdf({ type: store.calculationType, data: store.results });
+    const blob = await generatePdf({ 
+      type: store.calculationType, 
+      // O backend de PDF precisa dos inputs também para um relatório completo
+      inputs: store.lastFormData, // Supondo que você salve os inputs no store
+      results: store.results 
+    });
     saveAs(blob, `relatorio_${store.calculationType}.pdf`);
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
@@ -97,12 +124,21 @@ const exportToPdf = async () => {
   }
 };
 
-const exportToCsv = () => {
-  alert('Funcionalidade de exportação para CSV será implementada em breve.');
+// Função de exportar para CSV agora está funcional
+const exportToCsv = async () => {
+  if (!store.results) return;
+  try {
+    const blob = await generateCsv({ data: store.results });
+    saveAs(blob, `relatorio_${store.calculationType}.csv`);
+  } catch (error) {
+    console.error('Erro ao gerar CSV:', error);
+    alert('Não foi possível gerar o CSV.');
+  }
 };
 </script>
 
 <style scoped>
+/* Os estilos que já definimos permanecem os mesmos */
 .results-wrapper {
   margin-top: 2rem;
   padding: 2rem;
@@ -125,8 +161,6 @@ h2 {
   color: var(--orange);
   margin: 0;
 }
-
-/* --- Estilos dos Cards de Destaque --- */
 .highlight-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -160,8 +194,6 @@ h2 {
   color: var(--black-light);
   margin-left: 0.5rem;
 }
-
-/* --- Estilos da Tabela de Detalhes --- */
 .details-section .details-title {
   font-size: 1.2rem;
   color: var(--black);
@@ -184,8 +216,6 @@ th {
 tbody tr:nth-child(odd) { background-color: #fdfdfd; }
 .center { text-align: center; }
 .data-value { font-weight: 500; }
-
-/* Botões de Exportação */
 .export-buttons { display: flex; gap: 1rem; }
 .btn-export {
   padding: 0.6rem 1.2rem;
@@ -200,5 +230,5 @@ tbody tr:nth-child(odd) { background-color: #fdfdfd; }
 .btn-export.pdf { background-color: #e74c3c; }
 .btn-export.pdf:hover { background-color: #c0392b; }
 .btn-export.csv { background-color: #27ae60; }
-.btn-export:disabled { background-color: var(--grey); cursor: not-allowed; transform: none; }
+.btn-export.csv:hover { background-color: #229954; }
 </style>

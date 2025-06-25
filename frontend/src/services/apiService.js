@@ -34,3 +34,12 @@ export const generatePdf = async (data) => {
   });
   return response.data;
 };
+
+/** * Envia os dados para gerar um arquivo CSV.
+ * @param {object} data - O objeto com os dados para o CSV.
+ * @returns {Promise<Blob>} - A promessa com o arquivo CSV em formato Blob.
+ */
+export const generateCsv = async (data) => {
+  const response = await apiClient.post('/generate-csv', data, { responseType: 'blob' });
+  return response.data;
+};

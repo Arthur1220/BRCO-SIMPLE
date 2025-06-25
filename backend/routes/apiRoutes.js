@@ -4,6 +4,7 @@ const router = express.Router();
 const { handleRequirementCalculation } = require('../controllers/requirementController');
 const { handleNdtCalculation } = require('../controllers/ndtController');
 const { handlePdfGeneration } = require('../controllers/pdfController');
+const { handleCsvGeneration } = require('../controllers/csvController');
 
 // Rota para cálculo de Exigências
 router.post('/calculate/requirements', handleRequirementCalculation);
@@ -13,5 +14,8 @@ router.post('/calculate/ndt', handleNdtCalculation);
 
 // Rota para gerar PDF
 router.post('/generate-pdf', handlePdfGeneration);
+
+// Rota para gerar CSV
+router.post('/generate-csv', handleCsvGeneration);
 
 module.exports = router;
