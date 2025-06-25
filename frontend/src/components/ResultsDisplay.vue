@@ -45,7 +45,6 @@
 <script setup>
 import { computed } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
-// Importa TODAS as funções de exportação necessárias
 import { generatePdf, generateCsv } from '@/services/apiService'; 
 import { saveAs } from 'file-saver';
 
@@ -109,15 +108,24 @@ const highlightedResults = computed(() => {
 });
 
 const exportToPdf = async () => {
-  if (!store.results) return;
+  if (!store.results || !store.lastFormData) {
+    // Exibe um alerta para o usuário
+    alert("Dados insuficientes para gerar o relatório. Por favor, realize um novo cálculo.");
+    return;
+  }
   try {
-    const blob = await generatePdf({ 
+    // Monta o payload que será enviado
+    const payload = { 
       type: store.calculationType, 
-      // O backend de PDF precisa dos inputs também para um relatório completo
-      inputs: store.lastFormData, // Supondo que você salve os inputs no store
+      inputs: store.lastFormData, 
       results: store.results 
-    });
+    };
+
+    console.log('Payload para PDF:', payload);
+
+    const blob = await generatePdf(payload);
     saveAs(blob, `relatorio_${store.calculationType}.pdf`);
+
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
     alert('Não foi possível gerar o PDF.');
@@ -128,6 +136,7 @@ const exportToPdf = async () => {
 const exportToCsv = async () => {
   if (!store.results) return;
   try {
+    // O backend de CSV espera um objeto com a chave 'data'
     const blob = await generateCsv({ data: store.results });
     saveAs(blob, `relatorio_${store.calculationType}.csv`);
   } catch (error) {

@@ -2,19 +2,26 @@ const { generatePdf } = require('../services/pdfService');
 const logger = require('../lib/logger');
 
 async function handlePdfGeneration(req, res) {
-    const reportData = req.body;
+  const reportData = req.body;
 
-    if (!reportData || !reportData.type || !reportData.data) {
-        return res.status(400).json({ error: 'Dados do relatório insuficientes.' });
-    }
+  // Esta validação agora vai funcionar, pois o frontend envia 'inputs' e 'results'
+  if (!reportData || !reportData.type || !reportData.results || !reportData.inputs) {
+    return res.status(400).json({ error: 'Dados completos (type, inputs, results) são necessários.' });
+  }
 
+  try {
     const pdfBuffer = await generatePdf(reportData);
     
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=relatorio.pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="relatorio-brco.pdf"');
     
-    logger.info(`PDF generated for type: ${reportData.type}`);
+    logger.info('PDF report generated and sent.');
     res.send(pdfBuffer);
+
+  } catch (error) {
+    logger.error("Erro ao gerar PDF:", error);
+    res.status(500).json({ error: 'Ocorreu um erro interno ao gerar o PDF.' });
+  }
 }
 
 module.exports = { handlePdfGeneration };
