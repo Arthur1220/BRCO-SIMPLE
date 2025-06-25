@@ -28,25 +28,23 @@
               <th class="center">Unidade</th>
             </tr>
           </thead>
-          
           <tbody>
             <template v-for="group in groupedResults" :key="group.theme">
-              
               <tr class="group-header">
                 <td :colspan="tableColumnCount">{{ group.theme }}</td>
               </tr>
               
-              <tr v-for="item in group.items" :key="item.key">
-                <td>{{ item.key }}</td>
-                <td class="center data-value">{{ item.value.valor ?? item.value.valor_requerido ?? 'N/A' }}</td>
-                <td v-if="hasMaxValue" class="center data-value">{{ item.value.valor_maximo ?? 'N/A' }}</td>
-                <td class="center">{{ item.value.tipo }}</td>
-              </tr>
-
-            </template>
+              <template v-for="item in group.items" :key="item.key">
+                <tr v-if="(item.value.valor ?? item.value.valor_requerido) > 0">
+                  <td>{{ item.key }}</td>
+                  <td class="center data-value">{{ item.value.valor ?? item.value.valor_requerido ?? 'N/A' }}</td>
+                  <td v-if="hasMaxValue" class="center data-value">{{ item.value.valor_maximo ?? 'N/A' }}</td>
+                  <td class="center">{{ item.value.tipo }}</td>
+                </tr>
+              </template>
+              </template>
           </tbody>
-          
-          </table>
+        </table>
       </div>
     </div>
   </div>

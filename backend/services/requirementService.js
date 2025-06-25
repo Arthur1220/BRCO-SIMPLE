@@ -42,7 +42,7 @@ function _calculateEnergia(params) {
     const NDT_REQ = EDT_REQ / (especie === 'CAPRINOS' ? REQUIREMENTS.CAPRINOS.ENERGIA.NDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.NDT_DIV) * 1000;
     const NDT_MS_REQ = NDT_REQ * 1000 / CMS_REQ;
     const ED_MS_REQ = (especie === 'CAPRINOS')
-        ? ((EMT_REQ / (CMS_REQ / 1000) * 1000 - 0.0862) / 0.899) / 1000
+        ? ((EMT_MS_REQ * 1000 - 0.0862) / 0.899) / 1000
         : (EDT_REQ / (CMS_REQ / 1000));
 
     return {
@@ -106,7 +106,7 @@ function _calculateProteina(params) {
 }
 
 function _calculateMinerais(params) {
-    const { input, pesoMedio, PCVZ, GPCV, CMS_REQ, especie } = params;
+    const { input, pesoMedio, PCVZ, GPCV, GPCVZ, CMS_REQ, especie } = params;
     const C = REQUIREMENTS[especie].MINERAIS;
     const D = REQUIREMENTS.DECIMAIS;
     
@@ -116,7 +116,7 @@ function _calculateMinerais(params) {
         // --- Cálcio (Ca) ---
         const CAM_REQ = C.Ca_m.FACTOR * pesoMedio / 1000;
         const sexoConfCa = _getSexoConfig(C.Ca_g, input.sexoId);
-        const CAG_REQ = sexoConfCa.F * (PCVZ ** sexoConfCa.E) * GPCV;
+        const CAG_REQ = sexoConfCa.F * (PCVZ ** sexoConfCa.E) * GPCVZ; 
         const CLT_REQ = CAM_REQ + CAG_REQ;
         const CAD_REQ = CLT_REQ / C.Ca_d.DIV;
         const CAT_MS_REQ = CAD_REQ * 1000 / CMS_REQ;
@@ -124,7 +124,7 @@ function _calculateMinerais(params) {
         // --- Fósforo (P) ---
         const FM_REQ = C.P_m.FACTOR * PCVZ / 1000;
         const sexoConfP = _getSexoConfig(C.P_g, input.sexoId);
-        const FG_REQ = sexoConfP.F * (PCVZ ** sexoConfP.E) * GPCV;
+        const FG_REQ = sexoConfP.F * (PCVZ ** sexoConfP.E) * GPCVZ;
         const FLT_REQ = FM_REQ + FG_REQ;
         const FD_REQ = FLT_REQ / C.P_d.DIV;
         const FT_MS_REQ = FD_REQ * 1000 / CMS_REQ;
@@ -134,7 +134,7 @@ function _calculateMinerais(params) {
         const sexoConfMgM = _getSexoConfig(C.Mg_m, input.sexoId);
         const MGM_REQ = sexoConfMgM.F * PCVZ / 1000;
         const sexoConfMgG = _getSexoConfig(C.Mg_g, input.sexoId);
-        const MGG_REQ = (sexoConfMgG.F * (PCVZ ** sexoConfMgG.E)) * GPCV;
+        const MGG_REQ = (sexoConfMgG.F * (PCVZ ** sexoConfMgG.E)) * GPCVZ;
         const MGLT_REQ = MGM_REQ + MGG_REQ;
         const MGD_REQ = MGLT_REQ / C.Mg_d.DIV;
         const MGT_MS_REQ = MGD_REQ * 1000 / CMS_REQ;
@@ -142,7 +142,7 @@ function _calculateMinerais(params) {
         // --- Sódio (Na) ---
         const NAM_REQ = C.Na_m.FACTOR * PCVZ / 1000;
         const sexoConfNa = _getSexoConfig(C.Na_g, input.sexoId);
-        const NAG_REQ = (sexoConfNa.F * (PCVZ ** sexoConfNa.E)) * GPCV;
+        const NAG_REQ = (sexoConfNa.F * (PCVZ ** sexoConfNa.E)) * GPCVZ;
         const NALT_REQ = NAM_REQ + NAG_REQ;
         const NAD_REQ = NALT_REQ / C.Na_d.DIV;
         const NAT_MS_REQ = NAD_REQ * 1000 / CMS_REQ;
@@ -150,7 +150,7 @@ function _calculateMinerais(params) {
         // --- Potássio (K) ---
         const KM_REQ = C.K_m.FACTOR * PCVZ / 1000;
         const sexoConfK = _getSexoConfig(C.K_g, input.sexoId);
-        const KG_REQ = (sexoConfK.F * (PCVZ ** sexoConfK.E)) * GPCV;
+        const KG_REQ = (sexoConfK.F * (PCVZ ** sexoConfK.E)) * GPCVZ;
         const KLT_REQ = KM_REQ + KG_REQ;
         const KD_REQ = KLT_REQ / C.K_d.DIV;
         const KT_MS_REQ = KD_REQ * 1000 / CMS_REQ;
@@ -335,7 +335,7 @@ function _calculateMinerais(params) {
 
     // Adiciona valores máximos genéricos para consistência, pode ser ajustado
     for (const key in resultados) {
-        if (resultados[key].valor_requerido) {
+        if (resultados[key].valor_requerido !== undefined) {
             resultados[key].valor_maximo = round(resultados[key].valor_requerido * 1.3, D);
         }
     }
@@ -397,6 +397,10 @@ function calculateAllRequirements(input) {
     const proteinaResult = _calculateProteina({ ...commonParams, resultadosAnteriores: { ...cmsResult, ...energiaResult } });
     const mineraisResult = _calculateMinerais(commonParams);
     
+    console.log('Resultados de Energia:', energiaResult);
+    console.log('Resultados de Proteína:', proteinaResult);
+    console.log('Resultados de Minerais:', mineraisResult);
+
     return { ...cmsResult, ...energiaResult, ...proteinaResult, ...mineraisResult };
 }
 
