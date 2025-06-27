@@ -145,9 +145,17 @@ const exportToPdf = async () => {
 
     console.log('Payload para PDF:', payload);
 
-    const blob = await generatePdf(payload);
-    saveAs(blob, `relatorio_${store.calculationType}.pdf`);
+    const pdfBlob = await generatePdf(payload);
 
+    console.log("FRONTEND: Blob recebido do backend:", pdfBlob);
+
+    if (pdfBlob.size > 0 && pdfBlob.type === 'application/pdf') {
+      // Usa a função saveAs para iniciar o download.
+      // Ela cria um link temporário e simula um clique para o usuário.
+      saveAs(pdfBlob, `relatorio_${store.calculationType}.pdf`);
+    } else {
+      throw new Error("O backend retornou uma resposta inválida ou vazia para o PDF.");
+    }
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
     alert('Não foi possível gerar o PDF.');

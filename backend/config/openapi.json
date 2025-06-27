@@ -3,7 +3,7 @@
   "info": {
     "title": "API de Cálculos de Exigências e NDT",
     "version": "1.0.0",
-    "description": "Uma API para realizar cálculos nutricionais para ovinos e caprinos, e gerar relatórios em PDF."
+    "description": "Uma API para realizar cálculos nutricionais para ovinos e caprinos, gerar relatórios e visualizar estatísticas de uso."
   },
   "servers": [
     {
@@ -13,20 +13,24 @@
   ],
   "tags": [
     {
-      "name": "Cálculos",
-      "description": "Endpoints para realizar os cálculos nutricionais."
+      "name": "Cálculos Públicos",
+      "description": "Endpoints para realizar os cálculos nutricionais (protegidos por chave de API pública)."
     },
     {
-      "name": "Relatórios",
-      "description": "Endpoints para geração de arquivos."
+      "name": "Relatórios Públicos",
+      "description": "Endpoints para geração de arquivos (protegidos por chave de API pública)."
+    },
+    {
+      "name": "Admin",
+      "description": "Endpoints para administração e visualização de estatísticas (protegidos por chave de API de admin)."
     }
   ],
   "paths": {
     "/api/calculate/requirements": {
       "post": {
-        "tags": ["Cálculos"],
+        "tags": ["Cálculos Públicos"],
         "summary": "Calcula as exigências nutricionais para um animal.",
-        "description": "Recebe os parâmetros de um animal e retorna um objeto detalhado com os cálculos de exigências.",
+        "security": [{ "PublicApiKey": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -47,16 +51,15 @@
         },
         "responses": {
           "200": { "description": "Sucesso. Retorna o resultado completo do cálculo." },
-          "400": { "description": "Erro de validação nos dados de entrada." },
-          "500": { "description": "Erro interno no servidor." }
+          "401": { "description": "Não autorizado. Chave de API pública inválida ou ausente." }
         }
       }
     },
     "/api/calculate/ndt": {
       "post": {
-        "tags": ["Cálculos"],
+        "tags": ["Cálculos Públicos"],
         "summary": "Calcula o NDT de um alimento.",
-        "description": "Recebe a composição de um alimento e retorna o NDT e valores energéticos calculados.",
+        "security": [{ "PublicApiKey": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -64,13 +67,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "PB": { "type": "number", "example": 12.5 },
-                  "PIDN": { "type": "number", "example": 0.5 },
-                  "PIDA": { "type": "number", "example": 0.2 },
-                  "MO": { "type": "number", "example": 90 },
-                  "EE": { "type": "number", "example": 3.5 },
-                  "FDN": { "type": "number", "example": 45 },
-                  "Ligrina": { "type": "number", "example": 5.0 }
+                  "PB": { "type": "number", "example": 12.5 }, "EE": { "type": "number", "example": 3.5 }, "FDN": { "type": "number", "example": 45 }, "Ligrina": { "type": "number", "example": 5.0 }, "MO": { "type": "number", "example": 90 }, "PIDN": { "type": "number", "example": 0.5 }, "PIDA": { "type": "number", "example": 0.2 }
                 }
               }
             }
@@ -78,48 +75,119 @@
         },
         "responses": {
           "200": { "description": "Sucesso. Retorna o resultado completo do cálculo de NDT." },
-          "400": { "description": "Erro de validação nos dados de entrada." },
-          "500": { "description": "Erro interno no servidor." }
+          "401": { "description": "Não autorizado. Chave de API pública inválida ou ausente." }
         }
       }
     },
     "/api/generate-pdf": {
       "post": {
-        "tags": ["Relatórios"],
-        "summary": "Gera um relatório em PDF a partir de um resultado de cálculo.",
-        "description": "Recebe um objeto com os dados de um resultado de cálculo e retorna um arquivo PDF para download.",
+        "tags": ["Relatórios Públicos"],
+        "summary": "Gera um relatório em PDF.",
+        "security": [{ "PublicApiKey": [] }],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "type": { "type": "string", "example": "ndt" },
-                  "data": { 
-                    "type": "object", 
-                    "example": { 
-                      "Nutrientes digestíveis totais": { "tipo": "%", "valor": 68.32 }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReportPayload" } } }
         },
         "responses": {
-          "200": {
-            "description": "Sucesso. Retorna o arquivo PDF.",
-            "content": {
-              "application/pdf": {
-                "schema": { "type": "string", "format": "binary" }
-              }
-            }
-          },
-          "400": { "description": "Dados do relatório insuficientes ou inválidos." },
-          "500": { "description": "Erro interno ao gerar o PDF." }
+          "200": { "description": "Sucesso. Retorna o arquivo PDF.", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } },
+          "401": { "description": "Não autorizado." }
         }
       }
+    },
+    "/api/generate-csv": {
+        "post": {
+          "tags": ["Relatórios Públicos"],
+          "summary": "Gera um relatório em CSV.",
+          "security": [{ "PublicApiKey": [] }],
+          "requestBody": {
+            "required": true,
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CsvPayload" } } }
+          },
+          "responses": {
+            "200": { "description": "Sucesso. Retorna o arquivo CSV.", "content": { "text/csv": { "schema": { "type": "string" } } } },
+            "401": { "description": "Não autorizado." }
+          }
+        }
+    },
+    "/api/admin/login": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Realiza o login no painel administrativo.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminLogin" } } }
+        },
+        "responses": {
+          "200": { "description": "Login bem-sucedido." },
+          "401": { "description": "Senha incorreta." }
+        }
+      }
+    },
+    "/api/admin/stats": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Busca as estatísticas de uso da aplicação.",
+        "security": [{ "AdminApiKey": [] }],
+        "parameters": [
+          { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "all"] }, "description": "Filtra os dados pelo período." }
+        ],
+        "responses": {
+          "200": { "description": "Sucesso. Retorna as estatísticas." },
+          "401": { "description": "Não autorizado. Chave de API de admin inválida ou ausente." }
+        }
+      }
+    },
+    "/api/admin/logs": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Busca os logs de cálculos recentes.",
+        "security": [{ "AdminApiKey": [] }],
+        "parameters": [
+          { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "all"] }, "description": "Filtra os dados pelo período." }
+        ],
+        "responses": {
+          "200": { "description": "Sucesso. Retorna uma lista dos últimos logs." },
+          "401": { "description": "Não autorizado. Chave de API de admin inválida ou ausente." }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "PublicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Chave de API necessária para acessar os endpoints públicos de cálculo e relatório."
+      },
+      "AdminApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Chave de API necessária para acessar os endpoints de administração."
+      }
+    },
+    "schemas": {
+        "ReportPayload": {
+            "type": "object",
+            "properties": {
+                "type": { "type": "string", "example": "requirements" },
+                "inputs": { "type": "object", "example": { "especieId": 1 } },
+                "results": { "type": "object", "example": { "Consumo de matéria seca": {} } }
+            }
+        },
+        "CsvPayload": {
+            "type": "object",
+            "properties": {
+                "data": { "type": "object", "example": { "Consumo de matéria seca": {} } }
+            }
+        },
+        "AdminLogin": {
+            "type": "object",
+            "properties": {
+                "password": { "type": "string", "example": "senha-super-secreta" }
+            }
+        }
     }
   }
 }

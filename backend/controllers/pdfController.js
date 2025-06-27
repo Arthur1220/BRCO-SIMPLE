@@ -2,15 +2,16 @@ const { generatePdf } = require('../services/pdfService');
 const logger = require('../lib/logger');
 
 async function handlePdfGeneration(req, res) {
-  const reportData = req.body;
+  const { type, inputs, results } = req.body;
 
-  // Esta validação agora vai funcionar, pois o frontend envia 'inputs' e 'results'
-  if (!reportData || !reportData.type || !reportData.results || !reportData.inputs) {
+  // Validação mais explícita
+  if (!type || !results || !inputs) {
     return res.status(400).json({ error: 'Dados completos (type, inputs, results) são necessários.' });
   }
 
   try {
-    const pdfBuffer = await generatePdf(reportData);
+    // Passamos o objeto completo para o serviço
+    const pdfBuffer = await generatePdf({ type, inputs, results });
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="relatorio-brco.pdf"');
