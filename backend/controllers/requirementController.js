@@ -14,12 +14,15 @@ const requirementInputSchema = z.object({
 });
 
 async function handleRequirementCalculation(req, res) {
+    const inputData = requirementInputSchema.parse(req.body);
+    const result = calculateAllRequirements(inputData);
+
     const userAgent = req.headers['user-agent'];
     const ip = req.ip;
     const geo = geoip.lookup(ip);
 
     await prisma.calculationLog.create({
-        data: {
+        data: { 
             calculationType: `requirement_especie_${inputData.especieId}`,
             userAgent: userAgent,
             country: geo ? geo.country : 'Unknown',
@@ -27,14 +30,7 @@ async function handleRequirementCalculation(req, res) {
         },
     });
 
-    const inputData = requirementInputSchema.parse(req.body);
-    const result = calculateAllRequirements(inputData);
-    
-    await prisma.calculationLog.create({
-        data: { calculationType: `requirement_especie_${inputData.especieId}` },
-    });
-
-    logger.info(`Requirement calculation for especie ${inputData.especieId} successful`);
+    logger.info('Requirement calculation successful')
     res.status(200).json(result);
 }
 
