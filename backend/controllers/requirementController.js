@@ -2,6 +2,7 @@ const { z } = require('zod');
 const { calculateAllRequirements } = require('../services/requirementService');
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
+const geoip = require('geoip-lite');
 
 const requirementInputSchema = z.object({
     especieId: z.number().int().min(1),
@@ -13,6 +14,19 @@ const requirementInputSchema = z.object({
 });
 
 async function handleRequirementCalculation(req, res) {
+    const userAgent = req.headers['user-agent'];
+    const ip = req.ip;
+    const geo = geoip.lookup(ip);
+
+    await prisma.calculationLog.create({
+        data: {
+            calculationType: `requirement_especie_${inputData.especieId}`,
+            userAgent: userAgent,
+            country: geo ? geo.country : 'Unknown',
+            region: geo ? geo.region : 'Unknown',
+        },
+    });
+
     const inputData = requirementInputSchema.parse(req.body);
     const result = calculateAllRequirements(inputData);
     

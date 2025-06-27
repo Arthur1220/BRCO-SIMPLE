@@ -1,25 +1,20 @@
 import axios from 'axios';
 
-// 1. Cria uma instância customizada do Axios
+// Agora, o apiClient é apenas uma instância limpa, sem nenhum header de API Key.
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
-  
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000', // Aponta para a raiz da URL
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   }
 });
 
-// 2. Adiciona um "interceptor" de resposta
-apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
+const errorInterceptor = (error) => {
     console.error('Erro na resposta da API:', error.response?.data || error.message);
     return Promise.reject(error);
-  }
-);
+};
 
-// 3. Exporta a instância configurada para ser usada em outros lugares
+apiClient.interceptors.response.use(response => response, errorInterceptor);
+
+// Exportamos apenas uma instância genérica
 export default apiClient;

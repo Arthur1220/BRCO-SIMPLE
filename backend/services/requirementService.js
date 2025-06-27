@@ -397,10 +397,6 @@ function calculateAllRequirements(input) {
     const proteinaResult = _calculateProteina({ ...commonParams, resultadosAnteriores: { ...cmsResult, ...energiaResult } });
     const mineraisResult = _calculateMinerais(commonParams);
     
-    console.log('Resultados de Energia:', energiaResult);
-    console.log('Resultados de Proteína:', proteinaResult);
-    console.log('Resultados de Minerais:', mineraisResult);
-
     return { ...cmsResult, ...energiaResult, ...proteinaResult, ...mineraisResult };
 }
 

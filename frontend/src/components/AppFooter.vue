@@ -16,7 +16,8 @@
             <li><router-link to="/">Home</router-link></li>
             <li><router-link to="/calcular/exigencias">Calculadoras</router-link></li>
             <li><router-link to="/equipe">Equipe</router-link></li>
-            </ul>
+            <li><router-link to="/admin">Admin</router-link></li> 
+          </ul>
         </div>
 
         <div class="footer-column">
