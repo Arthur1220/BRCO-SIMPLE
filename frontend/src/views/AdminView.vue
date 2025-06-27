@@ -2,54 +2,55 @@
   <div class="admin-view container">
     <header class="admin-header">
       <div class="header-content">
-        <h1>Painel Administrativo</h1>
-        <p>Visão geral do uso do sistema de cálculos.</p>
+        <h1 v-if="isAuthenticated">Painel Administrativo</h1>
+        <p v-if="isAuthenticated">Visão geral do uso do sistema de cálculos.</p>
       </div>
-      <button @click="handleLogout" class="logout-button">Sair</button>
+      <button v-if="isAuthenticated" @click="handleLogout" class="logout-button">Sair</button>
     </header>
 
-    <div class="filter-controls">
-      <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">Últimos 7 dias</button>
-      <button @click="changeFilter('30d')" :class="{ active: activeFilter === '30d' }">Últimos 30 dias</button>
-      <button @click="changeFilter('all')" :class="{ active: activeFilter === 'all' }">Desde o início</button>
-    </div>
-
-    <div v-if="isLoading" class="state-container">
-      <LoadingSpinner />
-    </div>
-    <div v-else-if="error" class="state-container">
-      <div class="error-box">
-        <h3>Ocorreu um erro ao buscar os dados</h3>
-        <p>{{ error }}</p>
+    <AdminLogin v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
+    
+    <div v-else>
+      <div class="filter-controls">
+        <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">Últimos 7 dias</button>
+        <button @click="changeFilter('30d')" :class="{ active: activeFilter === '30d' }">Últimos 30 dias</button>
+        <button @click="changeFilter('all')" :class="{ active: activeFilter === 'all' }">Desde o início</button>
       </div>
-    </div>
-    <div v-else-if="stats && logs">
-      <AdminDashboard :stats="stats" :logs="logs" />
+
+      <div v-if="isLoading" class="state-container"><LoadingSpinner /></div>
+      <div v-else-if="error" class="state-container">
+        <div class="error-box">
+          <h3>Ocorreu um erro ao buscar os dados</h3>
+          <p>{{ error }}</p>
+        </div>
+      </div>
+      <AdminDashboard v-else-if="stats && logs" :stats="stats" :logs="logs" />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { getAdminStats, getAdminLogs } from '@/services/adminService';
+import AdminLogin from '@/components/AdminLogin.vue';
 import AdminDashboard from '@/components/AdminDashboard.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
-const router = useRouter();
+// Estado da View
+const isAuthenticated = ref(false);
 const stats = ref(null);
 const logs = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
-// Novo estado para controlar o filtro ativo
+// Estado do Filtro (Reintroduzido)
 const activeFilter = ref('all');
 
+// Função para buscar os dados, agora aceitando o período do filtro
 const fetchData = async (period) => {
   isLoading.value = true;
   error.value = null;
   try {
-    // Busca os dados passando o período do filtro
     const [statsData, logsData] = await Promise.all([
       getAdminStats(period),
       getAdminLogs(period)
@@ -58,29 +59,49 @@ const fetchData = async (period) => {
     logs.value = logsData;
   } catch (err) {
     error.value = err.response?.data?.error || err.message;
+    handleLogout();
   } finally {
     isLoading.value = false;
   }
 };
 
-// Função chamada pelos botões de filtro
+// Função chamada quando o filtro é alterado (Reintroduzida)
 const changeFilter = (newPeriod) => {
   activeFilter.value = newPeriod;
   fetchData(newPeriod);
 };
 
-const handleLogout = () => {
-  sessionStorage.removeItem('isAdminAuthenticated');
-  router.push('/admin-login'); 
+// Função de Login (Corrigida)
+const handleLoginSuccess = () => {
+  sessionStorage.setItem('isAdminAuthenticated', 'true');
+  isAuthenticated.value = true;
+  fetchData(activeFilter.value); // Busca os dados com o filtro padrão
 };
 
+// Função de Logout (Corrigida)
+const handleLogout = () => {
+  sessionStorage.removeItem('isAdminAuthenticated');
+  isAuthenticated.value = false;
+  stats.value = null;
+  logs.value = [];
+  error.value = null;
+};
+
+// Hook de montagem do componente
 onMounted(() => {
-  // Ao carregar, busca os dados com o filtro padrão ('all')
-  fetchData(activeFilter.value);
+  if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
+    isAuthenticated.value = true;
+    fetchData(activeFilter.value); // Se já estiver logado, busca os dados
+  } else {
+    isLoading.value = false;
+  }
 });
 </script>
 
 <style scoped>
+/* Os estilos combinados, incluindo os dos filtros */
+.admin-view { padding-top: 2rem; padding-bottom: 4rem; }
+
 .admin-header {
   display: flex;
   justify-content: space-between;

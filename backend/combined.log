@@ -282,3 +282,5 @@
 {"level":"info","message":"Admin stats accessed and served successfully."}
 {"level":"info","message":"Swagger docs available at /api-docs"}
 {"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"error"}
+{"level":"error"}
