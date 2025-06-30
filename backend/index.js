@@ -25,7 +25,7 @@ app.use(limiter);
 // Configuração do CORS
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://seu-site-no-netlify.com' 
+    ? 'https://brco.netlify.app/' // Endereço do seu Vue em produção
     : 'http://localhost:5173' // Endereço do seu Vue em dev
 };
 
