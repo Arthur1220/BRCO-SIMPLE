@@ -129,9 +129,18 @@ const highlightedResults = computed(() => {
 });
 
 const exportToCsv = async () => {
-  if (!store.results) return;
+  if (!store.results || !store.lastFormData) {
+    alert("Dados insuficientes para gerar o relatório.");
+    return;
+  }
   try {
-    const blob = await generateCsv({ data: store.results });
+    const payload = { 
+      type: store.calculationType, 
+      inputs: store.lastFormData, 
+      results: store.results 
+    };
+
+    const blob = await generateCsv(payload);
     saveAs(blob, `relatorio_${store.calculationType}.csv`);
   } catch (error) {
     console.error('Erro ao gerar CSV:', error);

@@ -344,3 +344,9 @@
 {"level":"info","message":"PDF report generated and sent."}
 {"level":"info","message":"Requirement calculation successful"}
 {"level":"info","message":"PDF report generated and sent."}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"level":"info","message":"Requirement calculation successful"}
+{"level":"info","message":"CSV report generated and sent."}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}

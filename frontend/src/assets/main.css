@@ -1,58 +1,133 @@
-/* src/assets/main.css */
-
-/* Definição de Variáveis de Cor Globais */
+/* ==========================================================================
+   1. VARIÁVEIS GLOBAIS (Design Tokens)
+   ========================================================================== */
 :root {
   --orange: #f58220;
   --light-orange: #ff9d47;
-  --black: #2c3e50;
-  --black-light: #5a5a5a;
-  --white: #ffffff;
-  --grey: #bdc3c7;
-  --grey-light: #ecf0f1;
   --blue: #3498db;
   --blue-dark: #2980b9;
   --red-error: #e74c3c;
+  
+  --black: #2c3e50;
+  --black-light: #5a5a5a;
+  
+  --white: #ffffff;
+  --grey-light: #ecf0f1;
+  --grey: #bdc3c7;
+
+  /* Tipografia */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Outros */
+  --border-radius: 8px;
+  --transition-speed: 0.3s;
 }
 
-/* Reset Básico e Fontes */
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--white);
-  color: var(--black);
-}
-
+/* ==========================================================================
+   2. RESET GLOBAL E ESTILOS BASE
+   ========================================================================== */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Estilos para links */
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--white);
+  color: var(--black-light);
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   3. ESCALA TIPOGRÁFICA RESPONSIVA
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--black);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); } /* Se ajusta entre 2.5rem e 3.5rem */
+h2 { font-size: clamp(2rem, 4vw, 2.5rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 1.75rem); }
+h4 { font-size: clamp(1.1rem, 2vw, 1.25rem); }
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
 a {
   text-decoration: none;
   color: var(--orange);
-  transition: color 0.3s;
+  transition: color var(--transition-speed);
 }
-
 a:hover {
   color: var(--light-orange);
 }
 
-/* Estilos para contêiner principal para centralizar conteúdo */
+/* ==========================================================================
+   4. LAYOUT E CLASSES UTILITÁRIAS
+   ========================================================================== */
 .container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
-/* Damos um nome diferente ('page-fade') para não conflitar com outras transições */
+/* ==========================================================================
+   5. ESTILOS DE FORMULÁRIO PADRÃO
+   ========================================================================== */
+button,
+input,
+select,
+textarea {
+  font-family: inherit; /* Garante que usem a mesma fonte do body */
+  font-size: 1rem;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+select {
+  display: block;
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--grey);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.2);
+}
+
+button {
+  cursor: pointer;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  transition: all var(--transition-speed) ease;
+}
+
+/* ==========================================================================
+   6. TRANSIÇÕES DE PÁGINA (Vue Router)
+   ========================================================================== */
 .page-fade-enter-active,
 .page-fade-leave-active {
-  /* Duração da transição. 0.2s é rápido e sutil para trocas de página */
   transition: opacity 0.2s ease;
 }
 

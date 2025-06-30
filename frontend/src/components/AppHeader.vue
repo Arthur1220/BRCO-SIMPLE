@@ -37,19 +37,22 @@
 <script setup>
 import { ref } from 'vue';
 
+// Controla a visibilidade do menu de navegação em telas mobile.
 const navLinksVisible = ref(false);
 
+// Alterna a visibilidade do menu.
 function toggleMenu() {
   navLinksVisible.value = !navLinksVisible.value;
 }
 
+// Fecha o menu (usado quando um link é clicado no modo mobile).
 function closeMenu() {
   navLinksVisible.value = false;
 }
 </script>
 
 <style scoped>
-/* Estilos gerais do header */
+/* --- Estrutura Principal do Header --- */
 .main-header {
   width: 100%;
   background-color: var(--white);
@@ -68,11 +71,21 @@ function closeMenu() {
   align-items: center;
   width: 100%;
 }
-.logo { text-decoration: none; color: var(--black); }
-.logo h3 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
-.logo h3 strong { color: var(--orange); }
+.logo { 
+  text-decoration: none; 
+  color: var(--black); 
+  flex-shrink: 0; /* Impede que o logo encolha */
+}
+.logo h3 { 
+  margin: 0; 
+  font-size: 1.8rem; 
+  letter-spacing: -1px; 
+}
+.logo h3 strong { 
+  color: var(--orange); 
+}
 
-/* Navegação Principal e Dropdown */
+/* --- Navegação Principal e Dropdown (Desktop) --- */
 .nav-links {
   list-style: none;
   display: flex;
@@ -81,7 +94,6 @@ function closeMenu() {
   padding: 0;
   align-items: center;
 }
-
 .nav-links li a {
   position: relative;
   text-decoration: none;
@@ -91,7 +103,6 @@ function closeMenu() {
   transition: color 0.3s ease;
   padding: 0.5rem 0;
 }
-
 .nav-links li a::after {
   content: '';
   position: absolute;
@@ -103,28 +114,30 @@ function closeMenu() {
   background-color: var(--orange);
   transition: width 0.3s ease-in-out;
 }
-
 .nav-links li a:hover,
 .nav-links li a.router-link-exact-active {
   color: var(--black);
 }
-
 .nav-links li a:hover::after,
 .nav-links li a.router-link-exact-active::after {
   width: 100%;
 }
-
-.mobile-only { display: none; }
-.nav-item-dropdown { position: relative; }
-.nav-item-dropdown > a { cursor: default; }
-
+.mobile-only { 
+  display: none; 
+}
+.nav-item-dropdown { 
+  position: relative; 
+}
+.nav-item-dropdown > a { 
+  cursor: default; 
+}
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   background-color: var(--white);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   list-style: none;
   padding: 0.5rem;
@@ -135,14 +148,14 @@ function closeMenu() {
   transition: all 0.3s ease;
   z-index: 1100;
 }
-
 .nav-item-dropdown:hover .dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
-
-.dropdown-menu li { width: 100%; }
+.dropdown-menu li { 
+  width: 100%; 
+}
 .dropdown-menu li a {
   display: block;
   padding: 0.8rem 1rem;
@@ -154,15 +167,25 @@ function closeMenu() {
   color: var(--black);
 }
 
-.header-options { display: flex; align-items: center; }
-.burger-menu { display: none; }
+/* --- Menu Mobile (Hamburguer) --- */
+.header-options { 
+  display: flex; 
+  align-items: center; 
+}
+.burger-menu { 
+  display: none; 
+}
 
-/* --- Media Query para Mobile --- */
 @media (max-width: 768px) {
-  .desktop-only { display: none; }
-  .mobile-only { display: block; }
-  .main-nav { display: none; }
-
+  .desktop-only { 
+    display: none; 
+  }
+  .mobile-only { 
+    display: block; 
+  }
+  .main-nav { 
+    display: none; 
+  }
   .burger-menu {
     display: flex;
     flex-direction: column;
@@ -179,10 +202,17 @@ function closeMenu() {
     background-color: var(--black);
     transition: all 0.3s ease-in-out;
   }
-  .bar-1-active { transform: rotate(45deg) translate(6px, 6px); }
-  .bar-2-active { opacity: 0; }
-  .bar-3-active { transform: rotate(-45deg) translate(7px, -7px); }
+  .bar-1-active { 
+    transform: rotate(45deg) translate(6px, 6px); 
+  }
+  .bar-2-active { 
+    opacity: 0; 
+  }
+  .bar-3-active { 
+    transform: rotate(-45deg) translate(7px, -7px); 
+  }
 
+  /* Estilo do menu mobile que desliza */
   .nav-links {
     position: fixed;
     top: 0;
@@ -198,6 +228,8 @@ function closeMenu() {
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     transition: right 0.4s ease-in-out;
   }
-  .nav-links.active { right: 0; }
+  .nav-links.active { 
+    right: 0; 
+  }
 }
 </style>
