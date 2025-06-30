@@ -79,21 +79,6 @@
         }
       }
     },
-    "/api/generate-pdf": {
-      "post": {
-        "tags": ["Relatórios Públicos"],
-        "summary": "Gera um relatório em PDF.",
-        "security": [{ "PublicApiKey": [] }],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReportPayload" } } }
-        },
-        "responses": {
-          "200": { "description": "Sucesso. Retorna o arquivo PDF.", "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } } },
-          "401": { "description": "Não autorizado." }
-        }
-      }
-    },
     "/api/generate-csv": {
         "post": {
           "tags": ["Relatórios Públicos"],

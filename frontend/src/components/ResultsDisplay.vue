@@ -3,7 +3,6 @@
     <div class="results-header">
       <h2>Resultados do Cálculo</h2>
       <div class="export-buttons">
-        <button @click="exportToPdf" class="btn-export pdf">Gerar PDF</button>
         <button @click="exportToCsv" class="btn-export csv">Exportar CSV</button>
       </div>
     </div>
@@ -53,7 +52,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
-import { generatePdf, generateCsv } from '@/services/apiService'; 
+import { generateCsv } from '@/services/apiService'; 
 import { saveAs } from 'file-saver';
 
 const store = useCalculationStore();
@@ -129,44 +128,9 @@ const highlightedResults = computed(() => {
   return highlights;
 });
 
-const exportToPdf = async () => {
-  if (!store.results || !store.lastFormData) {
-    // Exibe um alerta para o usuário
-    alert("Dados insuficientes para gerar o relatório. Por favor, realize um novo cálculo.");
-    return;
-  }
-  try {
-    // Monta o payload que será enviado
-    const payload = { 
-      type: store.calculationType, 
-      inputs: store.lastFormData, 
-      results: store.results 
-    };
-
-    console.log('Payload para PDF:', payload);
-
-    const pdfBlob = await generatePdf(payload);
-
-    console.log("FRONTEND: Blob recebido do backend:", pdfBlob);
-
-    if (pdfBlob.size > 0 && pdfBlob.type === 'application/pdf') {
-      // Usa a função saveAs para iniciar o download.
-      // Ela cria um link temporário e simula um clique para o usuário.
-      saveAs(pdfBlob, `relatorio_${store.calculationType}.pdf`);
-    } else {
-      throw new Error("O backend retornou uma resposta inválida ou vazia para o PDF.");
-    }
-  } catch (error) {
-    console.error('Erro ao gerar PDF:', error);
-    alert('Não foi possível gerar o PDF.');
-  }
-};
-
-// Função de exportar para CSV agora está funcional
 const exportToCsv = async () => {
   if (!store.results) return;
   try {
-    // O backend de CSV espera um objeto com a chave 'data'
     const blob = await generateCsv({ data: store.results });
     saveAs(blob, `relatorio_${store.calculationType}.csv`);
   } catch (error) {

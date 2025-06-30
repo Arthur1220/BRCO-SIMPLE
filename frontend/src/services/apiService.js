@@ -27,17 +27,6 @@ export const calculateNdt = async (data) => {
   return response.data;
 };
 
-/**
- * Envia os dados de um resultado para gerar um PDF.
- * @param {object} data - O objeto com o tipo e os dados do resultado.
- * @returns {Promise<Blob>} - A promessa com o arquivo PDF em formato Blob.
- */
-export const generatePdf = async (data) => {
-    const pdfConfig = { ...config, responseType: 'blob' };
-    const response = await apiClient.post('/generate-pdf', data, pdfConfig);
-    return response.data;
-};
-
 /** * Envia os dados para gerar um arquivo CSV.
  * @param {object} data - O objeto com os dados para o CSV.
  * @returns {Promise<Blob>} - A promessa com o arquivo CSV em formato Blob.
