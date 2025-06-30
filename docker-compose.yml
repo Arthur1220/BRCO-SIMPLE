@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Serviço do Backend
+  # Serviço do Backend (Versão de Produção)
   backend:
     build:
       context: ./backend
@@ -10,24 +10,23 @@ services:
       - "3000:3000"
     env_file:
       - ./backend/.env
+    # REMOVEMOS os volumes de código e o 'command' de desenvolvimento.
+    # O comando agora é o CMD do Dockerfile.
+    # O volume do banco de dados ainda é necessário se você continuar com o SQLite.
+    # Se mudar para PostgreSQL no RDS, esta linha de volume pode ser removida.
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-    command: npm run dev
+      - db_data:/app/prisma
 
-  # Serviço do Frontend
+  # Serviço do Frontend (sem alterações)
   frontend:
     build:
       context: ./frontend
     container_name: frontend
     ports:
-      - "8080:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev
+      - "8080:80"
     depends_on:
       - backend
 
+# Volume para persistir os dados do SQLite (se for usado)
 volumes:
-  db_data: # Este volume era para o DB do backend, pode ser removido se não for usado
+  db_data:
