@@ -125,13 +125,41 @@
   padding: 5rem 0;
   gap: 3rem;
 }
-.hero-content { flex: 1.2; }
-.hero-image { flex: 1; text-align: center; }
-.hero-image img { max-width: 100%; height: auto; }
-.hero-title { font-size: 5.5rem; color: var(--orange); margin: 0; line-height: 1; font-weight: 800; }
-.hero-subtitle { font-size: 2rem; color: var(--black-light); margin: 0.5rem 0 1.5rem; font-weight: 400; }
-.hero-description { font-size: 1.2rem; color: var(--black-light); max-width: 550px; line-height: 1.6; }
-.cta-buttons { display: flex; gap: 1rem; margin-top: 2.5rem; }
+.hero-content { 
+  flex: 1.2; 
+}
+.hero-image { 
+  flex: 1; 
+  text-align: center; 
+}
+.hero-image img { 
+  max-width: 100%; 
+  height: auto; 
+}
+.hero-title { 
+  font-size: 5.5rem; 
+  color: var(--orange); 
+  margin: 0; 
+  line-height: 1; 
+  font-weight: 800; 
+}
+.hero-subtitle { 
+  font-size: 2rem; 
+  color: var(--black-light); 
+  margin: 0.5rem 0 1.5rem; 
+  font-weight: 400; 
+}
+.hero-description { 
+  font-size: 1.2rem; 
+  color: var(--black-light); 
+  max-width: 550px; 
+  line-height: 1.6; 
+}
+.cta-buttons { 
+  display: flex; 
+  gap: 1rem; 
+  margin-top: 2.5rem; 
+}
 .btn {
   padding: 0.9rem 2rem;
   border-radius: 8px;
@@ -140,10 +168,25 @@
   transition: all 0.3s ease;
   border: 2px solid transparent;
 }
-.btn-primary { background-color: var(--orange); color: var(--white); }
-.btn-primary:hover { background-color: var(--light-orange); transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.btn-secondary { background-color: transparent; color: var(--orange); border-color: var(--orange); }
-.btn-secondary:hover { background-color: var(--orange); color: var(--white); transform: translateY(-3px); }
+.btn-primary { 
+  background-color: var(--orange); 
+  color: var(--white); 
+}
+.btn-primary:hover { 
+  background-color: var(--light-orange); 
+  transform: translateY(-3px); 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+}
+.btn-secondary { 
+  background-color: transparent; 
+  color: var(--orange); 
+  border-color: var(--orange); 
+}
+.btn-secondary:hover { 
+  background-color: var(--orange); 
+  color: var(--white); 
+  transform: translateY(-3px); 
+}
 
 /* --- Features Section --- */
 .features-section {
@@ -178,9 +221,18 @@
   color: var(--orange);
   margin-bottom: 1.5rem;
 }
-.icon-wrapper svg { width: 32px; height: 32px; }
-.feature-card h4 { font-size: 1.4rem; margin: 0 0 1rem; }
-.feature-card p { color: var(--black-light); line-height: 1.6; }
+.icon-wrapper svg { 
+  width: 32px; 
+  height: 32px; 
+}
+.feature-card h4 { 
+  font-size: 1.4rem; 
+  margin: 0 0 1rem; 
+}
+.feature-card p { 
+  color: var(--black-light); 
+  line-height: 1.6; 
+}
 
 /* --- About & Book Sections --- */
 .about-section, .book-section {
@@ -190,14 +242,34 @@
   width: 100%;
   border-radius: 12px;
 }
-.about-section { display: flex; align-items: center; gap: 4rem; }
-.about-image { flex: 1; }
-.about-content { flex: 1.2; }
-.about-content p { font-size: 1.1rem; line-height: 1.8; color: var(--black-light); }
+.about-section { 
+  display: flex; 
+  align-items: center; 
+  gap: 4rem; 
+}
+.about-image { 
+  flex: 1; 
+}
+.about-content { 
+  flex: 1.2; 
+}
+.about-content p { 
+  font-size: 1.1rem; 
+  line-height: 1.8; 
+  color: var(--black-light); 
+}
 
-.book-section { background-color: #fdfdfd; }
-.book-container { display: flex; align-items: center; gap: 4rem; }
-.book-details { flex: 1.2; }
+.book-section { 
+  background-color: #fdfdfd; 
+}
+.book-container { 
+  display: flex; 
+  align-items: center; 
+  gap: 4rem; 
+}
+.book-details { 
+  flex: 1.2; 
+}
 .book-cover {
   flex-shrink: 0;
 }
@@ -207,12 +279,11 @@
   display: block;
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  /* A transição é a chave para a suavidade */
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 .book-cover:hover img {
-  transform: scale(1.05); /* Aumenta o tamanho em 5% */
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* Sombra um pouco maior */
+  transform: scale(1.05); 
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); 
 }
 .book-details .source-text {
   font-size: 1.2rem;
@@ -222,8 +293,11 @@
   padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }
-.book-details p { font-size: 1.1rem; line-height: 1.8; color: var(--black-light); }
-
+.book-details p { 
+  font-size: 1.1rem; 
+  line-height: 1.8; 
+  color: var(--black-light); 
+}
 
 /* --- Responsividade --- */
 @media (max-width: 992px) {

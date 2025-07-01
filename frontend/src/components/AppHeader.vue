@@ -5,8 +5,8 @@
         <h3><strong>BRCO</strong></h3>
       </router-link>
       
-      <nav class="main-nav">
-        <ul :class="['nav-links', { active: navLinksVisible }]" @click="closeMenu">
+      <nav :class="['main-nav', { 'nav-active': navLinksVisible }]" @click="closeMenu">
+        <ul class="nav-links">
           
           <li class="nav-item-dropdown desktop-only">
             <a href="#" @click.prevent>Calculadoras</a>
@@ -36,30 +36,15 @@
 
 <script setup>
 import { ref } from 'vue';
-
-// Controla a visibilidade do menu de navegação em telas mobile.
 const navLinksVisible = ref(false);
-
-// Alterna a visibilidade do menu.
-function toggleMenu() {
-  navLinksVisible.value = !navLinksVisible.value;
-}
-
-// Fecha o menu (usado quando um link é clicado no modo mobile).
-function closeMenu() {
-  navLinksVisible.value = false;
-}
+function toggleMenu() { navLinksVisible.value = !navLinksVisible.value; }
+function closeMenu() { navLinksVisible.value = false; }
 </script>
 
 <style scoped>
-/* --- Estrutura Principal do Header --- */
+/* ... (estilos gerais do header que já estavam corretos) ... */
 .main-header {
-  width: 100%;
-  background-color: var(--white);
-  border-bottom: 1px solid var(--grey-light);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  position: sticky;
-  top: 0;
+  /* ... */
   z-index: 1000;
   height: 80px;
   display: flex;
@@ -71,21 +56,13 @@ function closeMenu() {
   align-items: center;
   width: 100%;
 }
-.logo { 
-  text-decoration: none; 
-  color: var(--black); 
-  flex-shrink: 0; /* Impede que o logo encolha */
-}
-.logo h3 { 
-  margin: 0; 
-  font-size: 1.8rem; 
-  letter-spacing: -1px; 
-}
-.logo h3 strong { 
-  color: var(--orange); 
-}
+.logo { text-decoration: none; color: var(--black); }
+.logo h3 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
+.logo h3 strong { color: var(--orange); }
 
-/* --- Navegação Principal e Dropdown (Desktop) --- */
+.main-nav {
+  display: flex;
+}
 .nav-links {
   list-style: none;
   display: flex;
@@ -122,15 +99,10 @@ function closeMenu() {
 .nav-links li a.router-link-exact-active::after {
   width: 100%;
 }
-.mobile-only { 
-  display: none; 
-}
-.nav-item-dropdown { 
-  position: relative; 
-}
-.nav-item-dropdown > a { 
-  cursor: default; 
-}
+.mobile-only { display: none; }
+.nav-item-dropdown { position: relative; }
+.nav-item-dropdown > a { cursor: default; }
+
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -153,9 +125,7 @@ function closeMenu() {
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
-.dropdown-menu li { 
-  width: 100%; 
-}
+.dropdown-menu li { width: 100%; }
 .dropdown-menu li a {
   display: block;
   padding: 0.8rem 1rem;
@@ -167,24 +137,45 @@ function closeMenu() {
   color: var(--black);
 }
 
-/* --- Menu Mobile (Hamburguer) --- */
-.header-options { 
-  display: flex; 
-  align-items: center; 
-}
-.burger-menu { 
-  display: none; 
-}
+.header-options { display: flex; align-items: center; }
+.burger-menu { display: none; }
 
+/* --- Media Query para Mobile --- */
 @media (max-width: 768px) {
-  .desktop-only { 
-    display: none; 
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+  
+  /* CORREÇÃO: Em vez de esconder o <nav>, nós escondemos o menu
+     e o mostramos apenas quando a classe 'active' é adicionada. */
+  .main-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none; /* Não pode ser clicado quando escondido */
   }
-  .mobile-only { 
-    display: block; 
+  .main-nav.nav-active .nav-links {
+    right: 0; /* Desliza para dentro da tela */
   }
-  .main-nav { 
-    display: none; 
+  .main-nav.nav-active {
+    pointer-events: all; /* Pode ser clicado quando ativo */
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 0;
+    right: -100%; /* Começa fora da tela */
+    width: 70%;
+    max-width: 300px;
+    height: 100%;
+    padding-top: 100px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    background-color: var(--white);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transition: right 0.4s ease-in-out;
   }
   .burger-menu {
     display: flex;
@@ -202,34 +193,8 @@ function closeMenu() {
     background-color: var(--black);
     transition: all 0.3s ease-in-out;
   }
-  .bar-1-active { 
-    transform: rotate(45deg) translate(6px, 6px); 
-  }
-  .bar-2-active { 
-    opacity: 0; 
-  }
-  .bar-3-active { 
-    transform: rotate(-45deg) translate(7px, -7px); 
-  }
-
-  /* Estilo do menu mobile que desliza */
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 70%;
-    max-width: 300px;
-    height: 100vh;
-    padding-top: 100px;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    background-color: var(--white);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    transition: right 0.4s ease-in-out;
-  }
-  .nav-links.active { 
-    right: 0; 
-  }
+  .bar-1-active { transform: rotate(45deg) translate(6px, 6px); }
+  .bar-2-active { opacity: 0; }
+  .bar-3-active { transform: rotate(-45deg) translate(7px, -7px); }
 }
 </style>

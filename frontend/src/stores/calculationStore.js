@@ -12,14 +12,12 @@ export const useCalculationStore = defineStore('calculation', () => {
   // Função auxiliar para criar um delay (pausa)
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // ACTIONS (com a nova lógica de tempo)
   async function performCalculation(type, formData) {
     isLoading.value = true
     error.value = null
     results.value = null
 
-    // Define o tempo mínimo em milissegundos e inicia o cronômetro
-    const minLoadingTime = 2000; // <-- CONTROLE AQUI! 1000ms = 1 segundo
+    const minLoadingTime = 2000; // 2 segundos
     const startTime = Date.now();
 
     try {
@@ -34,7 +32,6 @@ export const useCalculationStore = defineStore('calculation', () => {
         throw new Error('Tipo de cálculo desconhecido')
       }
 
-      // Lógica que força a espera do tempo mínimo
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < minLoadingTime) {
         await sleep(minLoadingTime - elapsedTime);
@@ -44,7 +41,6 @@ export const useCalculationStore = defineStore('calculation', () => {
       calculationType.value = type;
 
     } catch (err) {
-      // Lógica de tempo também aplicada no bloco de erro
       const elapsedTime = Date.now() - startTime;
       if (elapsedTime < minLoadingTime) {
         await sleep(minLoadingTime - elapsedTime);
@@ -52,7 +48,6 @@ export const useCalculationStore = defineStore('calculation', () => {
       error.value = err.response?.data?.error || err.message || 'Ocorreu um erro desconhecido.';
       lastFormData.value = null;
     } finally {
-      // Esta linha só será executada após o tempo mínimo ter passado
       isLoading.value = false
     }
   }

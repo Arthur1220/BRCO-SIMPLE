@@ -62,17 +62,14 @@
 </template>
 
 <script setup>
-// Imports do Vue e de bibliotecas
 import { ref, watch, onUnmounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
 
-// Imports dos Componentes
 import ExigenciasForm from '@/components/ExigenciasForm.vue';
 import NDTForm from '@/components/NDTForm.vue';
 import ResultsDisplay from '@/components/ResultsDisplay.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
-// Pega acesso ao store do Pinia
 const store = useCalculationStore();
 
 const props = defineProps({
@@ -179,20 +176,17 @@ onUnmounted(() => {
     margin-top: 1rem;
 }
 
-/* Animação de Fade (agora aplicada ao container da view) */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s ease; /* Tempo de transição ajustado */
+  transition: opacity 0.4s ease; 
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
-/* Estilos para o novo botão de retorno */
 .results-container {
   position: relative;
-  /* Adiciona um padding no topo para dar espaço ao botão */
   padding-top: 1rem; 
 }
 .return-button {
@@ -203,11 +197,11 @@ onUnmounted(() => {
   color: var(--black-light);
   border: none;
   border-radius: 8px;
-  padding: 0.5rem 1rem 0.5rem 0.75rem; /* Mais padding na direita */
+  padding: 0.5rem 1rem 0.5rem 0.75rem; 
   cursor: pointer;
-  display: inline-flex; /* Alinha o ícone e o texto */
+  display: inline-flex; 
   align-items: center;
-  gap: 0.5rem; /* Espaço entre o ícone e o texto */
+  gap: 0.5rem; 
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -222,7 +216,7 @@ onUnmounted(() => {
   transition: transform 0.3s ease;
 }
 .return-button:hover svg {
-  transform: translateX(-3px); /* Efeito de movimento na seta */
+  transform: translateX(-3px); 
 }
 
 /* Responsividade */

@@ -17,7 +17,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Qualquer requisição para /api será redirecionada para o seu backend local
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,

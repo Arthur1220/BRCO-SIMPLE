@@ -36,17 +36,14 @@ import AdminLogin from '@/components/AdminLogin.vue';
 import AdminDashboard from '@/components/AdminDashboard.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
-// Estado da View
 const isAuthenticated = ref(false);
 const stats = ref(null);
 const logs = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
-// Estado do Filtro (Reintroduzido)
 const activeFilter = ref('all');
 
-// Função para buscar os dados, agora aceitando o período do filtro
 const fetchData = async (period) => {
   isLoading.value = true;
   error.value = null;
@@ -65,20 +62,17 @@ const fetchData = async (period) => {
   }
 };
 
-// Função chamada quando o filtro é alterado (Reintroduzida)
 const changeFilter = (newPeriod) => {
   activeFilter.value = newPeriod;
   fetchData(newPeriod);
 };
 
-// Função de Login (Corrigida)
 const handleLoginSuccess = () => {
   sessionStorage.setItem('isAdminAuthenticated', 'true');
   isAuthenticated.value = true;
-  fetchData(activeFilter.value); // Busca os dados com o filtro padrão
+  fetchData(activeFilter.value); 
 };
 
-// Função de Logout (Corrigida)
 const handleLogout = () => {
   sessionStorage.removeItem('isAdminAuthenticated');
   isAuthenticated.value = false;
@@ -87,11 +81,10 @@ const handleLogout = () => {
   error.value = null;
 };
 
-// Hook de montagem do componente
 onMounted(() => {
   if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
     isAuthenticated.value = true;
-    fetchData(activeFilter.value); // Se já estiver logado, busca os dados
+    fetchData(activeFilter.value); 
   } else {
     isLoading.value = false;
   }
@@ -99,7 +92,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Os estilos combinados, incluindo os dos filtros */
 .admin-view { padding-top: 2rem; padding-bottom: 4rem; }
 
 .admin-header {
@@ -155,6 +147,19 @@ onMounted(() => {
   color: var(--black);
 }
 
-.state-container { display: flex; justify-content: center; align-items: center; min-height: 300px; flex-direction: column; }
-.error-box { color: var(--red-error); background-color: #fdeaea; border: 1px solid #f9c5c5; padding: 2rem; border-radius: 8px; text-align: center; }
+.state-container { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  min-height: 300px; 
+  flex-direction: column; 
+}
+.error-box { 
+  color: var(--red-error); 
+  background-color: #fdeaea; 
+  border: 1px solid #f9c5c5; 
+  padding: 2rem; 
+  border-radius: 8px; 
+  text-align: center; 
+}
 </style>
