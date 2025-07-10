@@ -5,29 +5,22 @@ services:
   backend:
     build:
       context: ./backend
-    container_name: ndt_backend
+    container_name: backend
     ports:
       - "3000:3000"
     env_file:
       - ./backend/.env
     volumes:
-      # Mapeia o código local para o container (para desenvolvimento)
-      # Em produção, você poderia remover esta linha para usar o código da imagem.
       - ./backend:/app 
-      # =========================================================
-      # ==                 INÍCIO DA CORREÇÃO                  ==
-      # == Usamos um volume nomeado para a node_modules, o que ==
-      # ==       é mais estável do que o truque anterior.      ==
-      # =========================================================
       - backend_node_modules:/app/node_modules
 
   # Serviço do Frontend
   frontend:
     build:
       context: ./frontend
-    container_name: ndt_frontend
+    container_name: frontend
     ports:
-      - "8080:80" # Mapeia a porta 80 do Nginx para a 8080 do seu host
+      - "8080:80" 
     depends_on:
       - backend
 
