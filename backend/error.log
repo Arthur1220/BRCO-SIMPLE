@@ -1,1 +1,2 @@
 {"level":"error"}
+{"issues":[{"code":"invalid_type","expected":"number","message":"Expected number, received string","path":["especieId"],"received":"string"}],"level":"error","name":"ZodError"}

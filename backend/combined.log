@@ -49,3 +49,6 @@
 {"level":"info","message":"Servidor rodando na porta 3000"}
 {"level":"info","message":"NDT calculation successful"}
 {"level":"error"}
+{"level":"info","message":"Swagger docs available at /api-docs"}
+{"level":"info","message":"Servidor rodando na porta 3000"}
+{"issues":[{"code":"invalid_type","expected":"number","message":"Expected number, received string","path":["especieId"],"received":"string"}],"level":"error","name":"ZodError"}

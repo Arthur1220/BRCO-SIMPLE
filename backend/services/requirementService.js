@@ -379,7 +379,7 @@ function calculateAllRequirements(input) {
 
     const cmsResult = {
         'Consumo de matéria seca': { tipo: 'g/d', valor_requerido: round(commonParams.CMS_REQ, D), valor_maximo: round(commonParams.CMS_REQ * 1.1, D) },
-        'Consumo de matéria seca (%PV)': { tipo: '%PV', valor_requerido: round(commonParams.CMS_REQ / pesoMedio / 10, D), valor_maximo: round((commonParams.CMS_REQ / pesoMedio / 10) * 1.1, D) }
+        //'Consumo de matéria seca (%PV)': { tipo: '%PV', valor_requerido: round(commonParams.CMS_REQ / pesoMedio / 10, D), valor_maximo: round((commonParams.CMS_REQ / pesoMedio / 10) * 1.1, D) }
     };
 
     const energiaResult = _calculateEnergia(commonParams);
