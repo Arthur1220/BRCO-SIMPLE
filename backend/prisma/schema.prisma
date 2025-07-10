@@ -11,6 +11,9 @@ model CalculationLog {
   id              String   @id @default(cuid())
   calculationType String
   createdAt       DateTime @default(now())
+  userAgent       String? 
+  country         String? 
+  region          String? 
 
   @@map("calculation_logs")
 }

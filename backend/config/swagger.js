@@ -1,5 +1,5 @@
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./openapi.json'); // Importa o arquivo JSON diretamente
+const swaggerDocument = require('./openapi.json');
 const logger = require('../lib/logger');
 
 function setupSwagger(app) {

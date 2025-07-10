@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import CalculatorView from '../views/CalculatorView.vue'
@@ -13,16 +12,20 @@ const router = createRouter({
       component: HomeView
     },
     {
-      // Rota dinâmica para os cálculos
       path: '/calcular/:type', // :type será 'ndt' ou 'exigencias'
       name: 'calculator',
       component: CalculatorView,
-      props: true // Passa o parâmetro 'type' como prop para o componente
+      props: true 
     },
     {
       path: '/equipe',
       name: 'equipe',
       component: EquipeView
+    },
+    {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue') 
     },
   ]
 })

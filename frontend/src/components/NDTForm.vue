@@ -78,9 +78,6 @@ const formData = reactive({
 });
 
 const handleSubmit = async () => {
-  // AJUSTE: Garante que todos os dados são numéricos antes de enviar para o store.
-  // Isso cria um objeto limpo para a API, prevenindo que valores nulos ou vazios
-  // causem problemas.
   const payload = {
     PB: Number(formData.PB) || 0,
     EE: Number(formData.EE) || 0,

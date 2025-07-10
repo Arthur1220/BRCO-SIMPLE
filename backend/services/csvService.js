@@ -1,41 +1,47 @@
-// services/csvService.js
+// backend/services/csvService.js
 const { Parser } = require('json2csv');
 
-/**
- * Converte um objeto de resultados de cálculo em uma string no formato CSV.
- * @param {object} jsonData - O objeto de resultados vindo do store/cálculo.
- * @returns {string} - Uma string formatada como CSV.
- */
-function generateCsv(jsonData) {
+function generateCsv(reportData) {
   try {
-    // 1. O json2csv funciona melhor com um array de objetos. Vamos transformar nosso objeto.
-    const formattedData = Object.keys(jsonData).map(key => {
-      const item = jsonData[key];
-      // Criamos um objeto "plano" para cada linha do CSV
+    const { type, inputs, results } = reportData;
+
+    const metadata = {
+      'Tipo de Calculo': type,
+      'Data de Geração': new Date().toLocaleString('pt-BR'),
+    };
+
+    const formattedInputs = {};
+    for (const key in inputs) {
+      formattedInputs[`Input: ${key}`] = inputs[key];
+    }
+
+    const formattedData = Object.keys(results).map(key => {
+      const item = results[key];
+      
       return {
         'Parâmetro': key,
-        // Usamos '??' para lidar tanto com resultados de NDT (que tem 'valor') quanto de Exigências
-        'Valor': item.valor_requerido ?? item.valor ?? 'N/A',
+        'Valor Requerido': item.valor_requerido ?? item.valor ?? 'N/A',
         'Valor Máximo': item.valor_maximo ?? 'N/A',
         'Unidade': item.tipo,
+        ...metadata,
+        ...formattedInputs
       };
     });
 
-    // 2. Definimos os cabeçalhos das colunas e a ordem que queremos no arquivo final.
-    const fields = ['Parâmetro', 'Valor', 'Valor Máximo', 'Unidade'];
+    if (formattedData.length === 0) {
+      return ''; 
+    }
+
+    const fields = Object.keys(formattedData[0]);
     
-    // 3. Criamos uma instância do Parser com nossas opções.
-    const json2csvParser = new Parser({ fields });
-    
-    // 4. Convertemos os dados formatados para o formato CSV.
+    const json2csvParser = new Parser({ fields, withBOM: true });
     const csv = json2csvParser.parse(formattedData);
     
-    console.log('CSV gerado com sucesso.');
     return csv;
 
   } catch (error) {
     console.error('Erro ao converter JSON para CSV:', error);
-    throw error; // Lança o erro para ser pego pelo controlador
+    throw error;
   }
 }
 

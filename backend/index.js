@@ -1,9 +1,11 @@
+require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const apiRoutes = require('./routes/apiRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 
@@ -20,8 +22,16 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Middlewares Gerais
-app.use(cors());
+// Configuração do CORS
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://brco.netlify.app/' // Endereço do seu Vue em produção
+    : 'http://localhost:5173' // Endereço do seu Vue em dev
+};
+
+app.use(cors(corsOptions));
+
+// Middleware para Log de Requisições
 app.use(express.json());
 
 // Rota Raiz
@@ -29,7 +39,7 @@ app.get('/', (req, res) => {
     res.json({ message: "API online. Acesse /api-docs para documentação."});
 });
 
-// Rotas da API
+app.use('/api/admin', adminRoutes);
 app.use('/api', apiRoutes);
 
 // Documentação com Swagger

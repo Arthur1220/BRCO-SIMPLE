@@ -29,6 +29,7 @@ function _calculateEnergia(params) {
         const sexoConf = _getSexoConfig(C.ELg, input.sexoId);
         
         ELm_REQ = C.ELm_FACTOR * (PCVZ ** 0.75);
+        // A fórmula original para ovinos usa GPCV, não GPCVZ
         ELg_REQ = sexoConf.F * (PCVZ ** 0.75) * (GPCV ** sexoConf.E);
         EMm_REQ = ELm_REQ / C.EMm_DIV;
         EMg_REQ = ELg_REQ / C.EMg_DIV;
@@ -37,9 +38,12 @@ function _calculateEnergia(params) {
     const ELT_REQ = ELm_REQ + ELg_REQ;
     const EMT_REQ = EMm_REQ + EMg_REQ;
     const EMT_MS_REQ = EMT_REQ / (CMS_REQ / 1000);
-    const EDT_REQ = EMT_REQ / (especie === 'CAPRINOS' ? C.EDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.EDT_DIV);
-    const NDT_REQ = EDT_REQ / (especie === 'CAPRINOS' ? C.NDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.NDT_DIV) * 1000;
+    const EDT_REQ = EMT_REQ / (especie === 'CAPRINOS' ? REQUIREMENTS.CAPRINOS.ENERGIA.EDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.EDT_DIV);
+    const NDT_REQ = EDT_REQ / (especie === 'CAPRINOS' ? REQUIREMENTS.CAPRINOS.ENERGIA.NDT_DIV : REQUIREMENTS.OVINOS.ENERGIA.NDT_DIV) * 1000;
     const NDT_MS_REQ = NDT_REQ * 1000 / CMS_REQ;
+    const ED_MS_REQ = (especie === 'CAPRINOS')
+        ? ((EMT_MS_REQ * 1000 - 0.0862) / 0.899) / 1000
+        : (EDT_REQ / (CMS_REQ / 1000));
 
     return {
         'Energia líquida de mantença': { tipo: 'Mcal/d', valor_requerido: round(ELm_REQ, D), valor_maximo: round(ELm_REQ * 1.05, D) },
@@ -48,8 +52,11 @@ function _calculateEnergia(params) {
         'Energia metabolizável de mantença': { tipo: 'Mcal/d', valor_requerido: round(EMm_REQ, D), valor_maximo: round(EMm_REQ * 1.05, D) },
         'Energia metabolizável de ganho': { tipo: 'Mcal/d', valor_requerido: round(EMg_REQ, D), valor_maximo: round(EMg_REQ * 1.05, D) },
         'Energia metabolizável total': { tipo: 'Mcal/d', valor_requerido: round(EMT_REQ, D), valor_maximo: round(EMT_REQ * 1.05, D) },
-        'Nutrientes digestíveis totais (g/dia)': { tipo: 'g/d', valor_requerido: round(NDT_REQ, D), valor_maximo: round(NDT_REQ * 1.05, D) },
-        'Nutrientes digestíveis totais (g/kgMS)': { tipo: 'g/kgMS', valor_requerido: round(NDT_MS_REQ, D), valor_maximo: round(NDT_MS_REQ * 1.05, D) },
+        'Energia metabolizável': { tipo: 'Mcal/kg MS', valor_requerido: round(EMT_MS_REQ, D), valor_maximo: round(EMT_MS_REQ * 1.05, D) },
+        'Energia digestível': { tipo: 'Mcal/kg MS', valor_requerido: round(ED_MS_REQ, D), valor_maximo: round(ED_MS_REQ * 1.05, D) },
+        'Energia digestível total': { tipo: 'Mcal/d', valor_requerido: round(EDT_REQ, D), valor_maximo: round(EDT_REQ * 1.05, D) },
+        'Nutrientes digestíveis totais1': { tipo: 'g/d', valor_requerido: round(NDT_REQ, D), valor_maximo: round(NDT_REQ * 1.05, D) },
+        'Nutrientes digestíveis totais': { tipo: 'g/kgMS', valor_requerido: round(NDT_MS_REQ, D), valor_maximo: round(NDT_MS_REQ * 1.05, D) },
     };
 }
 
@@ -63,7 +70,6 @@ function _calculateProteina(params) {
         let conf = C.LEITEIRO;
         if (input.categoriaAnimalId === 2) conf = C.NATIVA;
         if (input.categoriaAnimalId === 3) conf = C.CORTE;
-
         const sexoConf = _getSexoConfig(conf.PLG, input.sexoId);
         PLM_REQ = conf.PLM_FACTOR * (PCV ** 0.75);
         PLG_REQ = sexoConf.FACTOR * (PCV ** sexoConf.EXP) * GPCVZ;
@@ -79,7 +85,7 @@ function _calculateProteina(params) {
     
     const PLT_REQ = PLM_REQ + PLG_REQ;
     const PMT_REQ = PMM_REQ + PMG_REQ;
-    const NDT_g_d = resultadosAnteriores['Nutrientes digestíveis totais (g/dia)'].valor_requerido;
+    const NDT_g_d = resultadosAnteriores['Nutrientes digestíveis totais1'].valor_requerido; // Usando a chave correta
     const PDR_REQ = C.PDR_BASE + (C.PDR_FACTOR * (NDT_g_d / 1000));
     const PNDR_REQ = (PMT_REQ - (PDR_REQ * C.PNDR_FACTOR1)) / C.PNDR_FACTOR2;
     const PB_REQ = PDR_REQ + PNDR_REQ;
@@ -94,13 +100,13 @@ function _calculateProteina(params) {
         'Proteína metabolizável total': { tipo: 'g/dia', valor_requerido: round(PMT_REQ, D), valor_maximo: round(PMT_REQ * 1.1, D) },
         'Proteína degradável no rúmen': { tipo: 'g/dia', valor_requerido: round(PDR_REQ, D), valor_maximo: round(PDR_REQ * 1.1, D) },
         'Proteína não degradável no rúmen': { tipo: 'g/dia', valor_requerido: round(PNDR_REQ, D), valor_maximo: round(PNDR_REQ * 1.1, D) },
-        'Proteína bruta (g/dia)': { tipo: 'g/dia', valor_requerido: round(PB_REQ, D), valor_maximo: round(PB_REQ * 1.1, D) },
-        'Proteína bruta (g/kgMS)': { tipo: 'g/kgMS', valor_requerido: round(PB_MS_REQ, D), valor_maximo: round(PB_MS_REQ * 1.1, D) },
+        'Proteína bruta 1': { tipo: 'g/dia', valor_requerido: round(PB_REQ, D), valor_maximo: round(PB_REQ * 1.1, D) },
+        'Proteína bruta': { tipo: 'g/kgMS', valor_requerido: round(PB_MS_REQ, D), valor_maximo: round(PB_MS_REQ * 1.1, D) },
     };
 }
 
 function _calculateMinerais(params) {
-    const { input, pesoMedio, PCVZ, GPCV, CMS_REQ, especie } = params;
+    const { input, pesoMedio, PCVZ, GPCV, GPCVZ, CMS_REQ, especie } = params;
     const C = REQUIREMENTS[especie].MINERAIS;
     const D = REQUIREMENTS.DECIMAIS;
     
@@ -110,7 +116,7 @@ function _calculateMinerais(params) {
         // --- Cálcio (Ca) ---
         const CAM_REQ = C.Ca_m.FACTOR * pesoMedio / 1000;
         const sexoConfCa = _getSexoConfig(C.Ca_g, input.sexoId);
-        const CAG_REQ = sexoConfCa.F * (PCVZ ** sexoConfCa.E) * GPCV;
+        const CAG_REQ = sexoConfCa.F * (PCVZ ** sexoConfCa.E) * GPCVZ; 
         const CLT_REQ = CAM_REQ + CAG_REQ;
         const CAD_REQ = CLT_REQ / C.Ca_d.DIV;
         const CAT_MS_REQ = CAD_REQ * 1000 / CMS_REQ;
@@ -118,7 +124,7 @@ function _calculateMinerais(params) {
         // --- Fósforo (P) ---
         const FM_REQ = C.P_m.FACTOR * PCVZ / 1000;
         const sexoConfP = _getSexoConfig(C.P_g, input.sexoId);
-        const FG_REQ = sexoConfP.F * (PCVZ ** sexoConfP.E) * GPCV;
+        const FG_REQ = sexoConfP.F * (PCVZ ** sexoConfP.E) * GPCVZ;
         const FLT_REQ = FM_REQ + FG_REQ;
         const FD_REQ = FLT_REQ / C.P_d.DIV;
         const FT_MS_REQ = FD_REQ * 1000 / CMS_REQ;
@@ -128,7 +134,7 @@ function _calculateMinerais(params) {
         const sexoConfMgM = _getSexoConfig(C.Mg_m, input.sexoId);
         const MGM_REQ = sexoConfMgM.F * PCVZ / 1000;
         const sexoConfMgG = _getSexoConfig(C.Mg_g, input.sexoId);
-        const MGG_REQ = (sexoConfMgG.F * (PCVZ ** sexoConfMgG.E)) * GPCV;
+        const MGG_REQ = (sexoConfMgG.F * (PCVZ ** sexoConfMgG.E)) * GPCVZ;
         const MGLT_REQ = MGM_REQ + MGG_REQ;
         const MGD_REQ = MGLT_REQ / C.Mg_d.DIV;
         const MGT_MS_REQ = MGD_REQ * 1000 / CMS_REQ;
@@ -136,7 +142,7 @@ function _calculateMinerais(params) {
         // --- Sódio (Na) ---
         const NAM_REQ = C.Na_m.FACTOR * PCVZ / 1000;
         const sexoConfNa = _getSexoConfig(C.Na_g, input.sexoId);
-        const NAG_REQ = (sexoConfNa.F * (PCVZ ** sexoConfNa.E)) * GPCV;
+        const NAG_REQ = (sexoConfNa.F * (PCVZ ** sexoConfNa.E)) * GPCVZ;
         const NALT_REQ = NAM_REQ + NAG_REQ;
         const NAD_REQ = NALT_REQ / C.Na_d.DIV;
         const NAT_MS_REQ = NAD_REQ * 1000 / CMS_REQ;
@@ -144,7 +150,7 @@ function _calculateMinerais(params) {
         // --- Potássio (K) ---
         const KM_REQ = C.K_m.FACTOR * PCVZ / 1000;
         const sexoConfK = _getSexoConfig(C.K_g, input.sexoId);
-        const KG_REQ = (sexoConfK.F * (PCVZ ** sexoConfK.E)) * GPCV;
+        const KG_REQ = (sexoConfK.F * (PCVZ ** sexoConfK.E)) * GPCVZ;
         const KLT_REQ = KM_REQ + KG_REQ;
         const KD_REQ = KLT_REQ / C.K_d.DIV;
         const KT_MS_REQ = KD_REQ * 1000 / CMS_REQ;
@@ -184,6 +190,7 @@ function _calculateMinerais(params) {
         const CAM_REQ = C.Ca_m.F * pesoMedio / 1000;
         const sexoConfCa = _getSexoConfig(C.Ca_g, input.sexoId);
         const CAG_REQ = GPCV * (sexoConfCa.F * (PCVZ ** sexoConfCa.E));
+        const CLT_REQ = CAM_REQ + CAG_REQ;
         const CAD_REQ = (CAM_REQ + CAG_REQ) / C.Ca_d.DIV;
         const CAT_MS_REQ = CAD_REQ * 1000 / CMS_REQ;
 
@@ -191,6 +198,7 @@ function _calculateMinerais(params) {
         const FM_REQ = C.P_m.F * pesoMedio / 1000;
         const sexoConfP = _getSexoConfig(C.P_g, input.sexoId);
         const FG_REQ = GPCV * (sexoConfP.F * (PCVZ ** sexoConfP.E));
+        const FLT_REQ = FM_REQ + FG_REQ;
         const FD_REQ = (FM_REQ + FG_REQ) / C.P_d.DIV;
         const FT_MS_REQ = FD_REQ * 1000 / CMS_REQ;
         const REL_CA_P_REQ = CAT_MS_REQ / FT_MS_REQ;
@@ -207,6 +215,7 @@ function _calculateMinerais(params) {
         const NAM_REQ = C.Na_m.F * pesoMedio / 1000;
         const sexoConfNa = _getSexoConfig(C.Na_g, input.sexoId);
         const NAG_REQ = GPCV * (sexoConfNa.F * (PCVZ ** sexoConfNa.E));
+        const NALT_REQ = NAM_REQ + NAG_REQ;
         const NAD_REQ = (NAM_REQ + NAG_REQ) / C.Na_d.DIV;
         const NAT_MS_REQ = NAD_REQ * 1000 / CMS_REQ;
 
@@ -214,6 +223,7 @@ function _calculateMinerais(params) {
         const KM_REQ = C.K_m.F * pesoMedio / 1000;
         const KG_REQ = GPCV * (C.K_g.F * (PCVZ ** C.K_g.E));
         const KD_REQ = (KM_REQ + KG_REQ) / C.K_d.DIV;
+        const KLT_REQ = KM_REQ + KG_REQ;
         const KT_MS_REQ = KD_REQ * 1000 / CMS_REQ;
         
         // --- Cobre (Cu) ---
@@ -325,7 +335,7 @@ function _calculateMinerais(params) {
 
     // Adiciona valores máximos genéricos para consistência, pode ser ajustado
     for (const key in resultados) {
-        if (resultados[key].valor_requerido) {
+        if (resultados[key].valor_requerido !== undefined) {
             resultados[key].valor_maximo = round(resultados[key].valor_requerido * 1.3, D);
         }
     }
@@ -362,10 +372,11 @@ function calculateAllRequirements(input) {
         const sexoConfProteina = _getSexoConfig(confProteina.PLG, input.sexoId);
         const PLG_REQ_temp = sexoConfProteina.FACTOR * (PCV ** sexoConfProteina.EXP) * GPCVZ;
 
-        const ERP = (PLG_REQ_temp / 1000 * 5.686) / ELg_REQ_temp;
+        // Evitar divisão por zero se ELg_REQ_temp for 0
+        const ERP = ELg_REQ_temp !== 0 ? (PLG_REQ_temp / 1000 * 5.686) / ELg_REQ_temp : 0;
         const KG = 17 / (21 + ERP * 60);
 
-        commonParams = { input, pesoMedio, PCV, GPCVZ, CMS_REQ, KG, especie: 'CAPRINOS' };
+        commonParams = { input, pesoMedio, PCV, GPCV: GPCVZ, GPCVZ, CMS_REQ, KG, especie: 'CAPRINOS' }; // Passando GPCVZ como GPCV para os minerais
 
     } else { // Ovinos
         const O = R.OVINOS;

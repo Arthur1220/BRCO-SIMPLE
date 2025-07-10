@@ -82,24 +82,23 @@ h1 {
   line-height: 1.6;
 }
 
-/* MUDANÇA PRINCIPAL: De Grid para Flexbox para centralizar os cards */
 .team-grid {
   display: flex;
-  flex-wrap: wrap; /* Permite que os cards quebrem para a próxima linha */
-  justify-content: center; /* Centraliza os cards na linha */
+  flex-wrap: wrap; 
+  justify-content: center; 
   gap: 2rem;
 }
 
 .team-card {
-  width: 300px; /* Largura fixa para os cards */
+  width: 300px; 
   background-color: var(--white);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-top: 4px solid var(--orange); /* Toque visual */
-  display: flex; /* NOVO: Faz o card ser um container flex para alinhar o conteúdo */
-  flex-direction: column; /* Organiza os filhos do card em uma coluna */
+  border-top: 4px solid var(--orange);
+  display: flex; 
+  flex-direction: column; 
 }
 
 .team-card:hover {
@@ -107,7 +106,6 @@ h1 {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* Card destacado para o primeiro membro (desenvolvedor) */
 .highlight-card {
     border-top-color: var(--orange);
 }
@@ -116,7 +114,7 @@ h1 {
   padding: 0 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* Faz o conteúdo crescer e ocupar todo o espaço do card */
+  flex-grow: 1; 
 }
 
 .profile-image {
@@ -124,7 +122,7 @@ h1 {
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  margin: -60px auto 1rem; /* Puxa a imagem para cima, sobrepondo a borda */
+  margin: -60px auto 1rem; 
   border: 6px solid var(--white);
   background-color: var(--white);
   position: relative;
@@ -139,7 +137,7 @@ h1 {
 .member-info {
   display: flex;
   flex-direction: column;
-  flex-grow: 1; /* NOVO: Faz a área de info crescer e empurra o link para baixo */
+  flex-grow: 1; 
 }
 
 .member-info h3 {
@@ -153,11 +151,11 @@ h1 {
   color: var(--black-light);
   line-height: 1.5;
   margin-bottom: 1rem;
-  flex-grow: 1; /* Ponto chave: este parágrafo cresce, empurrando o footer do card para baixo */
+  flex-grow: 1; 
 }
 
 .card-footer {
-  margin-top: auto; /* Garante que o footer fique na base */
+  margin-top: auto; 
 }
 
 .social-link {

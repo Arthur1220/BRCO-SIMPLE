@@ -5,8 +5,8 @@
         <h3><strong>BRCO</strong></h3>
       </router-link>
       
-      <nav class="main-nav">
-        <ul :class="['nav-links', { active: navLinksVisible }]" @click="closeMenu">
+      <nav :class="['main-nav', { 'nav-active': navLinksVisible }]" @click="closeMenu">
+        <ul class="nav-links">
           
           <li class="nav-item-dropdown desktop-only">
             <a href="#" @click.prevent>Calculadoras</a>
@@ -36,27 +36,15 @@
 
 <script setup>
 import { ref } from 'vue';
-
 const navLinksVisible = ref(false);
-
-function toggleMenu() {
-  navLinksVisible.value = !navLinksVisible.value;
-}
-
-function closeMenu() {
-  navLinksVisible.value = false;
-}
+function toggleMenu() { navLinksVisible.value = !navLinksVisible.value; }
+function closeMenu() { navLinksVisible.value = false; }
 </script>
 
 <style scoped>
-/* Estilos gerais do header */
+/* ... (estilos gerais do header que já estavam corretos) ... */
 .main-header {
-  width: 100%;
-  background-color: var(--white);
-  border-bottom: 1px solid var(--grey-light);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  position: sticky;
-  top: 0;
+  /* ... */
   z-index: 1000;
   height: 80px;
   display: flex;
@@ -72,7 +60,9 @@ function closeMenu() {
 .logo h3 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
 .logo h3 strong { color: var(--orange); }
 
-/* Navegação Principal e Dropdown */
+.main-nav {
+  display: flex;
+}
 .nav-links {
   list-style: none;
   display: flex;
@@ -81,7 +71,6 @@ function closeMenu() {
   padding: 0;
   align-items: center;
 }
-
 .nav-links li a {
   position: relative;
   text-decoration: none;
@@ -91,7 +80,6 @@ function closeMenu() {
   transition: color 0.3s ease;
   padding: 0.5rem 0;
 }
-
 .nav-links li a::after {
   content: '';
   position: absolute;
@@ -103,17 +91,14 @@ function closeMenu() {
   background-color: var(--orange);
   transition: width 0.3s ease-in-out;
 }
-
 .nav-links li a:hover,
 .nav-links li a.router-link-exact-active {
   color: var(--black);
 }
-
 .nav-links li a:hover::after,
 .nav-links li a.router-link-exact-active::after {
   width: 100%;
 }
-
 .mobile-only { display: none; }
 .nav-item-dropdown { position: relative; }
 .nav-item-dropdown > a { cursor: default; }
@@ -124,7 +109,7 @@ function closeMenu() {
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   background-color: var(--white);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
   list-style: none;
   padding: 0.5rem;
@@ -135,13 +120,11 @@ function closeMenu() {
   transition: all 0.3s ease;
   z-index: 1100;
 }
-
 .nav-item-dropdown:hover .dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
-
 .dropdown-menu li { width: 100%; }
 .dropdown-menu li a {
   display: block;
@@ -161,8 +144,39 @@ function closeMenu() {
 @media (max-width: 768px) {
   .desktop-only { display: none; }
   .mobile-only { display: block; }
-  .main-nav { display: none; }
+  
+  /* CORREÇÃO: Em vez de esconder o <nav>, nós escondemos o menu
+     e o mostramos apenas quando a classe 'active' é adicionada. */
+  .main-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none; /* Não pode ser clicado quando escondido */
+  }
+  .main-nav.nav-active .nav-links {
+    right: 0; /* Desliza para dentro da tela */
+  }
+  .main-nav.nav-active {
+    pointer-events: all; /* Pode ser clicado quando ativo */
+  }
 
+  .nav-links {
+    position: absolute;
+    top: 0;
+    right: -100%; /* Começa fora da tela */
+    width: 70%;
+    max-width: 300px;
+    height: 100%;
+    padding-top: 100px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    background-color: var(--white);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transition: right 0.4s ease-in-out;
+  }
   .burger-menu {
     display: flex;
     flex-direction: column;
@@ -182,22 +196,5 @@ function closeMenu() {
   .bar-1-active { transform: rotate(45deg) translate(6px, 6px); }
   .bar-2-active { opacity: 0; }
   .bar-3-active { transform: rotate(-45deg) translate(7px, -7px); }
-
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 70%;
-    max-width: 300px;
-    height: 100vh;
-    padding-top: 100px;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    background-color: var(--white);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    transition: right 0.4s ease-in-out;
-  }
-  .nav-links.active { right: 0; }
 }
 </style>

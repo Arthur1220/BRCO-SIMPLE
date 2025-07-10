@@ -28,7 +28,7 @@ import AppFooter from '@/components/AppFooter.vue'
 }
 
 .content {
-  flex: 1; /* Faz com que o conteúdo principal ocupe o espaço disponível */
+  flex: 1;
   padding-top: 2rem;
   padding-bottom: 2rem;
 }

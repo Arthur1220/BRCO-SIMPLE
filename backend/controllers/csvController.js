@@ -1,20 +1,16 @@
-// controllers/csvController.js
 const { generateCsv } = require('../services/csvService');
 const logger = require('../lib/logger');
 
 async function handleCsvGeneration(req, res) {
-  // Os dados dos resultados virão no corpo da requisição
-  const resultsData = req.body.data;
+  const { type, inputs, results } = req.body;
 
-  if (!resultsData) {
-    return res.status(400).json({ error: 'Dados dos resultados são necessários.' });
+  if (!type || !results || !inputs) {
+    return res.status(400).json({ error: 'Dados completos (type, inputs, results) são necessários.' });
   }
   
   try {
-    const csvString = generateCsv(resultsData);
+    const csvString = generateCsv({ type, inputs, results });
     
-    // Estes headers são CRUCIAIS. Eles dizem ao navegador:
-    // "Isso não é para mostrar na tela, é um arquivo para baixar."
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="relatorio-brco.csv"`);
     
@@ -22,7 +18,7 @@ async function handleCsvGeneration(req, res) {
     res.status(200).send(csvString);
 
   } catch (error) {
-    // O logger já foi chamado dentro do serviço, mas podemos logar novamente aqui se quisermos.
+    logger.error("Erro ao gerar CSV:", error);
     res.status(500).json({ error: 'Ocorreu um erro interno ao gerar o arquivo CSV.' });
   }
 }
