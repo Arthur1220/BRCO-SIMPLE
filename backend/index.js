@@ -10,6 +10,7 @@ const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Middlewares de Segurança
