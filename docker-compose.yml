@@ -6,6 +6,7 @@ services:
     build:
       context: ./backend
     container_name: backend
+    restart: always
     ports:
       - "3000:3000"
     env_file:
@@ -19,6 +20,7 @@ services:
     build:
       context: ./frontend
     container_name: frontend
+    restart: always
     ports:
       - "8080:80" 
     depends_on:
