@@ -9,7 +9,7 @@
     </header>
 
     <AdminLogin v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
-    
+
     <div v-else>
       <div class="filter-controls">
         <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">Últimos 7 dias</button>
@@ -32,9 +32,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getAdminStats, getAdminLogs } from '@/services/adminService';
-import AdminLogin from '@/components/AdminLogin.vue';
-import AdminDashboard from '@/components/AdminDashboard.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import AdminLogin from '@/components/admin/AdminLogin.vue';
+import AdminDashboard from '@/components/admin/AdminDashboard.vue';
+import LoadingSpinner from '@/components/admin/LoadingSpinner.vue';
 
 const isAuthenticated = ref(false);
 const stats = ref(null);
@@ -70,7 +70,7 @@ const changeFilter = (newPeriod) => {
 const handleLoginSuccess = () => {
   sessionStorage.setItem('isAdminAuthenticated', 'true');
   isAuthenticated.value = true;
-  fetchData(activeFilter.value); 
+  fetchData(activeFilter.value);
 };
 
 const handleLogout = () => {
@@ -84,7 +84,7 @@ const handleLogout = () => {
 onMounted(() => {
   if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
     isAuthenticated.value = true;
-    fetchData(activeFilter.value); 
+    fetchData(activeFilter.value);
   } else {
     isLoading.value = false;
   }
@@ -147,19 +147,19 @@ onMounted(() => {
   color: var(--black);
 }
 
-.state-container { 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  min-height: 300px; 
-  flex-direction: column; 
+.state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  flex-direction: column;
 }
-.error-box { 
-  color: var(--red-error); 
-  background-color: #fdeaea; 
-  border: 1px solid #f9c5c5; 
-  padding: 2rem; 
-  border-radius: 8px; 
-  text-align: center; 
+.error-box {
+  color: var(--red-error);
+  background-color: #fdeaea;
+  border: 1px solid #f9c5c5;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
 }
 </style>

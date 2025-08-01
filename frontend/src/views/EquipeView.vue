@@ -7,10 +7,10 @@
           Conheça as mentes brilhantes e o esforço tecnológico e humano por trás deste projeto.
         </p>
         <div class="team-grid">
-          <div 
-            class="team-card" 
-            v-for="(member, index) in teamMembers" 
-            :key="index" 
+          <div
+            class="team-card"
+            v-for="(member, index) in teamMembers"
+            :key="index"
             @click="redirectToPage(member.pageUrl)"
             :title="'Clique para ver o perfil de ' + member.name"
             :class="{ 'highlight-card': index === 0 }"
@@ -41,7 +41,7 @@
 
 <script setup>
 const teamMembers = [
-  { name: 'Arthur Azevedo', role: 'Desenvolvimento & Design do Site', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K1120482T5', pageUrl: 'https://github.com/Arthur1220' },
+  { name: 'Arthur Azevedo', role: 'Desenvolvimento & Design do Site', image: 'https://avatars.githubusercontent.com/u/68549693?v=4', pageUrl: 'https://github.com/Arthur1220' },
   { name: 'Elzania Sales Pereira', role: 'Coord. Exigências Nutricionais Ovinos', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4763473Z5', pageUrl: 'http://lattes.cnpq.br/4011686548866427' },
   { name: 'Izabelle Teixeira', role: 'Coord. Exigências Nutricionais Caprinos', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4794675J1', pageUrl: 'http://lattes.cnpq.br/6293663565260182' },
   { name: 'José Augusto Azevêdo', role: 'Coord. Predição Consumo Matéria Seca', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4737784T8', pageUrl: 'http://lattes.cnpq.br/9391454312997091' },
@@ -84,21 +84,21 @@ h1 {
 
 .team-grid {
   display: flex;
-  flex-wrap: wrap; 
-  justify-content: center; 
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 2rem;
 }
 
 .team-card {
-  width: 300px; 
+  width: 300px;
   background-color: var(--white);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-top: 4px solid var(--orange);
-  display: flex; 
-  flex-direction: column; 
+  display: flex;
+  flex-direction: column;
 }
 
 .team-card:hover {
@@ -114,7 +114,7 @@ h1 {
   padding: 0 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
-  flex-grow: 1; 
+  flex-grow: 1;
 }
 
 .profile-image {
@@ -122,7 +122,7 @@ h1 {
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  margin: -60px auto 1rem; 
+  margin: -60px auto 1rem;
   border: 6px solid var(--white);
   background-color: var(--white);
   position: relative;
@@ -137,7 +137,7 @@ h1 {
 .member-info {
   display: flex;
   flex-direction: column;
-  flex-grow: 1; 
+  flex-grow: 1;
 }
 
 .member-info h3 {
@@ -151,11 +151,11 @@ h1 {
   color: var(--black-light);
   line-height: 1.5;
   margin-bottom: 1rem;
-  flex-grow: 1; 
+  flex-grow: 1;
 }
 
 .card-footer {
-  margin-top: auto; 
+  margin-top: auto;
 }
 
 .social-link {

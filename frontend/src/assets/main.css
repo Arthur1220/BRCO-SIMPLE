@@ -7,10 +7,10 @@
   --blue: #3498db;
   --blue-dark: #2980b9;
   --red-error: #e74c3c;
-  
+
   --black: #2c3e50;
   --black-light: #5a5a5a;
-  
+
   --white: #ffffff;
   --grey-light: #ecf0f1;
   --grey: #bdc3c7;
@@ -30,16 +30,23 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  margin: 0;
   background-color: var(--white);
   color: var(--black-light);
-  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ==========================================================================
@@ -47,13 +54,13 @@ body {
    ========================================================================== */
 h1, h2, h3, h4, h5, h6 {
   color: var(--black);
+  line-height: 1.3;
+  font-weight: 600;
   margin-top: 0;
   margin-bottom: 1rem;
-  font-weight: 700;
-  line-height: 1.2;
 }
 
-h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); } /* Se ajusta entre 2.5rem e 3.5rem */
+h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); }
 h2 { font-size: clamp(2rem, 4vw, 2.5rem); }
 h3 { font-size: clamp(1.5rem, 3vw, 1.75rem); }
 h4 { font-size: clamp(1.1rem, 2vw, 1.25rem); }
@@ -67,31 +74,20 @@ a {
   text-decoration: none;
   color: var(--orange);
   transition: color var(--transition-speed);
+  transition: color 0.3s ease;
 }
 a:hover {
   color: var(--light-orange);
 }
 
 /* ==========================================================================
-   4. LAYOUT E CLASSES UTILITÁRIAS
-   ========================================================================== */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-/* ==========================================================================
-   5. ESTILOS DE FORMULÁRIO PADRÃO
-   ========================================================================== */
+  4. ESTILOS DE FORMULÁRIO PADRÃO
+ ========================================================================== */
 button,
 input,
 select,
 textarea {
-  font-family: inherit; /* Garante que usem a mesma fonte do body */
+  font-family: inherit;
   font-size: 1rem;
 }
 
@@ -124,7 +120,7 @@ button {
 }
 
 /* ==========================================================================
-   6. TRANSIÇÕES DE PÁGINA (Vue Router)
+   5. TRANSIÇÕES DE PÁGINA (Vue Router)
    ========================================================================== */
 .page-fade-enter-active,
 .page-fade-leave-active {
@@ -134,4 +130,28 @@ button {
 .page-fade-enter-from,
 .page-fade-leave-to {
   opacity: 0;
+}
+
+/* ==========================================================================
+   6. ANIMAÇÕES DE SCROLL (Intersection Observer)
+   ========================================================================== */
+
+/*
+  Estado inicial: O elemento está invisível e ligeiramente deslocado para baixo.
+  A classe .hidden-initial é adicionada pelo nosso componente AnimateOnScroll.
+*/
+.hidden-initial {
+  opacity: 0;
+  transform: translateY(30px); /* Começa 30px abaixo da sua posição final */
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition-delay: 0.2s; /* Um pequeno delay para a animação começar */
+}
+
+/*
+  Estado final: Quando o elemento entra na tela, a classe .is-visible é adicionada,
+  tornando-o opaco e trazendo-o de volta à sua posição original.
+*/
+.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }

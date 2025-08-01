@@ -2,7 +2,7 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
-        
+
         <div class="footer-column">
           <h4>Sobre o BRCO</h4>
           <p class="footer-about-text">
@@ -48,26 +48,25 @@
 </template>
 
 <script setup>
-// Este componente é puramente visual e não requer lógica de JavaScript.
 </script>
 
 <style scoped>
 /* --- Estrutura Principal do Footer --- */
 .site-footer {
+  width: 100%;
   background-color: var(--black);
   color: var(--grey);
   padding: 4rem 0 2rem;
   font-size: 0.95rem;
-  /* O efeito diagonal no topo. Pode ser removido se preferir um topo reto. */
   clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
 }
 
 .footer-grid {
   display: grid;
-  /* Cria colunas responsivas que se ajustam ao tamanho da tela */
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 3rem;
-  padding-bottom: 3rem;
+  padding-bottom: 1rem;
+  padding-left: 1.5rem;
 }
 
 /* --- Estilos das Colunas --- */
@@ -91,11 +90,14 @@
 .footer-about-text {
   line-height: 1.7;
   padding-right: 1rem;
+  text-align: justify;
 }
 .footer-links {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
   list-style: none;
-  padding: 0;
-  margin: 0;
 }
 .footer-links li {
   margin-bottom: 0.8rem;
@@ -113,7 +115,7 @@
 /* --- Logos de Apoio --- */
 .support-logos {
   display: flex;
-  flex-wrap: wrap; /* Garante que os logos quebrem a linha em telas pequenas */
+  flex-wrap: wrap;
   gap: 1.5rem;
   align-items: center;
 }
@@ -137,5 +139,20 @@
 }
 .footer-bottom p {
   margin: 0;
+}
+
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+  .site-footer {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    padding: 2rem 0 1.5rem;
+  }
+
+  .footer-bottom {
+    margin-right: 1rem;
+    margin-left: 1rem;
+    text-align: center;
+  }
+
 }
 </style>

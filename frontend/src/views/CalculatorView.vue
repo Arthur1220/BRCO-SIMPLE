@@ -53,7 +53,7 @@
                 <ResultsDisplay />
               </div>
             </div>
-            
+
           </div>
         </Transition>
         </main>
@@ -65,10 +65,10 @@
 import { ref, watch, onUnmounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
 
-import ExigenciasForm from '@/components/ExigenciasForm.vue';
-import NDTForm from '@/components/NDTForm.vue';
-import ResultsDisplay from '@/components/ResultsDisplay.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import ExigenciasForm from '@/components/calculator/ExigenciasForm.vue';
+import NDTForm from '@/components/calculator/NDTForm.vue';
+import ResultsDisplay from '@/components/calculator/ResultsDisplay.vue';
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 
 const store = useCalculationStore();
 
@@ -103,6 +103,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
 .calculator-wrapper {
   display: flex;
   gap: 3rem;
@@ -178,7 +187,7 @@ onUnmounted(() => {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s ease; 
+  transition: opacity 0.4s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
@@ -187,7 +196,7 @@ onUnmounted(() => {
 
 .results-container {
   position: relative;
-  padding-top: 1rem; 
+  padding-top: 1rem;
 }
 .return-button {
   position: absolute;
@@ -197,11 +206,11 @@ onUnmounted(() => {
   color: var(--black-light);
   border: none;
   border-radius: 8px;
-  padding: 0.5rem 1rem 0.5rem 0.75rem; 
+  padding: 0.5rem 1rem 0.5rem 0.75rem;
   cursor: pointer;
-  display: inline-flex; 
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem; 
+  gap: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -216,7 +225,7 @@ onUnmounted(() => {
   transition: transform 0.3s ease;
 }
 .return-button:hover svg {
-  transform: translateX(-3px); 
+  transform: translateX(-3px);
 }
 
 /* Responsividade */
@@ -231,7 +240,7 @@ onUnmounted(() => {
   }
   .sidebar nav { display: flex; overflow-x: auto; gap: 1rem; }
   .sidebar .nav-item { flex-shrink: 0; }
-  
+
   .results-container { padding-top: 0; }
   .return-button {
       position: static;
