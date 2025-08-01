@@ -34,7 +34,7 @@ import { ref, onMounted } from 'vue';
 import { getAdminStats, getAdminLogs } from '@/services/adminService';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
-import LoadingSpinner from '@/components/admin/LoadingSpinner.vue';
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 
 const isAuthenticated = ref(false);
 const stats = ref(null);
