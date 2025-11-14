@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { login, getStats, getLogs } = require('../controllers/adminController.js');
+const { login, getStats, getLogs, getStatsOverTime } = require('../controllers/adminController.js');
 const { adminApiKeyAuth } = require('../middleware/authMiddleware.js');
 
 // ROTA DE LOGIN (PÚBLICA, SEM SEGURANÇA)
@@ -13,5 +13,6 @@ router.use(adminApiKeyAuth);
 // ROTAS DE DADOS (AGORA PROTEGIDAS)
 router.get('/stats', getStats);
 router.get('/logs', getLogs);
+router.get('/stats/over-time', getStatsOverTime);
 
 module.exports = router;
