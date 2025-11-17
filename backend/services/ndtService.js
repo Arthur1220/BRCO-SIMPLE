@@ -15,7 +15,7 @@ function calculateNdt(input) {
     const EEvd = ((C.EEvd_FACTOR * input.EE) * 2.25) - 0.33;
     const FDNd = (C.FDNd_FACTOR * (input.FDN - input.Ligrina)) * (1 - (input.Ligrina / input.FDN) ** C.FDNd_EXP);
     const CNFvd = (C.CNFvd_FACTOR * CNF) - 3.22;
-    const NDT_Result = PBvd + EEvd * 2.25 + FDNd + CNFvd - C.NDT_SUB;
+    const NDT_Result = PBvd + EEvd + FDNd + CNFvd;
     const Ed = NDT_Result * C.ED_FACTOR;
     const Em_caprinos = C.EM_CAPRINOS.BASE + C.EM_CAPRINOS.FACTOR * Ed;
     const Em_ovinos = C.EM_OVINOS.BASE + C.EM_OVINOS.FACTOR * Ed;
