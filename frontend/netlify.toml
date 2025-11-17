@@ -1,15 +1,5 @@
-# Arquivo de configuração para o Netlify
-# Local: frontend/netlify.toml
-
-# Esta regra de redirecionamento atua como um proxy.
 [[redirects]]
-  # Qualquer requisição que o frontend fizer para /api/...
   from = "/api/*"
-
-  # Será redirecionada pelo servidor do Netlify para o seu backend.
-  # Substitua o IP pelo da sua instância EC2.
-  to = "http://98.94.173.47:3000/:splat"
-
-  # O status 200 diz ao Netlify para atuar como um proxy,
-  # "espelhando" a resposta do seu backend.
+  to = "http://98.94.173.47:3000/api/:splat"  <-- Adicione o /api aqui
   status = 200
+  force = true
