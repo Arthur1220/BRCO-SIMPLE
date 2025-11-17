@@ -12,8 +12,8 @@ function calculateNdt(input) {
     }
 
     const CNF = input.MO - input.EE - input.PB - input.FDN;
-    const EEvd = (C.EEvd_FACTOR * input.EE) - 0.33;
-    const FDNd = C.FDNd_FACTOR * (input.FDN - input.Ligrina) * (1 - (input.Ligrina) / (input.FDN ** C.FDNd_EXP));
+    const EEvd = ((C.EEvd_FACTOR * input.EE) * 2.25) - 0.33;
+    const FDNd = (C.FDNd_FACTOR * (input.FDN - input.Ligrina)) * (1 - (input.Ligrina / (input.FDN) ** C.FDNd_EXP));
     const CNFvd = (C.CNFvd_FACTOR * CNF) - 3.22;
     const NDT_Result = PBvd + EEvd * 2.25 + FDNd + CNFvd - C.NDT_SUB;
     const Ed = NDT_Result * C.ED_FACTOR;
