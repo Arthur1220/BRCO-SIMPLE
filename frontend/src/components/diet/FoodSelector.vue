@@ -83,7 +83,6 @@
         <div class="modal-content preview-card">
             <div class="preview-header">
                 <h3>{{ previewFood.name }}</h3>
-                 <span class="category-pill" :class="previewFood.category?.toLowerCase()">{{ categoryLabels[previewFood.category] || 'Outro' }}</span>
             </div>
             <div class="nutrient-grid">
                 <div class="nutrient-item"><strong>MS:</strong> {{ previewFood.MS }}%</div>
