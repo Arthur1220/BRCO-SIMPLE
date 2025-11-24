@@ -17,3 +17,29 @@ model CalculationLog {
 
   @@map("calculation_logs")
 }
+
+model Food {
+  id        Int      @id @default(autoincrement())
+  name      String  
+  category  String   // 'VOLUMOSO', 'CONCENTRADO', 'SUPLEMENTO'
+
+  defaultMin  Float?   @default(0)
+  defaultMax  Float?   @default(100)
+
+  MS        Float    
+  MO        Float    
+  EE        Float    
+  PB        Float    
+  PDR       Float    
+  PNDR      Float    
+  NDT       Float    
+  FDNcp     Float    
+  CNF       Float    
+  Ca        Float    
+  P         Float    
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("foods")
+}

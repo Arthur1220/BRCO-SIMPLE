@@ -1,6 +1,9 @@
 const { generateCsv } = require('../services/csvService');
 const logger = require('../lib/logger');
 
+/**
+ * Gera e retorna um arquivo CSV com os resultados do cálculo.
+ */
 async function handleCsvGeneration(req, res) {
   const { type, inputs, results } = req.body;
 

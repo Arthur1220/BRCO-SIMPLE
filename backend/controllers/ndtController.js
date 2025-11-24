@@ -15,7 +15,9 @@ const ndtInputSchema = z.object({
     PIDA: z.number(),
 });
 
-// Note que esta função não tem mais o bloco try...catch
+/*
+ * Realiza o cálculo de NDT a partir dos dados fornecidos.
+ */
 async function handleNdtCalculation(req, res) {
     const inputData = ndtInputSchema.parse(req.body);
     const result = calculateNdt(inputData);

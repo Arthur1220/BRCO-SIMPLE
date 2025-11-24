@@ -34,6 +34,12 @@
   padding: 0;
 }
 
+body, html {
+  overflow-x: hidden; /* Corta qualquer coisa que tente ultrapassar a largura da tela */
+  width: 100%;
+  position: relative;
+}
+
 html {
   scroll-behavior: smooth;
 }

@@ -5,15 +5,15 @@
         <label>Espécie:</label>
         <div class="radio-group">
           <label>
-            <input type="radio" value="1" v-model="formData.especieId" required> Caprino
+            <input type="radio" :value="1" v-model="formData.especieId" required> Caprino
           </label>
           <label>
-            <input type="radio" value="2" v-model="formData.especieId" required> Ovino
+            <input type="radio" :value="2" v-model="formData.especieId" required> Ovino
           </label>
         </div>
       </div>
 
-      <div class="form-section" v-if="formData.especieId === '1'">
+      <div class="form-section" v-if="formData.especieId === 1">
         <label for="categoriaAnimal">Genótipo animal:</label>
         <select id="categoriaAnimal" v-model="formData.categoriaAnimalId">
           <option v-for="type in genotipos" :key="type.id" :value="type.id">
@@ -21,16 +21,16 @@
           </option>
         </select>
       </div>
-      
+
       <div class="form-section">
         <label for="sexo">Sexo:</label>
         <select id="sexo" v-model="formData.sexoId">
             <option :value="1">Macho Inteiro</option>
             <option :value="2">Macho Castrado</option>
-            <option v-if="formData.especieId === '1'" :value="3">Fêmea</option>
+            <option v-if="formData.especieId === 1" :value="3">Fêmea</option>
         </select>
       </div>
-      
+
       <div class="grid-2-cols">
         <div class="form-section">
           <label for="pesoInicial">Peso Corporal Inicial (kg):</label>
@@ -45,47 +45,68 @@
         <label for="GMD">Ganho Médio Diário (g/dia):</label>
         <input v-model.number="formData.GMD" type="number" id="GMD" required placeholder="Ex: 150"/>
       </div>
-          
+
       <button type="submit" :disabled="store.isLoading">
-        {{ store.isLoading ? 'Calculando...' : 'Calcular Exigências' }}
+         {{ isDietMode ? 'Confirmar Dados do Animal' : (store.isLoading ? 'Calculando...' : 'Calcular Exigências') }}
       </button>
     </form>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { reactive, ref, watch, onMounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
+// 1. IMPORTAR O STORE DA DIETA
+import { useDietStore } from '@/stores/dietStore';
 
 const store = useCalculationStore();
+const dietStore = useDietStore(); // 2. INSTANCIAR O STORE
 
-// Dados para os selects. No futuro, podem vir de uma API.
+const props = defineProps({
+  isDietMode: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const emit = defineEmits(['submit-data']);
+
 const genotipos = ref([
   { id: 1, name: 'Leiteiro' },
   { id: 2, name: 'Nativa' },
   { id: 3, name: 'Corte' },
 ]);
 
+// Inicializamos com números para combinar com o store e com os :value
 const formData = reactive({
-  especieId: "1",       // Inicia com um valor padrão para evitar ser nulo
-  categoriaAnimalId: 1, // Inicia com um valor padrão
-  sexoId: 1,            // Inicia com um valor padrão
+  especieId: 1,
+  categoriaAnimalId: 1,
+  sexoId: 1,
   pesoInicial: null,
   pesoFinal: null,
   GMD: null,
 });
 
-// Observador para resetar o sexo se a espécie mudar para Ovino e Fêmea estiver selecionada
+// 3. LÓGICA DE RECUPERAÇÃO DE DADOS ATUALIZADA
+onMounted(() => {
+  // Se estiver no modo Dieta, tenta recuperar do dietStore
+  if (props.isDietMode && dietStore.animalData) {
+     Object.assign(formData, dietStore.animalData);
+  }
+  // Se estiver no modo Calculadora normal, recupera do calculationStore
+  else if (!props.isDietMode && store.lastFormData && store.calculationType === 'requirements') {
+    Object.assign(formData, store.lastFormData);
+  }
+});
+
+// Observador para resetar o sexo se a espécie mudar para Ovino
 watch(() => formData.especieId, (newEspecie) => {
-    // Se mudar para Ovino, limpa o genótipo (categoriaAnimal)
-    if (newEspecie === '2') {
+    if (newEspecie === 2) {
         formData.categoriaAnimalId = null;
-        // E também ajusta o sexo se for uma opção inválida para ovinos
         if (formData.sexoId === 3) {
-            formData.sexoId = 1; // Reseta para 'Macho Inteiro'
+            formData.sexoId = 1;
         }
     } else {
-        // Se voltar para Caprino, define um valor padrão para o genótipo
         if (formData.categoriaAnimalId === null) {
             formData.categoriaAnimalId = 1;
         }
@@ -98,16 +119,22 @@ const handleSubmit = async () => {
     pesoFinal: formData.pesoFinal,
     GMD: formData.GMD,
     especieId: parseInt(formData.especieId, 10),
-    categoriaAnimalId: formData.especieId === '1' ? parseInt(formData.categoriaAnimalId, 10) : null,
+    categoriaAnimalId: formData.especieId === 1 ? parseInt(formData.categoriaAnimalId, 10) : null,
     sexoId: parseInt(formData.sexoId, 10),
   };
-  
-  await store.performCalculation('requirements', payload);
+
+  if (props.isDietMode) {
+    // Se estiver na tela de Dieta, apenas emite os dados para o pai
+    emit('submit-data', payload);
+  } else {
+    // Comportamento normal
+    await store.performCalculation('requirements', payload);
+  }
 };
 </script>
 
 <style scoped>
-/* Os estilos do form-container, grid, etc. permanecem os mesmos */
+/* Estilos inalterados */
 .form-container { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--grey-light); }
 .grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .form-section { margin-bottom: 1.5rem; }

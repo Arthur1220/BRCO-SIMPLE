@@ -1,6 +1,8 @@
-// backend/services/csvService.js
 const { Parser } = require('json2csv');
 
+/**
+ * Gera um arquivo CSV a partir dos resultados.
+ */
 function generateCsv(reportData) {
   try {
     const { type, inputs, results } = reportData;

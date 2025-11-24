@@ -24,16 +24,18 @@
           <p>{{ error }}</p>
         </div>
       </div>
-      <AdminDashboard v-else-if="stats && logs" :stats="stats" :logs="logs" />
+      <AdminDashboard v-else-if="stats && logs" :stats="stats" :logs="logs" :chartData="chartData"/>
+      <FoodsManager />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getAdminStats, getAdminLogs } from '@/services/adminService';
+import { getAdminStats, getAdminLogs, getAdminChartData } from '@/services/adminService';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
+import FoodsManager from '@/components/admin/FoodsManager.vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 
 const isAuthenticated = ref(false);
@@ -43,17 +45,20 @@ const isLoading = ref(true);
 const error = ref(null);
 
 const activeFilter = ref('all');
+const chartData = ref([]);
 
 const fetchData = async (period) => {
   isLoading.value = true;
   error.value = null;
   try {
-    const [statsData, logsData] = await Promise.all([
+    const [statsRes, logsRes, chartRes] = await Promise.all([
       getAdminStats(period),
-      getAdminLogs(period)
+      getAdminLogs(period),
+      getAdminChartData(period) // Nova chamada
     ]);
-    stats.value = statsData;
-    logs.value = logsData;
+    stats.value = statsRes;
+    logs.value = logsRes;
+    chartData.value = chartRes;
   } catch (err) {
     error.value = err.response?.data?.error || err.message;
     handleLogout();
@@ -92,7 +97,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-view { padding-top: 2rem; padding-bottom: 4rem; }
+.admin-view {
+  /* Aumenta o padding lateral para dar respiro */
+  padding: 2rem 5%; /* 5% de margem nas laterais */
+  max-width: 1400px; /* Permite que o painel fique mais largo em telas grandes */
+  margin: 0 auto;
+}
 
 .admin-header {
   display: flex;

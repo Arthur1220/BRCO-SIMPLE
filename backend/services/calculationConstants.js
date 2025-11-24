@@ -9,9 +9,12 @@ const round = (value, decimals) => {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 };
 
-// Coeficientes para os cálculos de Exigências Nutricionais
+/**
+ * Coeficientes para os cálculos de Exigências Nutricionais.
+ * Divididos por espécie (CAPRINOS e OVINOS).
+ */
 const REQUIREMENTS = {
-    DECIMAIS: 3,
+    DECIMAIS: 2,
     CAPRINOS: {
         PESO: { CTGI_FACTOR: 525.5, CTGI_EXP: -0.33, GPCVZ_FACTOR: 1.1259, GPCVZ_EXP: 0.941 },
         CMS: {
@@ -81,7 +84,10 @@ const REQUIREMENTS = {
     }
 };
 
-// Coeficientes para os cálculos de NDT (NDT = Nutritional Digestible Total)
+/**
+ * Coeficientes para os cálculos de NDT (Nutrientes Digestíveis Totais).
+ * Baseado nas equações do BRCO.
+ */
 const NDT = {
     DECIMAIS: 2,
     PBvd: { NO_PIDN_PIDA_FACTOR: 0.7934, FACTOR1: 0.98, FACTOR2: 0.7877 },
@@ -95,8 +101,4 @@ const NDT = {
     EM_OVINOS: { BASE: -0.1559, FACTOR: 0.8503 },
 };
 
-module.exports = {
-    REQUIREMENTS,
-    NDT,
-    round,
-};
+module.exports = { REQUIREMENTS, NDT, round };

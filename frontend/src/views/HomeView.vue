@@ -33,6 +33,7 @@
             <h4>Exigências Nutricionais</h4>
             <p>Determine de forma precisa as exigências de energia, proteína e minerais para otimizar o desempenho e a saúde dos animais.</p>
           </div>
+
           <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
             <div class="icon-wrapper">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.153-.344c-1.32.083-2.643.083-3.963 0a5.988 5.988 0 01-2.153-.344c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c-1.01.143-2.01.317-3 .52m3-.52L2.62 15.698c-.122.499.106 1.028.589 1.202a5.989 5.989 0 002.153.344c1.32.083 2.643.083 3.963 0a5.989 5.989 0 002.153-.344c.483-.174.711-.703.59-1.202L5.25 4.971z" /></svg>
@@ -40,16 +41,50 @@
             <h4>Análise de Alimentos (NDT)</h4>
             <p>Calcule os Nutrientes Digestíveis Totais (NDT) dos alimentos para formular dietas balanceadas e econômicas.</p>
           </div>
+
           <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
             <div class="icon-wrapper">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
             </div>
             <h4>Relatórios para Exportação</h4>
-            <p>Gere relatórios em CSV e PDF com os resultados dos seus cálculos para fácil consulta, arquivamento e compartilhamento.</p>
+            <p>Gere relatórios em CSV com os resultados dos seus cálculos para fácil consulta, arquivamento e compartilhamento.</p>
           </div>
         </div>
       </div>
     </section>
+
+    <section class="diet-intro-section">
+        <div class="container">
+          <div class="section-title" data-aos="fade-up">
+            <span>Novo Recurso</span>
+            <h3>Como Funciona a Formulação de Dieta?</h3>
+          </div>
+
+          <div class="steps-grid">
+            <div class="step-item" data-aos="fade-up" data-aos-delay="100">
+              <span class="step-number">1</span>
+              <h4>Defina o Animal</h4>
+              <p>Informe a espécie, peso e ganho desejado para calcular as metas nutricionais exatas.</p>
+            </div>
+            <div class="step-item" data-aos="fade-up" data-aos-delay="200">
+              <span class="step-number">2</span>
+              <h4>Escolha os Alimentos</h4>
+              <p>Use nossa base de dados ou <strong>cadastre seus próprios alimentos</strong> com valores nutricionais personalizados.</p>
+            </div>
+             <div class="step-item" data-aos="fade-up" data-aos-delay="300">
+              <span class="step-number">3</span>
+              <h4>Otimize Automaticamente</h4>
+              <p>Defina limites e nosso sistema calculará a <strong>dieta ideal</strong> para você.</p>
+            </div>
+          </div>
+
+          <div class="center-btn" data-aos="fade-up" data-aos-delay="400">
+             <router-link to="/formulacao-dieta" class="btn btn-primary">Experimentar Agora</router-link>
+          </div>
+        </div>
+      </section>
+
+    <hr>
 
     <section class="about-section container" data-aos="fade-up">
       <div class="about-image" data-aos="fade-right" data-aos-delay="100">
@@ -92,7 +127,7 @@
 <style scoped>
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 2rem;
 }
@@ -160,33 +195,15 @@
   gap: 1rem;
   margin-top: 2.5rem;
 }
-.btn {
-  padding: 0.9rem 2rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-.btn-primary {
-  background-color: var(--orange);
-  color: var(--white);
-}
-.btn-primary:hover {
-  background-color: var(--light-orange);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-.btn-secondary {
-  background-color: transparent;
-  color: var(--orange);
-  border-color: var(--orange);
-}
-.btn-secondary:hover {
-  background-color: var(--orange);
-  color: var(--white);
-  transform: translateY(-3px);
-}
+
+
+/* --- Botões --- */
+.btn { padding: 0.9rem 2rem; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.3s ease; border: 2px solid transparent; }
+.btn-primary { background-color: var(--orange); color: var(--white); }
+.btn-primary:hover { background-color: var(--light-orange); transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.btn-secondary { background-color: transparent; color: var(--orange); border-color: var(--orange); }
+.btn-secondary:hover { background-color: var(--orange); color: var(--white); transform: translateY(-3px); }
+.center-btn { text-align: center; margin-top: 2rem; }
 
 /* --- Features Section --- */
 .features-section {
@@ -233,6 +250,16 @@
   color: var(--black-light);
   line-height: 1.6;
 }
+
+/* --- Diet Intro Section (NOVA) --- */
+.diet-intro-section { padding: 5rem 0; background-color: var(--white); }
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: center; }
+.step-item { padding: 1rem; }
+.step-number { display: inline-block; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; background-color: var(--orange); color: white; font-weight: bold; font-size: 1.2rem; margin-bottom: 1rem; }
+.step-item h4 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--black); }
+.step-item p { color: var(--black-light); line-height: 1.5; }
+
+hr { width: 80%; height: 1px; background-color: var(--grey-light); border: none; margin: 2rem auto; }
 
 /* --- About & Book Sections --- */
 .about-section, .book-section {

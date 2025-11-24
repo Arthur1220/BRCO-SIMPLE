@@ -1,39 +1,46 @@
-// backend/controllers/adminController.js
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
 
-// --- FUNÇÃO AUXILIAR DE DATA ---
+/**
+ * Auxiliar: Cria um objeto Date para filtrar logs baseado no período.
+ * @param {string} period - '7d', '30d' ou undefined (all)
+ * @returns {Date|undefined} - Data de início do filtro ou undefined.
+ */
 const getDateFilter = (period) => {
   const now = new Date();
   now.setHours(23, 59, 59, 999); 
 
   if (period === '7d') {
-    const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-    return sevenDaysAgo;
+    const date = new Date(now);
+    date.setDate(date.getDate() - 7);
+    date.setHours(0, 0, 0, 0);
+    return date;
   }
   if (period === '30d') {
-    const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
-    thirtyDaysAgo.setHours(0, 0, 0, 0);
-    return thirtyDaysAgo;
+    const date = new Date(now);
+    date.setDate(date.getDate() - 30);
+    date.setHours(0, 0, 0, 0);
+    return date;
   }
   return undefined;
 };
 
-// --- FUNÇÃO DE LOGIN ---
+/**
+ * Realiza o login do admin verificando a senha.
+ */
 async function login(req, res) {
   const { password } = req.body;
   
   if (password && password === process.env.PANEL_PASSWORD) {
-    // Se a senha bate com a do .env, retorna sucesso.
     res.json({ success: true, message: 'Login bem-sucedido.' });
   } else {
-    // Senão, retorna um erro de não autorizado.
     res.status(401).json({ success: false, message: 'Senha incorreta.' });
   }
 }
 
-// --- FUNÇÃO DE ESTATÍSTICAS ---
+/**
+ * Retorna estatísticas gerais de uso (total e por tipo).
+ */
 async function getStats(req, res) {
   try {
     const { period } = req.query;
@@ -61,7 +68,9 @@ async function getStats(req, res) {
   }
 }
 
-// --- FUNÇÃO DE LOGS ---
+/**
+ * Retorna a lista de logs recentes.
+ */
 async function getLogs(req, res) {
   try {
     const { period } = req.query;
@@ -80,22 +89,20 @@ async function getLogs(req, res) {
   }
 }
 
-// --- FUNÇÃO DE ESTATÍSTICAS AO LONGO DO TEMPO ---
+/**
+ * Retorna dados para o gráfico de uso ao longo do tempo.
+ */
 async function getStatsOverTime(req, res) {
   try {
     const { period } = req.query;
-    // Define 30 dias como padrão se nenhum período for fornecido
     const startDate = getDateFilter(period || '30d'); 
     
-    // 1. Busca os logs dentro do período
     const logs = await prisma.calculationLog.findMany({
       where: { createdAt: { gte: startDate } },
       orderBy: { createdAt: 'asc' },
-      select: { createdAt: true } // Só precisamos da data
+      select: { createdAt: true } 
     });
 
-    // 2. Inicializa um "mapa" com todos os dias no período, zerados.
-    // Isso é crucial para preencher os dias sem cálculos.
     const countsByDay = new Map();
     let day = new Date(startDate);
     const today = new Date();
@@ -106,7 +113,6 @@ async function getStatsOverTime(req, res) {
       day.setDate(day.getDate() + 1);
     }
 
-    // 3. Preenche o mapa com as contagens reais dos logs
     for (const log of logs) {
       const dateString = log.createdAt.toISOString().split('T')[0];
       if (countsByDay.has(dateString)) {
@@ -114,7 +120,6 @@ async function getStatsOverTime(req, res) {
       }
     }
 
-    // 4. Converte o mapa em um array que o frontend possa usar
     const chartData = Array.from(countsByDay, ([date, count]) => ({
       date,
       count

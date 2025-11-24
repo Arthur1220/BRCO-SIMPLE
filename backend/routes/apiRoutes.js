@@ -2,20 +2,59 @@ const express = require('express');
 const router = express.Router();
 const { publicApiKeyAuth } = require('../middleware/authMiddleware');
 
-const { handleRequirementCalculation } = require('../controllers/requirementController');
-const { handleNdtCalculation } = require('../controllers/ndtController');
-const { handleCsvGeneration } = require('../controllers/csvController');
+// Importa os controladores
+const requirementController = require('../controllers/requirementController');
+const ndtController = require('../controllers/ndtController');
+const csvController = require('../controllers/csvController');
+const dietController = require('../controllers/dietController');
 
-// APLICA O MIDDLEWARE DE CHAVE PÚBLICA A TODAS AS ROTAS DESTE ARQUIVO
+// ==================================================================
+// BARREIRA DE SEGURANÇA
+// Todas as rotas públicas exigem a chave de API Pública (x-api-key).
+// Isso previne uso não autorizado da API por outros sites.
+// ==================================================================
 router.use(publicApiKeyAuth);
 
-// Rota para cálculo de Exigências
-router.post('/calculate/requirements', handleRequirementCalculation);
+// ==================================================================
+// ROTAS DE CÁLCULO
+// ==================================================================
 
-// Rota para cálculo de NDT
-router.post('/calculate/ndt', handleNdtCalculation);
+/**
+ * POST /api/calculate/requirements
+ * Calcula exigências nutricionais para Ovinos e Caprinos.
+ */
+router.post('/calculate/requirements', requirementController.handleRequirementCalculation);
 
-// Rota para gerar CSV
-router.post('/generate-csv', handleCsvGeneration);
+/**
+ * POST /api/calculate/ndt
+ * Calcula o NDT (Valor energético) de um alimento.
+ */
+router.post('/calculate/ndt', ndtController.handleNdtCalculation);
+
+/**
+ * POST /api/calculate/diet
+ * Calcula o balanço nutricional de uma dieta (Solver).
+ */
+router.post('/calculate/diet', dietController.handleDietCalculation);
+
+// ==================================================================
+// ROTAS DE DADOS AUXILIARES
+// ==================================================================
+
+/**
+ * GET /api/foods
+ * Lista todos os alimentos disponíveis no banco de dados para a dieta.
+ */
+router.get('/foods', dietController.getFoods);
+
+// ==================================================================
+// ROTAS DE EXPORTAÇÃO
+// ==================================================================
+
+/**
+ * POST /api/generate-csv
+ * Gera um arquivo CSV para download com base nos resultados.
+ */
+router.post('/generate-csv', csvController.handleCsvGeneration);
 
 module.exports = router;

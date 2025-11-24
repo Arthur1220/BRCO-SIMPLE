@@ -16,6 +16,7 @@
               <li><router-link to="/calcular/ndt" @click="closeMenu">Cálculo de NDT</router-link></li>
             </ul>
           </li>
+          <li><router-link to="/formulacao-dieta" @click="closeMenu">Gerador de Dieta</router-link></li>
           <li><router-link to="/equipe" @click="closeMenu">Equipe</router-link></li>
         </ul>
       </nav>
@@ -131,20 +132,31 @@ watch(() => route.path, () => {
   }
 
   /* O painel de links que desliza */
-  .main-nav {
+.main-nav {
     position: fixed;
     top: 0;
     right: -100%; /* Começa fora da tela */
     width: 80%;
     max-width: 320px;
     height: 100vh;
-    background-color: var(--white); /* COR SÓLIDA AQUI */
+    background-color: var(--white);
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 999;
+    z-index: 1100;
+    padding-top: 80px;
+
+    /* --- CORREÇÃO AQUI --- */
+    visibility: hidden; /* Esconde o elemento completamente quando fechado */
+    /* Adicionamos uma transição para a visibilidade com delay ao fechar */
+    transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.4s;
   }
+
   .main-nav.is-open {
     right: 0; /* Desliza para dentro */
+
+    /* --- CORREÇÃO AQUI --- */
+    visibility: visible; /* Torna visível imediatamente ao abrir */
+    /* Remove o delay da visibilidade ao abrir */
+    transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s;
   }
   .nav-links {
     list-style: none;

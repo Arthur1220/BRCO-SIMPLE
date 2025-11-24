@@ -135,6 +135,54 @@
           "401": { "description": "Não autorizado. Chave de API de admin inválida ou ausente." }
         }
       }
+    },
+    "/api/calculate/diet": {
+      "post": {
+        "tags": ["Cálculos Públicos"],
+        "summary": "Calcula o balanço nutricional de uma dieta.",
+        "description": "Recebe os dados do animal e uma lista de ingredientes com porcentagens (soma 100%) e retorna o balanço nutricional.",
+        "security": [{ "PublicApiKey": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "animalData": {
+                    "type": "object",
+                    "description": "Mesmo objeto usado no cálculo de exigências",
+                    "example": { "especieId": 1, "sexoId": 1, "categoriaAnimalId": 1, "pesoInicial": 20, "pesoFinal": 30, "GMD": 150 }
+                  },
+                  "ingredients": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string", "example": "Milho" },
+                        "percent": { "type": "number", "example": 70 },
+                        "PB": { "type": "number", "example": 92.3 },
+                        "NDT": { "type": "number", "example": 844.2 },
+                        "Ca": { "type": "number", "example": 0.4 },
+                        "P": { "type": "number", "example": 2.9 }
+                      }
+                    },
+                    "example": [
+                        { "name": "Milho", "percent": 70, "PB": 92.3, "NDT": 844.2, "Ca": 0.4, "P": 2.9 },
+                        { "name": "Soja", "percent": 30, "PB": 487.9, "NDT": 811.6, "Ca": 3.4, "P": 5.9 }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sucesso. Retorna o balanço da dieta." },
+          "400": { "description": "Erro de validação (ex: soma diferente de 100%)." },
+          "401": { "description": "Não autorizado." }
+        }
+      }
     }
   },
   "components": {

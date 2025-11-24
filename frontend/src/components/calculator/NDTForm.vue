@@ -1,7 +1,7 @@
 <template>
   <div class="form-container">
     <form @submit.prevent="handleSubmit">
-      
+
       <div class="grid-2-cols">
         <div class="form-section">
           <label for="PB">Proteína Bruta (PB, %MS):</label>
@@ -12,7 +12,7 @@
           <label for="EE">Extrato Etéreo (EE, %MS):</label>
           <input type="number" step="0.01" v-model.number="formData.EE" required placeholder="Ex: 3.5">
         </div>
-        
+
         <div class="form-section">
           <label for="FDN">Fibra em Detergente Neutro (FDN, %MS):</label>
           <input type="number" step="0.01" v-model.number="formData.FDN" required placeholder="Ex: 60.0">
@@ -23,7 +23,7 @@
           <input type="number" step="0.01" v-model.number="formData.Ligrina" required placeholder="Ex: 5.0">
         </div>
       </div>
-      
+
       <div class="form-section">
           <label for="MO">Matéria Orgânica (MO, %MS):</label>
           <input type="number" step="0.01" v-model.number="formData.MO" required placeholder="Ex: 90">
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
 
 const store = useCalculationStore();
@@ -75,6 +75,21 @@ const formData = reactive({
   MO: null,
   PIDN: 0,
   PIDA: 0,
+});
+
+// Recupera dados salvos ao carregar o componente
+onMounted(() => {
+  if (store.lastFormData && store.calculationType === 'ndt') {
+    // Copia os valores do store para o formulário local
+    Object.assign(formData, store.lastFormData);
+
+    // Restaura a opção do radio button
+    if (formData.PIDN > 0 || formData.PIDA > 0) {
+      option.value = 'sim';
+    } else {
+      option.value = 'nao';
+    }
+  }
 });
 
 const handleSubmit = async () => {

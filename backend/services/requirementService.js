@@ -1,13 +1,18 @@
-// services/requirementService.js
 const { REQUIREMENTS, round } = require('./calculationConstants');
-const D = REQUIREMENTS.DECIMAIS; // Atalho para o número de casas decimais
+const D = REQUIREMENTS.DECIMAIS;
 
+/**
+ * Helper para selecionar a configuração baseada no sexo do animal.
+ */
 function _getSexoConfig(config, sexoId) {
     if (sexoId === 1) return config.INTEIRO;
     if (sexoId === 2) return config.CASTRADO;
     return config.FEMEA;
 }
 
+/**
+ * Calcula as exigências de Energia.
+ */
 function _calculateEnergia(params) {
     const { input, PCV, PCVZ, GPCV, GPCVZ, KG, CMS_REQ, especie } = params;
     const C = REQUIREMENTS[especie].ENERGIA;
@@ -60,6 +65,9 @@ function _calculateEnergia(params) {
     };
 }
 
+/**
+ * Calcula as exigências de Proteína.
+ */
 function _calculateProteina(params) {
     const { input, PCV, PCVZ, GPCV, GPCVZ, CMS_REQ, especie, resultadosAnteriores } = params;
     const C = REQUIREMENTS[especie].PROTEINA;
@@ -105,6 +113,9 @@ function _calculateProteina(params) {
     };
 }
 
+/**
+ * Calcula as exigências de Minerais (Macro e Micro).
+ */
 function _calculateMinerais(params) {
     const { input, pesoMedio, PCVZ, GPCV, GPCVZ, CMS_REQ, especie } = params;
     const C = REQUIREMENTS[especie].MINERAIS;
@@ -155,7 +166,6 @@ function _calculateMinerais(params) {
         const KD_REQ = KLT_REQ / C.K_d.DIV;
         const KT_MS_REQ = KD_REQ * 1000 / CMS_REQ;
         
-        // Monta o objeto de resultados para Caprinos
         Object.assign(resultados, {
             'Cálcio Mantença': { tipo: 'g/dia', valor_requerido: round(CAM_REQ, D) },
             'Cálcio Ganho': { tipo: 'g/dia', valor_requerido: round(CAG_REQ, D) },
@@ -272,7 +282,6 @@ function _calculateMinerais(params) {
         const CRD_REQ = CRLT_REQ / C.Cr_d.DIV;
         const CRT_MS_REQ = CRD_REQ * 1000 / CMS_REQ;
         
-        // Monta o objeto de resultados para Ovinos
         Object.assign(resultados, {
             'Cálcio Mantença': { tipo: 'g/dia', valor_requerido: round(CAM_REQ, D) },
             'Cálcio Ganho': { tipo: 'g/dia', valor_requerido: round(CAG_REQ, D) },
@@ -333,7 +342,6 @@ function _calculateMinerais(params) {
         });
     }
 
-    // Adiciona valores máximos genéricos para consistência, pode ser ajustado
     for (const key in resultados) {
         if (resultados[key].valor_requerido !== undefined) {
             resultados[key].valor_maximo = round(resultados[key].valor_requerido * 1.3, D);
@@ -343,6 +351,9 @@ function _calculateMinerais(params) {
     return resultados;
 }
 
+/**
+ * Função principal que orquestra o cálculo das exigências nutricionais.
+ */
 function calculateAllRequirements(input) {
     const R = REQUIREMENTS;
     const pesoMedio = (input.pesoInicial + input.pesoFinal) / 2;
@@ -399,6 +410,5 @@ function calculateAllRequirements(input) {
     
     return { ...cmsResult, ...energiaResult, ...proteinaResult, ...mineraisResult };
 }
-
 
 module.exports = { calculateAllRequirements };

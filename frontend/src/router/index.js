@@ -15,7 +15,12 @@ const router = createRouter({
       path: '/calcular/:type', // :type será 'ndt' ou 'exigencias'
       name: 'calculator',
       component: CalculatorView,
-      props: true 
+      props: true
+    },
+    {
+      path: '/formulacao-dieta', // Mudamos de /formulacaoDieta para kebab-case
+      name: 'diet',
+      component: () => import('../views/DietView.vue')
     },
     {
       path: '/equipe',
@@ -25,7 +30,7 @@ const router = createRouter({
     {
     path: '/admin',
     name: 'admin',
-    component: () => import('../views/AdminView.vue') 
+    component: () => import('../views/AdminView.vue')
     },
   ]
 })

@@ -1,9 +1,11 @@
 import axios from 'axios';
 
-// Agora, o apiClient é apenas uma instância limpa, sem nenhum header de API Key.
+const baseURL = import.meta.env.VITE_API_URL
+  ? '/api'
+  : 'http://localhost:3000/api';
+
 const apiClient = axios.create({
-  //baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000', // Aponta para a raiz da URL
-  baseURL: '/api', // Aponta para a raiz da URL
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -17,5 +19,4 @@ const errorInterceptor = (error) => {
 
 apiClient.interceptors.response.use(response => response, errorInterceptor);
 
-// Exportamos apenas uma instância genérica
 export default apiClient;

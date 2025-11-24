@@ -36,3 +36,20 @@ export const generateCsv = async (data) => {
   const response = await apiClient.post('/generate-csv', data, csvConfig);
   return response.data;
 };
+
+/** * Busca a lista de alimentos.
+ * @returns {Promise<object[]>} - A promessa com a lista de alimentos.
+ */
+export const getFoods = async () => {
+  const response = await apiClient.get('/foods', config);
+  return response.data;
+};
+
+/** * Envia os dados para o cálculo de dieta.
+ * @param {object} data - O objeto com os dados do formulário.
+ * @returns {Promise<object>} - A promessa com os resultados do cálculo de dieta.
+ */
+export const calculateDiet = async (data) => {
+  const response = await apiClient.post('/calculate/diet', data, config);
+  return response.data;
+};

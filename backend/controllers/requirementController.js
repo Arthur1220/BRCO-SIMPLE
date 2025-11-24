@@ -13,6 +13,9 @@ const requirementInputSchema = z.object({
     GMD: z.number().positive(),
 });
 
+/* 
+ * Realiza o cálculo de requisitos a partir dos dados fornecidos.
+ */
 async function handleRequirementCalculation(req, res) {
     const inputData = requirementInputSchema.parse(req.body);
     const result = calculateAllRequirements(inputData);

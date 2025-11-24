@@ -32,3 +32,35 @@ export const getAdminLogs = async (period = 'all') => {
     const response = await apiClient.get(`/admin/logs?period=${period}`, adminConfig);
     return response.data;
 };
+
+/**
+ * Busca os dados para gráficos ao longo do tempo.
+ */
+export const getAdminChartData = async (period = '30d') => {
+    const response = await apiClient.get(`/admin/stats/over-time?period=${period}`, adminConfig);
+    return response.data;
+};
+
+/**
+ * Cria um novo alimento no sistema.
+ */
+export const createFood = async (foodData) => {
+    const response = await apiClient.post('/admin/foods', foodData, adminConfig);
+    return response.data;
+};
+
+/**
+ * Atualiza um alimento existente.
+ */
+export const updateFood = async (id, foodData) => {
+    const response = await apiClient.put(`/admin/foods/${id}`, foodData, adminConfig);
+    return response.data;
+};
+
+/**
+ * Deleta um alimento existente.
+ */
+export const deleteFood = async (id) => {
+    const response = await apiClient.delete(`/admin/foods/${id}`);
+    return response.data;
+};

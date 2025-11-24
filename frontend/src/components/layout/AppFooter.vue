@@ -15,6 +15,7 @@
           <ul class="footer-links">
             <li><router-link to="/">Home</router-link></li>
             <li><router-link to="/calcular/exigencias">Calculadoras</router-link></li>
+            <li><router-link to="/formulacao-dieta">Gerador de Dieta</router-link></li>
             <li><router-link to="/equipe">Equipe</router-link></li>
             <li><router-link to="/admin">Admin</router-link></li>
             </ul>
@@ -96,7 +97,7 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.5rem;
   list-style: none;
 }
 .footer-links li {
