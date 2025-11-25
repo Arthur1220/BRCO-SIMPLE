@@ -112,8 +112,7 @@
               <label>Categoria</label>
               <select v-model="customFood.category" required>
                 <option value="VOLUMOSO">Volumoso</option>
-                <option value="ENERGETICO">Concentrado Energético</option>
-                <option value="PROTEICO">Concentrado Proteico</option>
+                <option value="CONCENTRADO">Concentrado</option>
                 <option value="SUPLEMENTO">Suplemento</option>
               </select>
             </div>
@@ -147,8 +146,7 @@ const previewFood = ref(null);
 
 const categoryLabels = {
     'VOLUMOSO': 'Volumosos',
-    'ENERGETICO': 'Conc. Energéticos',
-    'PROTEICO': 'Conc. Proteicos',
+    'CONCENTRADO': 'Concentrados',
     'SUPLEMENTO': 'Suplementos',
     'Outros': 'Outros'
 };
@@ -157,7 +155,7 @@ const initialCustomState = { name: '', category: 'VOLUMOSO', MS: 0, PB: 0, NDT: 
 const customFood = reactive({ ...initialCustomState });
 
 const groupedFoods = computed(() => {
-    const groups = { 'VOLUMOSO': [], 'ENERGETICO': [], 'PROTEICO': [], 'SUPLEMENTO': [] };
+    const groups = { 'VOLUMOSO': [], 'CONCENTRADO': [], 'SUPLEMENTO': [] };
 
     const foods = searchQuery.value
         ? store.availableFoods.filter(f => f.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
@@ -231,7 +229,7 @@ onMounted(() => {
 .btn-add:hover { background-color: #e8f5e9; border-color: #27ae60; }
 .btn-remove:hover { background-color: #ffebee; border-color: #e74c3c; }
 .category-badge { width: 20px; height: 20px; border-radius: 50%; color: white; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-left: 8px; text-transform: uppercase; }
-.volumoso { background-color: #27ae60; } .energetico { background-color: #f39c12; } .proteico { background-color: #e74c3c; } .suplemento { background-color: #8e44ad; }
+.volumoso { background-color: #27ae60; } .concentrado { background-color: #f39c12; } .suplemento { background-color: #8e44ad; }
 
 /* --- CORREÇÃO RESPONSIVA DO MODAL --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }

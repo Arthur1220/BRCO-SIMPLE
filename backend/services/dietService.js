@@ -21,89 +21,74 @@ function getRequirementValue(requirements, possibleKeys) {
     return 0; 
 }
 
-/**
- * Calcula a dieta otimizada (Mínimo Custo) usando Programação Linear.
- * * @param {object} animalInput - Dados do animal.
- * @param {array} ingredients - Lista de alimentos candidatos.
- * @returns {object} - Resultado da otimização e balanço nutricional.
- */
-function calculateDiet(animalInput, ingredients) {
-    // 1. Calcular a META (Exigências do Animal)
-    const requirements = calculateAllRequirements(animalInput);
-
-    const targetCMS_g = getRequirementValue(requirements, ['Consumo de matéria seca 1', 'Consumo de matéria seca']);
-    const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
-    const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
-
-    // Transforma as metas em % da dieta total
-    const targetPB_percent = (targetPB_g / targetCMS_g) * 100;
-    const targetNDT_percent = (targetNDT_g / targetCMS_g) * 100;
-
-    // 2. Configuração do Modelo do Solver
+function buildModel(ingredients, targets, strictNutrients = true) {
     const model = {
         optimize: "cost",
         opType: "min",
         constraints: {
-            weight: { equal: 1 }, // Soma das partes deve ser 1 (100%)
-            PB: { min: targetPB_percent },
-            NDT: { min: targetNDT_percent },
-            
-            // Regras Nutricionais Específicas
-            FDN_Volumoso: { min: 18 }, // Mínimo de 18% de fibra vinda de volumosos
-            Total_Suplemento: { max: 0.015 }, // Máximo de 1.5% de suplementos
-            
-            // Garantia de presença mínima
+            weight: { equal: 1 }, 
+            FDN_Volumoso: { min: 18 },
+            Total_Suplemento: { max: 0.015 },
             Total_Volumoso: { min: 0.01 }, 
             Total_Concentrado: { min: 0.01 } 
         },
         variables: {}
     };
 
-    // 3. Povoar as variáveis do modelo com os ingredientes
+    if (strictNutrients) {
+        model.constraints.PB = { min: targets.PB };
+        model.constraints.NDT = { min: targets.NDT };
+    }
+
     ingredients.forEach((ing, index) => {
         const key = `ing_${index}`;
         const valPB = getNutrientPercentage(Number(ing.PB) || 0);
         const valNDT = getNutrientPercentage(Number(ing.NDT) || 0);
-        const valFDN = getNutrientPercentage(Number(ing.FDNcp) || 0); 
-        const cost = ing.price ? Number(ing.price) : 1;
+        const valFDN = getNutrientPercentage(Number(ing.FDNcp) || 0);
+        const cost = Number(ing.price) > 0 ? Number(ing.price) : 0.001;
 
         model.variables[key] = {
-            weight: 1,
-            PB: valPB,
-            NDT: valNDT,
-            cost: cost,
-            _originalIndex: index
+            weight: 1, PB: valPB, NDT: valNDT, cost: cost, _originalIndex: index
         };
 
-        // Aplicação de Tags para as Regras Específicas
         if (ing.category === 'VOLUMOSO') {
-            model.variables[key].FDN_Volumoso = valFDN; // Se é volumoso, contribui para a regra de "FDN vinda do volumoso"
-            model.variables[key].Total_Volumoso = 1; // Contribui para o total de volumosos
-        } 
-        else if (ing.category === 'ENERGETICO' || ing.category === 'PROTEICO') {
-            model.variables[key].Total_Concentrado = 1; // Contribui para o total de concentrados
-        }
-        else if (ing.category === 'SUPLEMENTO') {
-            model.variables[key].Total_Suplemento = 1; // Contribui para o limite de suplementos
+            model.variables[key].FDN_Volumoso = valFDN;
+            model.variables[key].Total_Volumoso = 1;
+        } else if (ing.category === 'CONCENTRADO' || ing.category === 'ENERGETICO' || ing.category === 'PROTEICO') {
+            model.variables[key].Total_Concentrado = 1;
+        } else if (ing.category === 'SUPLEMENTO') {
+            model.variables[key].Total_Suplemento = 1;
         }
 
-        // Restrições individuais (Min/Max definido pelo usuário)
-        const userMin = Number(ing.min) || 0;
-        const userMax = Number(ing.max) || 100;
-        model.constraints[key] = { min: userMin, max: userMax };
-        model.variables[key][key] = 1;
+        // Limites do Usuário (SEMPRE APLICADOS AO MODELO)
+        let userMin = 0;
+        if (ing.min !== undefined && ing.min !== null && ing.min !== '') userMin = Number(ing.min) / 100;
+
+        let userMax = 1;
+        if (ing.max !== undefined && ing.max !== null && ing.max !== '') userMax = Number(ing.max) / 100;
+
+        const minName = `limit_min_${key}`;
+        const maxName = `limit_max_${key}`;
+        model.constraints[minName] = { min: userMin };
+        model.constraints[maxName] = { max: userMax };
+        model.variables[key][minName] = 1;
+        model.variables[key][maxName] = 1;
     });
 
-    // 4. Execução
-    const solution = solver.Solve(model);
+    return model;
+}
 
-    // 5. Pós-processamento e Cálculo de Totais
+/**
+ * Processa a solução do solver, calculando balanço e fornecimento.
+ */
+function processSolution(solution, ingredients, requirements, targets, targetCMS_g, status, isFeasible) {
     let supply = { 'Consumo Estimado (g)': 0, 'Proteína Bruta (g)': 0, 'NDT (g)': 0, 'Cálcio (g)': 0, 'Fósforo (g)': 0, 'Custo Total': 0 };
-
+    
     const optimizedIngredients = ingredients.map((ing, index) => {
         const key = `ing_${index}`;
-        let calculatedPercent = (solution[key] || 0) * 100; // O solver retorna valores de 0 a 1 (ex: 0.354). Multiplicamos por 100 para ter %.
-        return { ...ing, percent: round(calculatedPercent, 2) };
+        let rawResult = solution[key] || 0;
+        if (rawResult < 0) rawResult = 0;
+        return { ...ing, percent: round(rawResult * 100, 2) };
     });
 
     optimizedIngredients.forEach(ing => {
@@ -124,7 +109,10 @@ function calculateDiet(animalInput, ingredients) {
         supply['Custo Total'] += (amountInDiet_g / 1000) * price;
     });
 
-    // 6. Montagem do Balanço Final
+    // CORREÇÃO: Recupera os valores alvo de PB e NDT dentro desta função para usar no balanço
+    const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
+    const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
+
     const getVal = (k) => requirements[k] ? requirements[k].valor_requerido : 0;
     const reqCa = getVal('Cálcio Mantença') + getVal('Cálcio Ganho');
     const reqP = getVal('Fósforo Mantença') + getVal('Fósforo Ganho');
@@ -135,18 +123,67 @@ function calculateDiet(animalInput, ingredients) {
         'Cálcio': { unit: 'g/d', required: round(reqCa, 2), supplied: round(supply['Cálcio (g)'], 2), diff: round(supply['Cálcio (g)'] - reqCa, 2) },
         'Fósforo': { unit: 'g/d', required: round(reqP, 2), supplied: round(supply['Fósforo (g)'], 2), diff: round(supply['Fósforo (g)'] - reqP, 2) }
     };
-
-    // Se feasible é false, o solver retorna a melhor aproximação possível (bounded)
-    const isFeasible = solution.feasible;
-    const statusMessage = isFeasible ? "Solução Encontrada" : "Não foi possível atingir todas as metas com os ingredientes/restrições fornecidos.";
+    
+    const totalPercent = optimizedIngredients.reduce((sum, ing) => sum + ing.percent, 0);
+    if (totalPercent > 100.1) {
+        // Se passou de 100%, normalizamos tudo proporcionalmente
+        optimizedIngredients.forEach(ing => {
+            ing.percent = round((ing.percent / totalPercent) * 100, 2);
+        });
+    }
 
     return {
-        status: statusMessage,
+        status: status,
         isFeasible: isFeasible,
         optimizedIngredients: optimizedIngredients,
-        animalRequirements: requirements,
         dietSupply: supply,
-        dietBalance: balance
+        dietBalance: balance,
+        cost: supply['Custo Total']
+    };
+}
+
+
+function calculateDiet(animalInput, ingredients) {
+    const requirements = calculateAllRequirements(animalInput);
+    const targetCMS_g = getRequirementValue(requirements, ['Consumo de matéria seca 1', 'Consumo de matéria seca']);
+    const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
+    const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
+    
+    const targets = {
+        PB: (targetPB_g / targetCMS_g) * 100,
+        NDT: (targetNDT_g / targetCMS_g) * 100
+    };
+
+    // --- 1. TENTATIVA IDEAL (Com Limites Nutricionais) ---
+    let modelIdeal = buildModel(ingredients, targets, true);
+    let solutionIdeal = solver.Solve(modelIdeal);
+
+    if (solutionIdeal.feasible) {
+        // Se a solução ideal funcionar, retornamos apenas ela.
+        return {
+            hasConflict: false,
+            result: processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, "Solução Ótima Encontrada", true),
+            animalRequirements: requirements
+        };
+    }
+
+    // --- 2. TENTATIVA REALISTA (Sem Limites Nutricionais, Respeitando SÓ Limites do Usuário) ---
+    let modelRealistic = buildModel(ingredients, targets, false);
+    let solutionRealistic = solver.Solve(modelRealistic);
+
+    // Se a Tentativa Ideal falhar, retornamos as duas opções para o frontend decidir.
+    const resultIdeal = processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, 
+        "Alerta: Inviável! Viola limites do usuário para atingir nutrição.", false);
+    
+    const resultRealistic = processSolution(solutionRealistic, ingredients, requirements, targets, targetCMS_g, 
+        "Resultado: Respeita limites, mas não atende nutrição.", solutionRealistic.feasible);
+
+
+    return {
+        hasConflict: true, // Avisa o frontend para abrir a modal
+        resultIdeal: resultIdeal,
+        resultRealistic: resultRealistic,
+        animalRequirements: requirements
     };
 }
 

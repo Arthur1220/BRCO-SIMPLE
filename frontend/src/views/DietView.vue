@@ -94,6 +94,13 @@
         <LoadingSpinner v-if="store.isLoading" />
     </Transition>
 
+    <ConflictModal
+        :isVisible="store.showConflictModal"
+        :resultIdeal="store.conflictData.resultIdeal"
+        :resultRealistic="store.conflictData.resultRealistic"
+        @select-option="store.finalizeCalculation"
+    />
+
   </div>
 </template>
 
@@ -109,6 +116,7 @@ import FoodSelector from '@/components/diet/FoodSelector.vue';
 import DietBalancer from '@/components/diet/DietBalancer.vue';
 import DietResultsTable from '@/components/diet/DietResultsTable.vue';
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import ConflictModal from '@/components/diet/ConflictModal.vue';
 
 const store = useDietStore();
 

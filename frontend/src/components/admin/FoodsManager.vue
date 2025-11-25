@@ -61,7 +61,7 @@
               <label>Categoria</label>
               <select v-model="form.category" required>
                 <option value="VOLUMOSO">Volumoso</option>
-                <option value="ENERGETICO">Concentrado</option>
+                <option value="CONCENTRADO">Concentrado</option>
                 <option value="SUPLEMENTO">Suplemento</option>
               </select>
             </div>
@@ -202,8 +202,7 @@ th { background-color: #f8f9fa; font-weight: 600; font-size: 0.9rem; color: var(
   width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;
 }
 .category-badge.volumoso { background-color: #27ae60; }
-.category-badge.energetico { background-color: #f39c12; }
-.category-badge.proteico { background-color: #e74c3c; }
+.category-badge.concentrado { background-color: #f39c12; }
 .category-badge.suplemento { background-color: #8e44ad; }
 
 /* Modal Styles */
