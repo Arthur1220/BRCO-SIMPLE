@@ -58,6 +58,9 @@ const navigate = (stepId) => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Container & Layout Principal
+   ========================================= */
 .stepper {
   width: 100%;
   padding: 1rem 0 2rem;
@@ -74,19 +77,27 @@ const navigate = (stepId) => {
   position: relative;
 }
 
+/* =========================================
+   2. Item do Passo (Wrapper)
+   ========================================= */
 .step-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  flex: 1;
+  position: relative; /* Necessário para posicionar a linha absoluta */
+  flex: 1; /* Distribui o espaço igualmente */
   cursor: default;
-  z-index: 2;
+  z-index: 2; /* Garante que o círculo fique acima da linha conectora */
 }
 
-.step-item.clickable { cursor: pointer; }
+.step-item.clickable {
+  cursor: pointer;
+}
 
-/* Círculo do Passo */
+/* =========================================
+   3. Elementos Visuais Base
+   ========================================= */
+/* Círculo do Número/Ícone */
 .step-circle {
   width: 32px;
   height: 32px;
@@ -103,7 +114,7 @@ const navigate = (stepId) => {
   transition: all 0.3s ease;
 }
 
-/* Texto do Passo */
+/* Rótulo de Texto */
 .step-label {
   font-size: 0.85rem;
   color: var(--grey);
@@ -111,41 +122,67 @@ const navigate = (stepId) => {
   transition: color 0.3s ease;
 }
 
-/* Estados Ativos e Completos */
+/* Linha Conectora (Background) */
+.step-line {
+  position: absolute;
+  top: 16px; /* Metade da altura do círculo (32px / 2) */
+  left: 50%; /* Começa no meio do item atual */
+  width: 100%; /* Estende até o meio do próximo item */
+  height: 2px;
+  background-color: var(--grey-light);
+  z-index: -1; /* Fica atrás do círculo */
+}
+
+/* =========================================
+   4. Estados: ATIVO (Current)
+   ========================================= */
 .step-item.active .step-circle {
   border-color: var(--orange);
   background-color: var(--orange);
   color: white;
-  transform: scale(1.1);
-  box-shadow: 0 0 0 4px rgba(245, 130, 32, 0.2);
+  transform: scale(1.1); /* Leve aumento para destaque */
+  box-shadow: 0 0 0 4px rgba(245, 130, 32, 0.2); /* Efeito de "glow" */
 }
-.step-item.active .step-label { color: var(--orange); font-weight: bold; }
 
+.step-item.active .step-label {
+  color: var(--orange);
+  font-weight: bold;
+}
+
+/* =========================================
+   5. Estados: COMPLETO (Finished)
+   ========================================= */
 .step-item.completed .step-circle {
   background-color: #27ae60; /* Verde */
   border-color: #27ae60;
   color: white;
 }
-.step-item.completed .step-label { color: #27ae60; }
 
-/* Linha Conectora */
-.step-line {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  width: 100%;
-  height: 2px;
-  background-color: var(--grey-light);
-  z-index: -1;
+.step-item.completed .step-label {
+  color: #27ae60;
 }
 
+/* A linha fica verde se o passo atual já foi completado */
 .step-item.completed .step-line {
-  background-color: #27ae60; /* Linha fica verde se o passo foi completado */
+  background-color: #27ae60;
 }
 
-/* Ajustes Mobile */
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 600px) {
-  .step-label { display: none; } /* Esconde texto no mobile para caber */
-  .step-item.active .step-label { display: block; position: absolute; top: 40px; width: 100px; text-align: center; }
+  /* Esconde os textos dos passos não ativos para economizar espaço */
+  .step-label {
+    display: none;
+  }
+
+  /* Mostra apenas o texto do passo ATIVO */
+  .step-item.active .step-label {
+    display: block;
+    position: absolute;
+    top: 40px; /* Posiciona abaixo do círculo */
+    width: 100px; /* Largura fixa para centralizar texto longo */
+    text-align: center;
+  }
 }
 </style>

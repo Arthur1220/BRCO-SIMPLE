@@ -56,6 +56,9 @@ const redirectToPage = (url) => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Layout & Estrutura da Página
+   ========================================= */
 .equipe-page {
   background-color: var(--white);
   color: var(--black);
@@ -67,6 +70,9 @@ const redirectToPage = (url) => {
   padding-bottom: 5rem;
 }
 
+/* =========================================
+   2. Tipografia & Cabeçalho
+   ========================================= */
 h1 {
   color: var(--orange);
   font-size: 2.8rem;
@@ -77,37 +83,50 @@ h1 {
 .intro-text {
   font-size: 1.2rem;
   max-width: 750px;
-  margin: 0 auto 4rem;
+  margin: 0 auto 4rem; /* Centraliza o bloco de texto */
   color: var(--black-light);
   line-height: 1.6;
 }
 
+/* =========================================
+   3. Grid de Membros
+   ========================================= */
 .team-grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Permite que os cards quebrem linha */
   justify-content: center;
   gap: 2rem;
 }
 
+/* =========================================
+   4. Componente Card (Membro)
+   ========================================= */
 .team-card {
   width: 300px;
   background-color: var(--white);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* Borda superior colorida */
   border-top: 4px solid var(--orange);
+
+  /* Layout Flex para empurrar o rodapé para baixo */
   display: flex;
   flex-direction: column;
+
+  /* Transição suave para o efeito de hover */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Efeito de Elevação ao passar o mouse */
 .team-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .highlight-card {
-    border-top-color: var(--orange);
+  border-top-color: var(--orange);
 }
 
 .card-content {
@@ -117,13 +136,21 @@ h1 {
   flex-grow: 1;
 }
 
+/* =========================================
+   5. Imagem de Perfil (Avatar)
+   ========================================= */
 .profile-image {
   width: 120px;
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
+
+  /* Técnica de Margem Negativa:
+     Faz a imagem subir 60px para fora do container,
+     ficando metade dentro e metade fora do card */
   margin: -60px auto 1rem;
-  border: 6px solid var(--white);
+
+  border: 6px solid var(--white); /* Cria um contorno branco ao redor da foto */
   background-color: var(--white);
   position: relative;
 }
@@ -131,9 +158,12 @@ h1 {
 .profile-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Garante que a foto preencha o círculo sem distorcer */
 }
 
+/* =========================================
+   6. Informações do Membro
+   ========================================= */
 .member-info {
   display: flex;
   flex-direction: column;
@@ -151,9 +181,12 @@ h1 {
   color: var(--black-light);
   line-height: 1.5;
   margin-bottom: 1rem;
-  flex-grow: 1;
+  flex-grow: 1; /* Empurra o rodapé para o final do card */
 }
 
+/* =========================================
+   7. Rodapé do Card & Links Sociais
+   ========================================= */
 .card-footer {
   margin-top: auto;
 }
@@ -171,17 +204,21 @@ h1 {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.team-card:hover .social-link {
-    background-color: var(--orange);
-    color: var(--white);
-}
-
-.highlight-card:hover .social-link {
-    background-color: var(--orange);
-}
-
 .link-icon {
   width: 18px;
   height: 18px;
+}
+
+/* Interação Avançada:
+   Quando passar o mouse no CARD (.team-card:hover),
+   o link social muda de cor automaticamente.
+*/
+.team-card:hover .social-link {
+  background-color: var(--orange);
+  color: var(--white);
+}
+
+.highlight-card:hover .social-link {
+  background-color: var(--orange);
 }
 </style>

@@ -77,8 +77,7 @@ import { saveAs } from 'file-saver';
 
 const store = useCalculationStore();
 
-// --- LÓGICA DE EXPANSÃO ---
-const expandedGroups = reactive({}); // Objeto para rastrear quais grupos estão abertos
+const expandedGroups = reactive({});
 const allExpanded = ref(false);
 
 const toggleGroup = (theme) => {
@@ -92,8 +91,6 @@ const toggleAll = () => {
     });
 };
 
-// --- LÓGICA DE DADOS ---
-
 const getThemeGroup = (key) => {
   const lowerKey = key.toLowerCase();
   if (lowerKey.includes('consumo')) return 'Consumo';
@@ -105,7 +102,6 @@ const getThemeGroup = (key) => {
   return 'Outros Parâmetros';
 };
 
-// Helper para encontrar o valor principal de um grupo para exibir no cabeçalho
 const getMainValueForGroup = (theme, items) => {
     let mainKey = null;
     if (theme === 'Energia') mainKey = 'Nutrientes digestíveis totais1';
@@ -142,7 +138,7 @@ const groupedResults = computed(() => {
         return {
             theme: theme,
             items: items,
-            mainValue: getMainValueForGroup(theme, items) // Adiciona o valor principal aqui
+            mainValue: getMainValueForGroup(theme, items)
         };
     })
     .filter(group => group.items.length > 0);
@@ -153,15 +149,11 @@ const hasMaxValue = computed(() => {
   return Object.values(store.results).some(item => typeof item.valor_maximo !== 'undefined');
 });
 
-// Inicializa os grupos como fechados (ou abertos se preferir)
-// Watch para abrir automaticamente quando os resultados mudarem
 import { watch } from 'vue';
 watch(() => store.results, () => {
     groupedResults.value.forEach(g => expandedGroups[g.theme] = false); // Começa fechado
-    // Ou true para começar aberto
 });
 
-// --- HIGHLIGHTS (Mantido igual) ---
 const highlightedResults = computed(() => {
   if (!store.results) return [];
   const highlights = [];
@@ -199,55 +191,263 @@ const exportToCsv = async () => {
 </script>
 
 <style scoped>
-.results-wrapper { margin-top: 2rem; padding: 2rem; background: linear-gradient(180deg, var(--white) 0%, #fdfdfd 100%); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); border: 1px solid var(--grey-light); }
-.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--grey-light); flex-wrap: wrap; gap: 1rem; }
-h2 { color: var(--orange); margin: 0; }
-.highlight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-.highlight-card { background-color: var(--white); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--grey-light); text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-.highlight-label { display: block; font-size: 0.9rem; color: var(--black-light); margin-bottom: 0.5rem; }
-.highlight-value { display: block; font-size: 2.5rem; font-weight: 700; color: var(--black); line-height: 1; }
-.highlight-value small { font-size: 1rem; font-weight: 500; color: var(--black-light); margin-left: 0.5rem; }
-
-/* --- ESTILOS DO ACORDEÃO --- */
-.accordion-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.details-title { font-size: 1.2rem; color: var(--black); margin: 0; font-weight: 600; }
-.btn-toggle-all { background: none; border: none; color: var(--blue); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-.btn-toggle-all:hover { text-decoration: underline; }
-
-.accordion-container { border: 1px solid var(--grey-light); border-radius: 8px; overflow: hidden; background: white; }
-.accordion-item { border-bottom: 1px solid var(--grey-light); }
-.accordion-item:last-child { border-bottom: none; }
-
-.accordion-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 1.5rem; cursor: pointer; background-color: #f8f9fa;
-    transition: background-color 0.2s; user-select: none;
+/* =========================================
+   1. Layout Principal & Cabeçalho
+   ========================================= */
+.results-wrapper {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(180deg, var(--white) 0%, #fdfdfd 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--grey-light);
 }
-.accordion-header:hover { background-color: #f1f3f5; }
-.accordion-header.active { background-color: #e9ecef; border-bottom: 1px solid var(--grey-light); }
 
-.header-left { display: flex; align-items: center; gap: 0.8rem; }
-.toggle-icon svg { width: 18px; height: 18px; color: var(--grey); transition: transform 0.2s; }
-.group-title { font-weight: 700; color: var(--black); font-size: 1rem; }
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--grey-light);
+  flex-wrap: wrap; /* Garante que os botões caiam pra linha de baixo no mobile */
+  gap: 1rem;
+}
 
-.header-summary { font-size: 0.9rem; color: var(--black-light); display: flex; align-items: center; gap: 0.5rem; }
-.summary-label { font-weight: 500; }
-.summary-value { font-weight: 700; color: var(--black); }
+h2 {
+  color: var(--orange);
+  margin: 0;
+}
 
-.accordion-content { background-color: white; animation: slideDown 0.3s ease-out; }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+/* =========================================
+   2. Cards de Destaque (Highlights)
+   ========================================= */
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
 
-/* Tabela dentro do acordeão */
-.accordion-content table { width: 100%; border-collapse: collapse; }
-.accordion-content th, .accordion-content td { padding: 0.8rem 1.5rem; text-align: left; border-bottom: 1px solid #f0f0f0; }
-.accordion-content th { background-color: white; font-size: 0.85rem; color: var(--black-light); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f0f0f0; }
-.accordion-content tr:last-child td { border-bottom: none; }
+.highlight-card {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--grey-light);
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
 
-.center { text-align: center; }
-.data-value { font-weight: 500; }
-.export-buttons { display: flex; gap: 1rem; }
-.btn-export { padding: 0.6rem 1.2rem; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-.btn-export:hover { transform: translateY(-2px); }
-.btn-export.pdf { background-color: #e74c3c; }
-.btn-export.csv { background-color: #27ae60; }
+.highlight-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--black-light);
+  margin-bottom: 0.5rem;
+}
+
+.highlight-value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--black);
+  line-height: 1;
+}
+
+.highlight-value small {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--black-light);
+  margin-left: 0.5rem;
+}
+
+/* =========================================
+   3. Componente Accordion (Lista Expansível)
+   ========================================= */
+/* Controles Superiores (Título + Botão Expandir) */
+.accordion-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.details-title {
+  font-size: 1.2rem;
+  color: var(--black);
+  margin: 0;
+  font-weight: 600;
+}
+
+.btn-toggle-all {
+  background: none;
+  border: none;
+  color: var(--blue);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.btn-toggle-all:hover {
+  text-decoration: underline;
+}
+
+/* Estrutura do Accordion */
+.accordion-container {
+  border: 1px solid var(--grey-light);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--grey-light);
+}
+
+.accordion-item:last-child {
+  border-bottom: none;
+}
+
+/* Cabeçalho do Item (Clicável) */
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  transition: background-color 0.2s;
+  user-select: none; /* Evita seleção de texto ao clicar rápido */
+}
+
+.accordion-header:hover {
+  background-color: #f1f3f5;
+}
+
+.accordion-header.active {
+  background-color: #e9ecef;
+  border-bottom: 1px solid var(--grey-light);
+}
+
+/* Conteúdo Esquerdo do Header */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.toggle-icon svg {
+  width: 18px;
+  height: 18px;
+  color: var(--grey);
+  transition: transform 0.2s;
+}
+
+.group-title {
+  font-weight: 700;
+  color: var(--black);
+  font-size: 1rem;
+}
+
+/* Resumo Direito do Header */
+.header-summary {
+  font-size: 0.9rem;
+  color: var(--black-light);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.summary-label {
+  font-weight: 500;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* Área de Conteúdo Expansível */
+.accordion-content {
+  background-color: white;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   4. Tabela Interna (Dentro do Accordion)
+   ========================================= */
+.accordion-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.accordion-content th,
+.accordion-content td {
+  padding: 0.8rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.accordion-content th {
+  background-color: white;
+  font-size: 0.85rem;
+  color: var(--black-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.accordion-content tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================
+   5. Botões de Exportação & Utilitários
+   ========================================= */
+.export-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-export {
+  padding: 0.6rem 1.2rem;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn-export:hover {
+  transform: translateY(-2px); /* Leve subida ao passar o mouse */
+}
+
+/* Variantes de Cor */
+.btn-export.pdf {
+  background-color: #e74c3c;
+}
+
+.btn-export.csv {
+  background-color: #27ae60;
+}
+
+/* Utilitários */
+.center {
+  text-align: center;
+}
+
+.data-value {
+  font-weight: 500;
+}
 </style>

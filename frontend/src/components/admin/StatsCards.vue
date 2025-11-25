@@ -42,23 +42,91 @@ const formatTypeName = (typeName) => {
 };
 
 const getIconClass = (typeName) => {
-    if (typeName.includes('ndt')) return 'ndt'; // Azul
-    if (typeName.includes('diet')) return 'diet'; // Verde
-    return 'req'; // Laranja
+    if (typeName.includes('ndt')) return 'ndt';
+    if (typeName.includes('diet')) return 'diet';
+    return 'req';
 };
 </script>
 
 <style scoped>
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
-.stat-card { background-color: var(--white); padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid var(--grey-light); box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; }
-.stat-value { font-size: 2.5rem; font-weight: 700; color: var(--black); margin: 0.5rem 0; }
-.stat-label { color: var(--black-light); font-weight: 500; font-size: 0.9rem; }
-.icon-wrapper { height: 40px; width: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
-.icon-wrapper svg { height: 28px; width: 28px; color: white; }
+/* =========================================
+   1. Grid Layout (Container)
+   ========================================= */
+.stats-grid {
+  display: grid;
+  /* Cria colunas responsivas que se ajustam automaticamente */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
 
-/* CORES DOS ÍCONES */
-.icon-wrapper.total { background-color: var(--black-light); }
-.icon-wrapper.req { background-color: var(--orange); } /* Laranja para Exigências */
-.icon-wrapper.ndt { background-color: #3498db; } /* Azul para NDT */
-.icon-wrapper.diet { background-color: #27ae60; } /* Verde para Dieta */
+/* =========================================
+   2. Componente Card (Stat Card)
+   ========================================= */
+.stat-card {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--grey-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); /* Sombra suave */
+
+  /* Alinhamento interno */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* =========================================
+   3. Tipografia do Card
+   ========================================= */
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--black);
+  margin: 0.5rem 0;
+}
+
+.stat-label {
+  color: var(--black-light);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* =========================================
+   4. Iconografia
+   ========================================= */
+/* Container do Ícone */
+.icon-wrapper {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Estilo do SVG dentro do wrapper */
+.icon-wrapper svg {
+  height: 28px;
+  width: 28px;
+  color: white;
+}
+
+/* Variações de Cores dos Ícones */
+.icon-wrapper.total {
+  background-color: var(--black-light);
+}
+
+.icon-wrapper.req {
+  background-color: var(--orange); /* Laranja para Exigências */
+}
+
+.icon-wrapper.ndt {
+  background-color: #3498db; /* Azul para NDT */
+}
+
+.icon-wrapper.diet {
+  background-color: #27ae60; /* Verde para Dieta */
+}
 </style>

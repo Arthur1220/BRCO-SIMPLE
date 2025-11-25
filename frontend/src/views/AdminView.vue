@@ -54,7 +54,7 @@ const fetchData = async (period) => {
     const [statsRes, logsRes, chartRes] = await Promise.all([
       getAdminStats(period),
       getAdminLogs(period),
-      getAdminChartData(period) // Nova chamada
+      getAdminChartData(period)
     ]);
     stats.value = statsRes;
     logs.value = logsRes;
@@ -97,13 +97,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Layout Principal
+   ========================================= */
 .admin-view {
-  /* Aumenta o padding lateral para dar respiro */
-  padding: 2rem 5%; /* 5% de margem nas laterais */
-  max-width: 1400px; /* Permite que o painel fique mais largo em telas grandes */
+  /* Aumenta o padding lateral para dar respiro em telas grandes */
+  padding: 2rem 5%;
+  max-width: 1400px; /* Painel mais largo para tabelas/dados */
   margin: 0 auto;
 }
 
+/* =========================================
+   2. Cabeçalho Administrativo
+   ========================================= */
 .admin-header {
   display: flex;
   justify-content: space-between;
@@ -112,9 +118,22 @@ onMounted(() => {
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--grey-light);
 }
-.admin-header h1 { color: var(--orange); font-size: 2.5rem; margin: 0; }
-.admin-header p { font-size: 1.2rem; color: var(--black-light); margin: 0; }
 
+.admin-header h1 {
+  color: var(--orange);
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.admin-header p {
+  font-size: 1.2rem;
+  color: var(--black-light);
+  margin: 0;
+}
+
+/* =========================================
+   3. Ações: Botão de Logout
+   ========================================= */
 .logout-button {
   padding: 0.7rem 1.5rem;
   border: 1px solid var(--grey);
@@ -125,17 +144,22 @@ onMounted(() => {
   font-weight: bold;
   transition: all 0.3s ease;
 }
+
 .logout-button:hover {
   border-color: var(--red-error);
   background-color: var(--red-error);
   color: white;
 }
 
+/* =========================================
+   4. Ações: Filtros e Abas
+   ========================================= */
 .filter-controls {
   display: flex;
   gap: 1rem;
   margin-bottom: 2.5rem;
 }
+
 .filter-controls button {
   padding: 0.6rem 1.2rem;
   border: 1px solid var(--grey);
@@ -146,27 +170,35 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
+/* Estado Ativo (Filtro selecionado) */
 .filter-controls button.active {
   background-color: var(--orange);
   color: var(--white);
   border-color: var(--orange);
   font-weight: bold;
 }
+
+/* Hover (Apenas em botões não ativos) */
 .filter-controls button:hover:not(.active) {
   border-color: var(--black);
   color: var(--black);
 }
 
+/* =========================================
+   5. Estados de Interface (Loading/Erro)
+   ========================================= */
 .state-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
+  min-height: 300px; /* Garante altura mínima para centralizar o spinner/erro */
   flex-direction: column;
 }
+
 .error-box {
   color: var(--red-error);
-  background-color: #fdeaea;
+  background-color: #fdeaea; /* Fundo vermelho bem claro */
   border: 1px solid #f9c5c5;
   padding: 2rem;
   border-radius: 8px;

@@ -47,28 +47,31 @@ function closeMenu() {
   isMenuOpen.value = false;
 }
 
-// Fecha o menu automaticamente ao navegar para uma nova página
 watch(() => route.path, () => {
   isMenuOpen.value = false;
 });
 </script>
 
 <style scoped>
-/* --- Estrutura e Estilos Base --- */
+/* =========================================
+   1. Estrutura Base do Header (Sticky)
+   ========================================= */
 .site-header {
   position: sticky;
   top: 0;
   left: 0;
   width: 100%;
+  height: 80px;
   padding: 1rem 2rem;
   z-index: 1000;
-  /* Fundo do header com transparência e desfoque */
+  border-bottom: 1px solid var(--grey-light);
+
+  /* Efeito de vidro (Glassmorphism) */
   background-color: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--grey-light);
-  height: 80px;
+  -webkit-backdrop-filter: blur(10px); /* Suporte Safari */
 }
+
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -78,42 +81,190 @@ watch(() => route.path, () => {
   margin: 0 auto;
   height: 100%;
 }
-.logo { text-decoration: none; color: var(--black); z-index: 1001; }
-.logo h3 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
-.logo h3 strong { color: var(--orange); }
-.menu-toggle { display: none; background: none; border: none; color: var(--black); cursor: pointer; z-index: 1001; padding: 0.5rem; }
 
-/* --- Navegação Desktop (a partir de 992px) --- */
-@media (min-width: 992px) {
-  .main-nav { position: absolute; left: 50%; transform: translateX(-50%); }
-  .nav-links { list-style: none; display: flex; gap: 2.5rem; margin: 0; padding: 0; align-items: center; }
-  .nav-links li a, .dropdown-toggle { position: relative; text-decoration: none; color: var(--black-light); font-size: 1rem; font-weight: 500; transition: color 0.3s ease; padding: 0.5rem 0; cursor: default; }
-  .nav-links li a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 50%; transform: translateX(-50%); background-color: var(--orange); transition: width 0.3s ease-in-out; }
-  .nav-links li a:hover, .nav-links li a.router-link-exact-active { color: var(--black); }
-  .nav-links li a:hover::after, .nav-links li a.router-link-exact-active::after { width: 100%; }
-
-  .nav-item-dropdown { position: relative; }
-  .dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background-color: var(--white); border-radius: var(--border-radius); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); list-style: none; padding: 0.5rem; margin-top: 1rem; min-width: 220px; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1100; }
-  .nav-item-dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-  .dropdown-menu li { width: 100%; }
-  .dropdown-menu li a { display: block; padding: 0.8rem 1rem; border-radius: 6px; white-space: nowrap; cursor: pointer; }
-  .dropdown-menu li a:hover { background-color: var(--grey-light); }
-  .nav-overlay { display: none; }
+/* Logo */
+.logo {
+  text-decoration: none;
+  color: var(--black);
+  z-index: 1001; /* Garante que o logo fique acima do menu mobile se necessário */
 }
 
-/* --- Navegação Mobile (Até 991px) --- */
+.logo h3 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: -1px;
+}
+
+.logo h3 strong {
+  color: var(--orange);
+}
+
+/* Botão Toggle (Hambúrguer) - Invisível por padrão no Desktop */
+.menu-toggle {
+  display: none; /* Só aparece no media query mobile */
+  background: none;
+  border: none;
+  color: var(--black);
+  cursor: pointer;
+  z-index: 1001;
+  padding: 0.5rem;
+}
+
+/* =========================================
+   2. Navegação Desktop (Min-width: 992px)
+   ========================================= */
+@media (min-width: 992px) {
+  .main-nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Centraliza o menu na tela */
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+  }
+
+  /* Links Principais */
+  .nav-links li a,
+  .dropdown-toggle {
+    position: relative;
+    text-decoration: none;
+    color: var(--black-light);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 0.5rem 0;
+    cursor: default;
+  }
+
+  /* Efeito de Sublinhado (Underline) Animado */
+  .nav-links li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--orange);
+    transition: width 0.3s ease-in-out;
+  }
+
+  /* Hover States Desktop */
+  .nav-links li a:hover,
+  .nav-links li a.router-link-exact-active {
+    color: var(--black);
+  }
+
+  .nav-links li a:hover::after,
+  .nav-links li a.router-link-exact-active::after {
+    width: 100%;
+  }
+
+  /* --- Dropdown Desktop --- */
+  .nav-item-dropdown {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px); /* Começa um pouco abaixo */
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    min-width: 220px;
+
+    /* Estado inicial: Invisível */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1100;
+  }
+
+  /* Mostrar Dropdown ao passar o mouse */
+  .nav-item-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0); /* Sobe suavemente */
+  }
+
+  .dropdown-menu li {
+    width: 100%;
+  }
+
+  .dropdown-menu li a {
+    display: block;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .dropdown-menu li a:hover {
+    background-color: var(--grey-light);
+  }
+
+  .nav-overlay {
+    display: none; /* Não usada no desktop */
+  }
+}
+
+/* =========================================
+   3. Navegação Mobile (Max-width: 991px)
+   ========================================= */
 @media (max-width: 991px) {
-  .menu-toggle { display: block; }
-  .icon-wrapper { width: 28px; height: 24px; position: relative; }
-  .bar { position: absolute; left: 0; width: 100%; height: 3px; border-radius: 2px; background-color: var(--black); transition: all 0.3s ease-in-out; }
-  .bar-top { top: 0; }
+  /* Exibe o botão hambúrguer */
+  .menu-toggle {
+    display: block;
+  }
+
+  /* --- Animação do Ícone Hambúrguer para X --- */
+  .icon-wrapper {
+    width: 28px;
+    height: 24px;
+    position: relative;
+  }
+
+  .bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--black);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .bar-top    { top: 0; }
   .bar-middle { top: 50%; transform: translateY(-50%); }
   .bar-bottom { bottom: 0; }
-  .bar-top.is-open { top: 50%; transform: translate(0, -50%) rotate(45deg); }
-  .bar-middle.is-open { opacity: 0; }
-  .bar-bottom.is-open { bottom: 50%; transform: translate(0, 50%) rotate(-45deg); }
 
-  /* O fundo semi-transparente que cobre a página */
+  /* Estado Aberto (Transforma em X) */
+  .bar-top.is-open {
+    top: 50%;
+    transform: translate(0, -50%) rotate(45deg);
+  }
+
+  .bar-middle.is-open {
+    opacity: 0; /* Desaparece a barra do meio */
+  }
+
+  .bar-bottom.is-open {
+    bottom: 50%;
+    transform: translate(0, 50%) rotate(-45deg);
+  }
+
+  /* --- Overlay (Fundo Escuro) --- */
   .nav-overlay {
     position: fixed;
     top: 0;
@@ -126,52 +277,59 @@ watch(() => route.path, () => {
     transition: opacity 0.4s ease;
     z-index: 998;
   }
+
   .main-nav.is-open + .nav-overlay {
     opacity: 1;
     visibility: visible;
   }
 
-  /* O painel de links que desliza */
-.main-nav {
+  /* --- Menu Lateral (Drawer) --- */
+  .main-nav {
     position: fixed;
     top: 0;
-    right: -100%; /* Começa fora da tela */
+    right: -100%; /* Começa escondido à direita */
     width: 80%;
     max-width: 320px;
     height: 100vh;
     background-color: var(--white);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
     z-index: 1100;
     padding-top: 80px;
 
-    /* --- CORREÇÃO AQUI --- */
-    visibility: hidden; /* Esconde o elemento completamente quando fechado */
-    /* Adicionamos uma transição para a visibilidade com delay ao fechar */
+    /* Transition Trick:
+       Quando fecha: Atrasa a visibilidade para depois da animação 'right'
+    */
+    visibility: hidden;
     transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.4s;
   }
 
   .main-nav.is-open {
     right: 0; /* Desliza para dentro */
 
-    /* --- CORREÇÃO AQUI --- */
-    visibility: visible; /* Torna visível imediatamente ao abrir */
-    /* Remove o delay da visibilidade ao abrir */
+    /* Quando abre: Visibilidade imediata */
+    visibility: visible;
     transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s;
   }
+
+  /* --- Links no Mobile --- */
   .nav-links {
     list-style: none;
-    padding: 100px 2rem 2rem;
+    padding: 100px 2rem 2rem; /* Espaço para não ficar em cima do X */
     margin: 0;
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Alinha os itens à esquerda */
+    align-items: flex-start;
     gap: 1rem;
     text-align: left;
   }
-  .nav-links li, .nav-item-dropdown {
+
+  .nav-links li,
+  .nav-item-dropdown {
     width: 100%;
   }
-  .nav-links li a, .dropdown-toggle {
+
+  .nav-links li a,
+  .dropdown-toggle {
     display: block;
     padding: 1rem;
     font-size: 1.2rem;
@@ -181,12 +339,14 @@ watch(() => route.path, () => {
     border-radius: var(--border-radius);
     transition: all 0.3s ease;
   }
-  .nav-links li a:hover, .nav-links li a.router-link-exact-active {
+
+  .nav-links li a:hover,
+  .nav-links li a.router-link-exact-active {
     background-color: var(--grey-light);
     color: var(--orange);
   }
 
-  /* Estilo do título 'Calculadoras' no mobile */
+  /* Ajustes do Submenu no Mobile */
   .nav-item-dropdown .dropdown-toggle {
     font-size: 1.4rem;
     color: var(--black);
@@ -195,15 +355,17 @@ watch(() => route.path, () => {
     cursor: default;
     margin-bottom: 0.5rem;
   }
+
   .dropdown-menu {
     list-style: none;
-    padding-left: 1rem; /* Indentação para submenu */
+    padding-left: 1rem; /* Indentação visual */
     margin: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
+
   .dropdown-menu li a {
     font-size: 1.1rem;
   }

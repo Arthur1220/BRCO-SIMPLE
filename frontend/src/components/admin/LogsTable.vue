@@ -69,22 +69,120 @@ const formatUserAgent = (ua) => {
 </script>
 
 <style scoped>
-.logs-wrapper { background: white; border-radius: 12px; border: 1px solid var(--grey-light); overflow: hidden; }
-.table-container { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th { background: #f9fafb; text-align: left; padding: 1rem; color: var(--black-light); font-weight: 600; border-bottom: 1px solid var(--grey-light); }
-td { padding: 0.8rem 1rem; border-bottom: 1px solid #f0f0f0; color: var(--black); }
-.truncate { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.region { color: var(--black-light); font-size: 0.8rem; }
+/* =========================================
+   1. Containers & Wrapper Principal
+   ========================================= */
+.logs-wrapper {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--grey-light);
+  overflow: hidden; /* Garante que o conteúdo respeite o border-radius */
+}
 
-.type-badge { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
-.badge-blue { background: #e3f2fd; color: #1976d2; }
-.badge-green { background: #e8f5e9; color: #2e7d32; }
-.badge-orange { background: #fff3e0; color: #f57c00; }
+/* =========================================
+   2. Tabela de Logs
+   ========================================= */
+.table-container {
+  overflow-x: auto; /* Permite scroll horizontal se necessário */
+}
 
-.pagination { display: flex; justify-content: flex-end; align-items: center; padding: 1rem; gap: 1rem; background: #fafafa; border-top: 1px solid var(--grey-light); }
-.page-btn { background: white; border: 1px solid var(--grey); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
-.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.page-btn:not(:disabled):hover { border-color: var(--orange); color: var(--orange); }
-.page-info { font-size: 0.9rem; font-weight: bold; color: var(--black-light); }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th {
+  background: #f9fafb;
+  text-align: left;
+  padding: 1rem;
+  color: var(--black-light);
+  font-weight: 600;
+  border-bottom: 1px solid var(--grey-light);
+}
+
+td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: var(--black);
+}
+
+/* =========================================
+   3. Utilitários de Texto (Células)
+   ========================================= */
+.truncate {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Adiciona '...' em textos longos */
+}
+
+.region {
+  color: var(--black-light);
+  font-size: 0.8rem;
+}
+
+/* =========================================
+   4. Badges (Tipos de Log)
+   ========================================= */
+.type-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Variações de Cores */
+.badge-blue {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge-green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-orange {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+/* =========================================
+   5. Paginação
+   ========================================= */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+  background: #fafafa;
+  border-top: 1px solid var(--grey-light);
+}
+
+.page-info {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--black-light);
+}
+
+.page-btn {
+  background: white;
+  border: 1px solid var(--grey);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s; /* Suaviza o hover */
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-btn:not(:disabled):hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
 </style>

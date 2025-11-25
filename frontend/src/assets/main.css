@@ -35,7 +35,7 @@
 }
 
 body, html {
-  overflow-x: hidden; /* Corta qualquer coisa que tente ultrapassar a largura da tela */
+  overflow-x: hidden;
   width: 100%;
   position: relative;
 }
@@ -142,21 +142,13 @@ button {
    6. ANIMAÇÕES DE SCROLL (Intersection Observer)
    ========================================================================== */
 
-/*
-  Estado inicial: O elemento está invisível e ligeiramente deslocado para baixo.
-  A classe .hidden-initial é adicionada pelo nosso componente AnimateOnScroll.
-*/
 .hidden-initial {
   opacity: 0;
-  transform: translateY(30px); /* Começa 30px abaixo da sua posição final */
+  transform: translateY(30px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  transition-delay: 0.2s; /* Um pequeno delay para a animação começar */
+  transition-delay: 0.2s;
 }
 
-/*
-  Estado final: Quando o elemento entra na tela, a classe .is-visible é adicionada,
-  tornando-o opaco e trazendo-o de volta à sua posição original.
-*/
 .is-visible {
   opacity: 1;
   transform: translateY(0);

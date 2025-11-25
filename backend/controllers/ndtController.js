@@ -1,10 +1,10 @@
-// backend/controllers/ndtController.js
 const { z } = require('zod');
 const { calculateNdt } = require('../services/ndtService');
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
 const geoip = require('geoip-lite');
 
+// Validação dos dados de entrada usando Zod
 const ndtInputSchema = z.object({
     PB: z.number(), 
     EE: z.number(), 

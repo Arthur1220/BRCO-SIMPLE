@@ -651,3 +651,10 @@
 {"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T16:32:29.937Z"}
 {"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T16:32:39.766Z"}
 {"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T16:33:12.361Z"}
+{"level":"info","message":"Swagger docs available at /api-docs","timestamp":"2025-11-25T20:46:58.086Z"}
+{"level":"info","message":"🚀 Servidor rodando na porta 3000","timestamp":"2025-11-25T20:46:58.091Z"}
+{"level":"info","message":"📝 Documentação disponível em http://localhost:3000/api-docs","timestamp":"2025-11-25T20:46:58.091Z"}
+{"level":"info","message":"NDT calculation successful","timestamp":"2025-11-25T20:57:23.630Z"}
+{"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T21:06:25.339Z"}
+{"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T21:06:42.700Z"}
+{"level":"info","message":"Diet calculation successful","timestamp":"2025-11-25T21:20:28.075Z"}

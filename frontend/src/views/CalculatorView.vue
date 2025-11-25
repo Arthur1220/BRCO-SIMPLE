@@ -102,6 +102,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Containers & Layout Principal
+   ========================================= */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -114,14 +117,26 @@ onUnmounted(() => {
 .calculator-wrapper {
   display: flex;
   gap: 3rem;
-  align-items: flex-start;
+  align-items: flex-start; /* Garante que a sidebar não estique se o conteúdo for longo */
 }
+
+.content-area {
+  flex-grow: 1;
+  min-width: 0; /* Previne que flex items estourem o container em alguns browsers */
+}
+
+/* =========================================
+   2. Barra Lateral (Sidebar Navigation)
+   ========================================= */
 .sidebar {
   width: 280px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Impede que a sidebar encolha */
+
+  /* Comportamento Sticky (fixo ao rolar) */
   position: sticky;
-  top: 100px;
+  top: 100px; /* Ajuste conforme altura do seu header fixo */
 }
+
 .sidebar h2 {
   font-size: 1.5rem;
   color: var(--black);
@@ -129,6 +144,8 @@ onUnmounted(() => {
   border-bottom: 2px solid var(--grey-light);
   padding-bottom: 1rem;
 }
+
+/* Links de Navegação */
 .sidebar .nav-item {
   display: block;
   padding: 0.8rem 1rem;
@@ -139,64 +156,38 @@ onUnmounted(() => {
   font-weight: 500;
   transition: all 0.3s ease;
 }
+
 .sidebar .nav-item:hover {
   background-color: var(--grey-light);
   color: var(--black);
 }
+
 .sidebar .nav-item.active {
   background-color: var(--orange);
   color: var(--white);
   font-weight: bold;
 }
-.content-area {
-  flex-grow: 1;
-  min-width: 0;
-}
+
+/* =========================================
+   3. Cabeçalhos e Conteúdo
+   ========================================= */
 .info-header {
   margin-bottom: 2rem;
 }
+
 .info-header h1 {
   color: var(--orange);
   margin-top: 0;
 }
-.state-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-.error-message {
-  padding: 2rem;
-  text-align: center;
-  border: 1px solid var(--red-error);
-  background-color: #fbecec;
-  color: #a82323;
-  border-radius: 8px;
-}
-.btn-return {
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    border: none;
-    background-color: var(--orange);
-    color: var(--white);
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 1rem;
-}
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
+/* =========================================
+   4. Botão "Voltar" (Com Ícone)
+   ========================================= */
 .results-container {
   position: relative;
   padding-top: 1rem;
 }
+
 .return-button {
   position: absolute;
   top: 0;
@@ -214,37 +205,105 @@ onUnmounted(() => {
   font-weight: 500;
   transition: all 0.3s ease;
 }
+
 .return-button:hover {
   background-color: var(--grey-light);
   color: var(--black);
 }
+
+/* Animação da setinha do botão voltar */
 .return-button svg {
   width: 20px;
   height: 20px;
   transition: transform 0.3s ease;
 }
+
 .return-button:hover svg {
-  transform: translateX(-3px);
+  transform: translateX(-3px); /* Move levemente para a esquerda */
 }
 
-/* Responsividade */
+/* =========================================
+   5. Estados de Feedback (Erro/Loading)
+   ========================================= */
+.state-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.error-message {
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid var(--red-error);
+  background-color: #fbecec;
+  color: #a82323;
+  border-radius: 8px;
+}
+
+.btn-return {
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--orange);
+  color: var(--white);
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+/* =========================================
+   6. Transições Vue (Fade)
+   ========================================= */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* =========================================
+   7. Responsividade (Mobile: < 992px)
+   ========================================= */
 @media (max-width: 992px) {
-  .calculator-wrapper { flex-direction: column; gap: 1rem; }
+  /* Altera layout lateral para coluna única */
+  .calculator-wrapper {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Transforma a sidebar em barra horizontal */
   .sidebar {
     width: 100%;
-    position: static;
+    position: static; /* Remove o sticky no mobile */
     border-bottom: 2px solid var(--grey-light);
     padding-bottom: 1rem;
     margin-bottom: 2rem;
   }
-  .sidebar nav { display: flex; overflow-x: auto; gap: 1rem; }
-  .sidebar .nav-item { flex-shrink: 0; }
 
-  .results-container { padding-top: 0; }
+  /* Cria scroll horizontal para os itens de menu */
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+  }
+
+  .sidebar .nav-item {
+    flex-shrink: 0; /* Garante que os itens não encolham no scroll */
+  }
+
+  /* Ajustes do botão voltar no mobile */
+  .results-container {
+    padding-top: 0;
+  }
+
   .return-button {
-      position: static;
-      margin-bottom: 2rem;
-      background-color: var(--grey-light);
+    position: static; /* Remove posicionamento absoluto */
+    margin-bottom: 2rem;
+    background-color: var(--grey-light); /* Dá fundo cinza para destacar mais */
   }
 }
 </style>

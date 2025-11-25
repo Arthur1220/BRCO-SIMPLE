@@ -24,11 +24,19 @@ import UsageChart from './UsageChart.vue';
 defineProps({
   stats: Object,
   logs: Array,
-  chartData: Array // Novo dado recebido
+  chartData: Array
 });
 </script>
 
 <style scoped>
-.section { margin-bottom: 2.5rem; }
-.section-title { font-size: 1.2rem; color: var(--black); margin-bottom: 1rem; font-weight: 600; }
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: var(--black);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
 </style>

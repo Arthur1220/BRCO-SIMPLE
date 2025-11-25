@@ -81,26 +81,24 @@ const formatNum = (num) => {
   return num ? Number(num).toFixed(2) : '0.00';
 };
 
-// Função para calcular kg de cada alimento com base no CMS Total
 const calculateKg = (percent) => {
   const totalCMS_g = store.dietResults.dietSupply['Consumo Estimado (g)'];
   const amount_g = totalCMS_g * (percent / 100);
-  return (amount_g / 1000).toFixed(3); // Retorna em kg com 3 casas
+  return (amount_g / 1000).toFixed(3);
 };
 
 const getBalanceClass = (diff) => {
-  if (diff < -0.1) return 'text-red'; // Falta (com pequena margem)
-  return 'text-green'; // Sobra ou igual
+  if (diff < -0.1) return 'text-red';
+  return 'text-green';
 };
 
 const getStatusClass = (diff, required) => {
   if (required === 0) return 'badge-info';
   const percentDiff = (diff / required) * 100;
 
-  // Tolerância de +/- 5% é considerada Ideal
   if (Math.abs(percentDiff) <= 5 || (diff >= 0 && diff < 0.1)) return 'badge-success';
-  if (diff < 0) return 'badge-warning'; // Déficit
-  return 'badge-info'; // Excesso
+  if (diff < 0) return 'badge-warning';
+  return 'badge-info';
 };
 
 const getStatusLabel = (diff, required) => {
@@ -114,22 +112,16 @@ const getStatusLabel = (diff, required) => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Container Principal & Estrutura
+   ========================================= */
 .diet-results {
   background: var(--white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-top: 2rem;
   border: 1px solid var(--grey-light);
-}
-
-.section-title {
-  color: var(--black);
-  font-size: 1.2rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  border-left: 4px solid var(--orange);
-  padding-left: 10px;
 }
 
 .recipe-section {
@@ -143,6 +135,21 @@ const getStatusLabel = (diff, required) => {
   margin: 2rem 0;
 }
 
+/* =========================================
+   2. Tipografia e Títulos
+   ========================================= */
+.section-title {
+  color: var(--black);
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--orange); /* Detalhe visual na esquerda */
+  padding-left: 10px;
+}
+
+/* =========================================
+   3. Cards de Resumo (KPIs)
+   ========================================= */
 .summary-cards {
   display: flex;
   gap: 1.5rem;
@@ -157,33 +164,97 @@ const getStatusLabel = (diff, required) => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  flex: 1;
+  flex: 1; /* Faz os cards ocuparem a mesma largura */
 }
 
-.card .label { font-size: 0.9rem; color: var(--black-light); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
-.card .value { font-size: 1.8rem; font-weight: 800; color: var(--orange); }
+.card .label {
+  font-size: 0.9rem;
+  color: var(--black-light);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
-.table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--grey-light); }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 0.9rem 1.2rem; text-align: left; border-bottom: 1px solid var(--grey-light); }
-th { background-color: #f1f3f5; font-weight: 700; color: var(--black); font-size: 0.95rem; }
-.center { text-align: center; }
+.card .value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--orange);
+}
 
+/* =========================================
+   4. Tabelas de Dados
+   ========================================= */
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--grey-light);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid var(--grey-light);
+}
+
+th {
+  background-color: #f1f3f5;
+  font-weight: 700;
+  color: var(--black);
+  font-size: 0.95rem;
+}
+
+.center {
+  text-align: center;
+}
+
+/* Destaque para células específicas (ex: Total) */
 .highlight-cell {
   font-weight: bold;
   color: var(--blue-dark);
   background-color: #f0f7ff;
 }
 
-.text-red { color: #e74c3c; font-weight: bold; }
-.text-green { color: #27ae60; font-weight: bold; }
+/* =========================================
+   5. Indicadores, Cores e Badges
+   ========================================= */
+/* Cores de Texto Utilitárias */
+.text-red {
+  color: #e74c3c;
+  font-weight: bold;
+}
 
-.status-badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; color: white; display: inline-block; min-width: 80px;}
+.text-green {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+/* Badges de Status */
+.status-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center; /* Adicionado para centralizar texto dentro do badge */
+}
+
 .badge-success { background-color: #27ae60; }
 .badge-warning { background-color: #e74c3c; }
-.badge-info { background-color: #3498db; }
+.badge-info    { background-color: #3498db; }
 
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 600px) {
-  .summary-cards { flex-direction: column; }
+  .summary-cards {
+    flex-direction: column; /* Empilha os cards verticalmente */
+  }
 }
 </style>

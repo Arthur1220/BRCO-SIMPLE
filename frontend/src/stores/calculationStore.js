@@ -2,6 +2,10 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { calculateRequirements, calculateNdt } from '@/services/apiService'
 
+/*
+ * Store para gerenciar o estado dos cálculos.
+ * Inclui resultados, tipo de cálculo, estado de carregamento, erros e dados do formulário.
+ */
 export const useCalculationStore = defineStore('calculation', () => {
   const results = ref(null)
   const calculationType = ref(null)
@@ -17,16 +21,16 @@ export const useCalculationStore = defineStore('calculation', () => {
     error.value = null
     results.value = null
 
-    const minLoadingTime = 2000; // 2 segundos
+    const minLoadingTime = 2000;
     const startTime = Date.now();
 
     try {
       let response;
       if (type === 'requirements') {
-        lastFormData.value = formData; 
+        lastFormData.value = formData;
         response = await calculateRequirements(formData)
       } else if (type === 'ndt') {
-        lastFormData.value = formData; 
+        lastFormData.value = formData;
         response = await calculateNdt(formData)
       } else {
         throw new Error('Tipo de cálculo desconhecido')
@@ -59,13 +63,13 @@ export const useCalculationStore = defineStore('calculation', () => {
     lastFormData.value = null;
   }
 
-  return { 
-    results, 
-    calculationType, 
-    isLoading, 
-    error, 
+  return {
+    results,
+    calculationType,
+    isLoading,
+    error,
     lastFormData,
-    performCalculation, 
+    performCalculation,
     clearCalculationState
   }
 })

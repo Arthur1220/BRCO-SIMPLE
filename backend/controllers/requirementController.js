@@ -4,6 +4,7 @@ const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
 const geoip = require('geoip-lite');
 
+// Validação dos dados de entrada usando Zod
 const requirementInputSchema = z.object({
     especieId: z.number().int().min(1),
     categoriaAnimalId: z.number().int().min(1).nullable(), 

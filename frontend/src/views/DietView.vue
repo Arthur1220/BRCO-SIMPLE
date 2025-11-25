@@ -108,7 +108,6 @@
 import { computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
 
-// Importação de todos os componentes modulares
 import DietStepper from '@/components/diet/DietStepper.vue';
 import DietIntro from '@/components/diet/DietIntro.vue';
 import ExigenciasForm from '@/components/calculator/ExigenciasForm.vue';
@@ -120,11 +119,10 @@ import ConflictModal from '@/components/diet/ConflictModal.vue';
 
 const store = useDietStore();
 
-// Handler para quando o formulário de exigências é submetido
 const handleAnimalData = (data) => {
   store.animalData = data;
-  store.fetchFoods(); // Já carrega os alimentos em background
-  store.nextStep();   // Avança para a seleção de alimentos
+  store.fetchFoods();
+  store.nextStep();
 };
 
 const totalStatusClass = computed(() => {
@@ -134,132 +132,271 @@ const totalStatusClass = computed(() => {
 </script>
 
 <style scoped>
-.diet-page { padding: 2rem 0 4rem; max-width: 1000px; margin: 0 auto; }
-.page-header { text-align: center; margin-bottom: 2rem; }
-.page-header h1 { color: var(--orange); font-size: 2.2rem; margin-bottom: 0.5rem; }
-.page-header p { color: var(--black-light); }
+/* =========================================
+   1. Layout da Página & Cabeçalho
+   ========================================= */
+.diet-page {
+  padding: 2rem 0 4rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
 
-/* Container Geral dos Passos */
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  color: var(--orange);
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header p {
+  color: var(--black-light);
+}
+
+/* =========================================
+   2. Container do Passo (Step Wizard)
+   ========================================= */
 .step-content {
-    min-height: 400px;
-    position: relative;
+  min-height: 400px; /* Evita pulos de altura durante a transição */
+  position: relative;
 }
 
 .step-wrapper {
-    background: var(--white);
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    border: 1px solid var(--grey-light);
-    animation: fadeIn 0.4s ease;
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--grey-light);
+
+  /* Animação suave ao carregar o passo */
+  animation: fadeIn 0.4s ease;
 }
 
-.step-header { margin-bottom: 2rem; text-align: center; }
-.step-header h3 { color: var(--black); font-size: 1.5rem; margin-bottom: 0.5rem; }
-.step-header p { color: var(--black-light); }
+.step-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
 
-/* Botões de Navegação */
+.step-header h3 {
+  color: var(--black);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.step-header p {
+  color: var(--black-light);
+}
+
+/* =========================================
+   3. Botões e Navegação
+   ========================================= */
 .nav-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--grey-light);
-}
-.final-actions { justify-content: center; }
-
-.btn-primary, .btn-calc {
-    background-color: var(--orange);
-    color: white;
-    padding: 0.8rem 2rem;
-    border-radius: 8px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.btn-calc { background-color: var(--blue); width: auto; min-width: 200px;}
-
-.btn-primary:hover { background-color: var(--light-orange); transform: translateY(-2px); }
-.btn-calc:hover { background-color: var(--blue-dark); transform: translateY(-2px); }
-
-.btn-primary:disabled, .btn-calc:disabled {
-    background-color: var(--grey);
-    cursor: not-allowed;
-    transform: none;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--grey-light);
 }
 
+.final-actions {
+  justify-content: center;
+}
+
+/* --- Botões Primários e de Cálculo --- */
+.btn-primary,
+.btn-calc {
+  background-color: var(--orange);
+  color: white;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* Estilo específico do botão Calcular */
+.btn-calc {
+  background-color: var(--blue);
+  width: auto;
+  min-width: 200px; /* Garante destaque visual */
+}
+
+/* Hover States */
+.btn-primary:hover {
+  background-color: var(--light-orange);
+  transform: translateY(-2px);
+}
+
+.btn-calc:hover {
+  background-color: var(--blue-dark);
+  transform: translateY(-2px);
+}
+
+/* Disabled States */
+.btn-primary:disabled,
+.btn-calc:disabled {
+  background-color: var(--grey);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- Botão Secundário (Voltar) --- */
 .btn-secondary {
-    background-color: transparent;
-    color: var(--black-light);
-    border: 1px solid var(--grey);
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+  background-color: transparent;
+  color: var(--black-light);
+  border: 1px solid var(--grey);
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
-.btn-secondary:hover { background-color: var(--grey-light); color: var(--black); }
 
-.btn-edit {
-    display: flex; align-items: center; gap: 0.5rem;
-    background: #fff3e0; color: var(--orange);
-    border: 1px solid #ffe0b2; padding: 0.5rem 1rem;
-    border-radius: 6px; cursor: pointer; font-weight: 600;
+.btn-secondary:hover {
+  background-color: var(--grey-light);
+  color: var(--black);
 }
-.btn-edit svg { width: 18px; height: 18px; }
+
+/* --- Botões Utilitários (Editar / Outline) --- */
+.btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff3e0;
+  color: var(--orange);
+  border: 1px solid #ffe0b2;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-edit svg {
+  width: 18px;
+  height: 18px;
+}
 
 .btn-outline {
-    border: 1px dashed var(--orange);
-    color: var(--orange);
-    background: transparent;
-    padding: 0.8rem 2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+  border: 1px dashed var(--orange);
+  color: var(--orange);
+  background: transparent;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-/* Área de Cálculo (Passo 4) */
-.calculation-area { margin-top: 2rem; }
-.total-bar {
-    background: #f9fafb;
-    padding: 1rem;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
+/* =========================================
+   4. Área de Resultados (Cálculo Final)
+   ========================================= */
+.calculation-area {
+  margin-top: 2rem;
 }
-.status-ok { border: 1px solid #c8e6c9; background: #e8f5e9; color: #2e7d32; }
-.status-info { border: 1px solid #e3f2fd; background: #f1f8e9; color: #546e7a; }
 
 .results-top-bar {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.5rem; border-bottom: 1px solid var(--grey-light); padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--grey-light);
+  padding-bottom: 1rem;
 }
-.results-top-bar h3 { margin: 0; color: var(--black); }
 
-/* Transições */
+.results-top-bar h3 {
+  margin: 0;
+  color: var(--black);
+}
+
+/* Barra de Status/Total */
+.total-bar {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* Modificadores de Status */
+.status-ok {
+  border: 1px solid #c8e6c9;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-info {
+  border: 1px solid #e3f2fd;
+  background: #f1f8e9;
+  color: #546e7a;
+}
+
+/* =========================================
+   5. Animações e Transições
+   ========================================= */
+/* Keyframes Globais */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Transição Vue: Slide + Fade */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: all 0.3s ease;
 }
+
 .slide-fade-enter-from {
   opacity: 0;
   transform: translateX(20px);
 }
+
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateX(-20px);
 }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.4s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* Transição Vue: Fade Simples */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s;
+}
 
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 768px) {
-    .nav-buttons { flex-direction: column-reverse; gap: 1rem; }
-    .btn-primary, .btn-secondary, .btn-calc { width: 100%; }
-    .results-top-bar { flex-direction: column; gap: 1rem; align-items: flex-start; }
+  .nav-buttons {
+    /* Inverte a ordem: Botão principal vai para o topo, voltar vai para baixo */
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-calc {
+    width: 100%; /* Botões ocupam largura total no mobile */
+  }
+
+  .results-top-bar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
 }
 </style>

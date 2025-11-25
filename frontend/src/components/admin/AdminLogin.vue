@@ -3,10 +3,10 @@
     <h2>Acesso Restrito</h2>
     <p>Por favor, insira a senha para acessar o painel administrativo.</p>
     <form @submit.prevent="handleLogin">
-      <input 
+      <input
         v-model="password"
-        type="password" 
-        placeholder="Senha do painel" 
+        type="password"
+        placeholder="Senha do painel"
         required
       />
       <button type="submit" :disabled="isLoading">
@@ -25,7 +25,6 @@ const password = ref('');
 const isLoading = ref(false);
 const error = ref(null);
 
-// Define o evento que este componente pode emitir
 const emit = defineEmits(['login-success']);
 
 const handleLogin = async () => {
@@ -34,9 +33,7 @@ const handleLogin = async () => {
   try {
     const response = await loginAdmin(password.value);
     if (response.success) {
-      // Salva o "ticket" de autenticação
       sessionStorage.setItem('isAdminAuthenticated', 'true');
-      // AVISA O COMPONENTE PAI que o login deu certo!
       emit('login-success');
     }
   } catch (err) {
@@ -56,11 +53,43 @@ const handleLogin = async () => {
   border-radius: 12px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.1);
   text-align: center;
-  margin: 4rem auto; /* Centraliza a caixa na tela */
+  margin: 4rem auto;
 }
-h2 { color: var(--orange); margin-bottom: 0.5rem; }
-p { color: var(--black-light); margin-bottom: 2rem; }
-input[type="password"] { width: 100%; padding: 0.8rem; border: 1px solid var(--grey); border-radius: 5px; font-size: 1rem; margin-bottom: 1rem; }
-button { width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: bold; background-color: var(--orange); color: white; border: none; border-radius: 5px; cursor: pointer; }
-.error-message { color: var(--red-error); margin-top: 1rem; font-weight: bold; }
+
+h2 {
+  color: var(--orange);
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: var(--black-light);
+  margin-bottom: 2rem;
+}
+
+input[type="password"] {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--grey);
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  background-color: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.error-message {
+  color: var(--red-error);
+  margin-top: 1rem;
+  font-weight: bold;
+}
 </style>

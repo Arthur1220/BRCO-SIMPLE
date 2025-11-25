@@ -121,10 +121,12 @@
 </template>
 
 <script setup>
-// No additional script logic is needed for this view
 </script>
 
 <style scoped>
+/* =========================================
+   1. Estrutura Base & Títulos
+   ========================================= */
 .container {
   width: 100%;
   max-width: 1100px;
@@ -132,11 +134,12 @@
   padding: 0 2rem;
 }
 
-/* --- Títulos de Seção Padronizados --- */
+/* Títulos de Seção Padronizados */
 .section-title {
   text-align: center;
   margin-bottom: 3rem;
 }
+
 .section-title span {
   color: var(--orange);
   font-weight: bold;
@@ -144,33 +147,39 @@
   font-size: 0.9rem;
   letter-spacing: 1px;
 }
+
 .section-title h3 {
   font-size: 2.5rem;
   color: var(--black);
   margin: 0.5rem 0 0;
 }
+
 .section-title.left-aligned {
   text-align: left;
 }
 
-/* --- Hero Section --- */
+hr {
+  width: 80%;
+  height: 1px;
+  background-color: var(--grey-light);
+  border: none;
+  margin: 2rem auto;
+}
+
+/* =========================================
+   2. Hero Section (Topo da Página)
+   ========================================= */
 .hero-section {
   display: flex;
   align-items: center;
   padding: 5rem 0;
   gap: 3rem;
 }
+
 .hero-content {
   flex: 1.2;
 }
-.hero-image {
-  flex: 1;
-  text-align: center;
-}
-.hero-image img {
-  max-width: 100%;
-  height: auto;
-}
+
 .hero-title {
   font-size: 5.5rem;
   color: var(--orange);
@@ -178,43 +187,93 @@
   line-height: 1;
   font-weight: 800;
 }
+
 .hero-subtitle {
   font-size: 2rem;
   color: var(--black-light);
   margin: 0.5rem 0 1.5rem;
   font-weight: 400;
 }
+
 .hero-description {
   font-size: 1.2rem;
   color: var(--black-light);
   max-width: 550px;
   line-height: 1.6;
 }
+
+.hero-image {
+  flex: 1;
+  text-align: center;
+}
+
+.hero-image img {
+  max-width: 100%;
+  height: auto;
+}
+
 .cta-buttons {
   display: flex;
   gap: 1rem;
   margin-top: 2.5rem;
 }
 
+/* =========================================
+   3. Botões Globais (CTA)
+   ========================================= */
+.btn {
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
 
-/* --- Botões --- */
-.btn { padding: 0.9rem 2rem; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.3s ease; border: 2px solid transparent; }
-.btn-primary { background-color: var(--orange); color: var(--white); }
-.btn-primary:hover { background-color: var(--light-orange); transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-.btn-secondary { background-color: transparent; color: var(--orange); border-color: var(--orange); }
-.btn-secondary:hover { background-color: var(--orange); color: var(--white); transform: translateY(-3px); }
-.center-btn { text-align: center; margin-top: 2rem; }
+/* Botão Primário (Preenchido) */
+.btn-primary {
+  background-color: var(--orange);
+  color: var(--white);
+}
 
-/* --- Features Section --- */
+.btn-primary:hover {
+  background-color: var(--light-orange);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Botão Secundário (Contorno) */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.btn-secondary:hover {
+  background-color: var(--orange);
+  color: var(--white);
+  transform: translateY(-3px);
+}
+
+.center-btn {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* =========================================
+   4. Features Section (Cards de Recursos)
+   ========================================= */
 .features-section {
   padding: 5rem 0;
   background-color: #fdfdfd;
 }
+
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
+
 .feature-card {
   text-align: center;
   padding: 2.5rem 2rem;
@@ -223,10 +282,23 @@
   border-radius: 12px;
   transition: all 0.3s ease;
 }
+
 .feature-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
 }
+
+.feature-card h4 {
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+}
+
+.feature-card p {
+  color: var(--black-light);
+  line-height: 1.6;
+}
+
+/* Ícone do Feature */
 .icon-wrapper {
   display: inline-flex;
   justify-content: center;
@@ -234,84 +306,109 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: rgba(245, 130, 32, 0.1); /* Laranja mais suave */
+  background-color: rgba(245, 130, 32, 0.1); /* Laranja suave */
   color: var(--orange);
   margin-bottom: 1.5rem;
 }
+
 .icon-wrapper svg {
   width: 32px;
   height: 32px;
 }
-.feature-card h4 {
-  font-size: 1.4rem;
-  margin: 0 0 1rem;
+
+/* =========================================
+   5. Diet Intro Section (Passo a Passo)
+   ========================================= */
+.diet-intro-section {
+  padding: 5rem 0;
+  background-color: var(--white);
 }
-.feature-card p {
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  text-align: center;
+}
+
+.step-item {
+  padding: 1rem;
+}
+
+.step-number {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  background-color: var(--orange);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.step-item h4 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: var(--black);
+}
+
+.step-item p {
   color: var(--black-light);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
-/* --- Diet Intro Section (NOVA) --- */
-.diet-intro-section { padding: 5rem 0; background-color: var(--white); }
-.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: center; }
-.step-item { padding: 1rem; }
-.step-number { display: inline-block; width: 40px; height: 40px; line-height: 40px; border-radius: 50%; background-color: var(--orange); color: white; font-weight: bold; font-size: 1.2rem; margin-bottom: 1rem; }
-.step-item h4 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--black); }
-.step-item p { color: var(--black-light); line-height: 1.5; }
-
-hr { width: 80%; height: 1px; background-color: var(--grey-light); border: none; margin: 2rem auto; }
-
-/* --- About & Book Sections --- */
-.about-section, .book-section {
+/* =========================================
+   6. About & Book Sections (Informacional)
+   ========================================= */
+.about-section,
+.book-section {
   padding: 5rem 0;
 }
-.about-image img, .book-cover img {
+
+.about-image img,
+.book-cover img {
   width: 100%;
   border-radius: 12px;
 }
+
+/* --- About Section --- */
 .about-section {
   display: flex;
   align-items: center;
   gap: 4rem;
 }
+
 .about-image {
   flex: 1;
 }
+
 .about-content {
   flex: 1.2;
 }
+
 .about-content p {
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--black-light);
 }
 
+/* --- Book Section --- */
 .book-section {
   background-color: #fdfdfd;
 }
+
 .book-container {
   display: flex;
   align-items: center;
   gap: 4rem;
 }
+
 .book-details {
   flex: 1.2;
 }
-.book-cover {
-  flex-shrink: 0;
-}
-.book-cover img {
-  max-width: 300px;
-  margin: 0 auto;
-  display: block;
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-.book-cover:hover img {
-  transform: scale(1.05);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
+
 .book-details .source-text {
   font-size: 1.2rem;
   color: var(--black);
@@ -320,32 +417,69 @@ hr { width: 80%; height: 1px; background-color: var(--grey-light); border: none;
   padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }
+
 .book-details p {
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--black-light);
 }
 
-/* --- Responsividade --- */
+/* Capa do Livro Interativa */
+.book-cover {
+  flex-shrink: 0;
+}
+
+.book-cover img {
+  max-width: 300px;
+  margin: 0 auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.book-cover:hover img {
+  transform: scale(1.05); /* Zoom suave */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   7. Responsividade (Tablets e Mobiles)
+   ========================================= */
 @media (max-width: 992px) {
-  .hero-section, .about-section, .book-container {
+  /* Layout de Coluna Única para seções principais */
+  .hero-section,
+  .about-section,
+  .book-container {
     flex-direction: column;
     text-align: center;
   }
-  .hero-content, .about-content, .book-details {
+
+  /* Reordenação: Conteúdo embaixo, Imagem em cima */
+  .hero-content,
+  .about-content,
+  .book-details {
     order: 2;
   }
-  .hero-image, .about-image, .book-cover {
+
+  .hero-image,
+  .about-image,
+  .book-cover {
     order: 1;
     margin-bottom: 3rem;
     text-align: center;
   }
+
+  /* Ajustes de Texto e Botões */
   .section-title.left-aligned {
     text-align: center;
   }
+
   .cta-buttons {
     justify-content: center;
   }
+
+  /* Remove borda lateral no mobile para ficar mais limpo */
   .book-details .source-text {
     border-left: none;
     padding-left: 0;
@@ -353,8 +487,16 @@ hr { width: 80%; height: 1px; background-color: var(--grey-light); border: none;
 }
 
 @media (max-width: 768px) {
-  .section-title h3 { font-size: 2rem; }
-  .hero-title { font-size: 4rem; }
-  .hero-subtitle { font-size: 1.5rem; }
+  .section-title h3 {
+    font-size: 2rem;
+  }
+
+  .hero-title {
+    font-size: 4rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
 }
 </style>

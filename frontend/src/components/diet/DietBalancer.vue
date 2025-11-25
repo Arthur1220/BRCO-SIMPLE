@@ -75,17 +75,25 @@ const store = useDietStore();
 </script>
 
 <style scoped>
+/* =========================================
+   1. Estrutura Principal & Mensagens
+   ========================================= */
 .diet-balancer {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
-.hint { color: var(--black-light); font-size: 0.8rem; }
+
+.hint {
+  color: var(--black-light);
+  font-size: 0.8rem;
+}
 
 .empty-state {
   text-align: center;
@@ -96,9 +104,12 @@ const store = useDietStore();
   color: var(--black-light);
 }
 
-/* Grid Layout Ajustado para incluir Preço */
+/* =========================================
+   2. Cabeçalhos da Lista (Desktop)
+   ========================================= */
 .list-header {
   display: grid;
+  /* Define as colunas: Nome (maior) | 3 Inputs | Espaço do botão */
   grid-template-columns: 1.5fr 1fr 1fr 1fr 30px;
   gap: 10px;
   padding: 0 10px 5px;
@@ -107,11 +118,17 @@ const store = useDietStore();
   color: var(--black-light);
   text-align: center;
 }
-.col-name { text-align: left; }
 
+.col-name {
+  text-align: left;
+}
+
+/* =========================================
+   3. Linha do Ingrediente (Row/Card)
+   ========================================= */
 .ingredient-row {
   display: grid;
-  grid-template-columns: 1.5fr 3fr 30px; /* Nome | Inputs | Botão */
+  grid-template-columns: 1.5fr 3fr 30px; /* Nome | Wrapper dos Inputs | Botão */
   gap: 10px;
   align-items: center;
   padding: 1rem;
@@ -120,41 +137,51 @@ const store = useDietStore();
   border-radius: 8px;
   transition: box-shadow 0.2s;
 }
-.ingredient-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-.ing-name-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.ingredient-row:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+/* Informações do Nome (Esquerda) */
+.ing-name-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .ing-name {
   font-weight: 600;
   color: var(--black);
   font-size: 0.95rem;
   line-height: 1.2;
 }
+
 .result-badge {
-    background-color: var(--blue);
-    color: white;
-    font-size: 0.8rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    width: fit-content;
-    font-weight: bold;
+  background-color: var(--blue);
+  color: white;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+  font-weight: bold;
 }
 
+/* =========================================
+   4. Inputs e Controles
+   ========================================= */
 .ing-controls {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr; /* Divide o espaço dos inputs igualmente */
   gap: 8px;
 }
 
 .input-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Estilo Base do Input */
 input {
   width: 100%;
   padding: 0.5rem;
@@ -164,18 +191,34 @@ input {
   font-size: 0.95rem;
   font-weight: 500;
 }
-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
 
-.input-price { color: var(--green-dark); border-color: #a5d6a7; background-color: #f1f8e9; }
-.input-limit { color: var(--black-light); background-color: #fafafa; }
-
-.unit-label {
-    font-size: 0.7rem;
-    color: var(--black-light);
-    text-align: center;
-    margin-top: 2px;
+input:focus {
+  outline: 2px solid var(--orange);
+  border-color: transparent;
 }
 
+/* Variações de Input */
+.input-price {
+  color: var(--green-dark);
+  border-color: #a5d6a7;
+  background-color: #f1f8e9; /* Verde bem claro */
+}
+
+.input-limit {
+  color: var(--black-light);
+  background-color: #fafafa;
+}
+
+.unit-label {
+  font-size: 0.7rem;
+  color: var(--black-light);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* =========================================
+   5. Botões de Ação
+   ========================================= */
 .btn-remove {
   background: none;
   border: none;
@@ -185,17 +228,31 @@ input:focus { outline: 2px solid var(--orange); border-color: transparent; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 5px; /* Ajuste visual */
+  padding-bottom: 5px; /* Ajuste visual para alinhar o ícone "x" */
 }
-.btn-remove:hover { color: var(--red-error); }
 
+.btn-remove:hover {
+  color: var(--red-error);
+}
+
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 768px) {
-    .ingredient-row {
-        grid-template-columns: 1fr; /* Empilha no mobile */
-        gap: 1rem;
-    }
-    .list-header { display: none; }
-    .btn-remove { position: absolute; right: 10px; top: 5px; }
-    .ingredient-row { position: relative; }
+  .list-header {
+    display: none; /* Esconde o cabeçalho da tabela no mobile */
+  }
+
+  .ingredient-row {
+    grid-template-columns: 1fr; /* Empilha tudo em uma coluna */
+    gap: 1rem;
+    position: relative; /* Necessário para posicionar o botão de remover */
+  }
+
+  .btn-remove {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+  }
 }
 </style>

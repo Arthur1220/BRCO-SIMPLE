@@ -21,6 +21,9 @@ function getRequirementValue(requirements, possibleKeys) {
     return 0; 
 }
 
+/**
+ * Constrói o modelo de programação linear para o solver.
+ */
 function buildModel(ingredients, targets, strictNutrients = true) {
     const model = {
         optimize: "cost",
@@ -60,7 +63,6 @@ function buildModel(ingredients, targets, strictNutrients = true) {
             model.variables[key].Total_Suplemento = 1;
         }
 
-        // Limites do Usuário (SEMPRE APLICADOS AO MODELO)
         let userMin = 0;
         if (ing.min !== undefined && ing.min !== null && ing.min !== '') userMin = Number(ing.min) / 100;
 
@@ -109,7 +111,6 @@ function processSolution(solution, ingredients, requirements, targets, targetCMS
         supply['Custo Total'] += (amountInDiet_g / 1000) * price;
     });
 
-    // CORREÇÃO: Recupera os valores alvo de PB e NDT dentro desta função para usar no balanço
     const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
     const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
 
@@ -126,7 +127,6 @@ function processSolution(solution, ingredients, requirements, targets, targetCMS
     
     const totalPercent = optimizedIngredients.reduce((sum, ing) => sum + ing.percent, 0);
     if (totalPercent > 100.1) {
-        // Se passou de 100%, normalizamos tudo proporcionalmente
         optimizedIngredients.forEach(ing => {
             ing.percent = round((ing.percent / totalPercent) * 100, 2);
         });
@@ -142,7 +142,10 @@ function processSolution(solution, ingredients, requirements, targets, targetCMS
     };
 }
 
-
+/**
+ * Calcula a dieta ótima para o animal dado os ingredientes disponíveis.
+ * Tenta primeiro uma solução ideal, e se falhar, tenta uma solução realista.
+ */
 function calculateDiet(animalInput, ingredients) {
     const requirements = calculateAllRequirements(animalInput);
     const targetCMS_g = getRequirementValue(requirements, ['Consumo de matéria seca 1', 'Consumo de matéria seca']);
@@ -154,12 +157,11 @@ function calculateDiet(animalInput, ingredients) {
         NDT: (targetNDT_g / targetCMS_g) * 100
     };
 
-    // --- 1. TENTATIVA IDEAL (Com Limites Nutricionais) ---
+    // TENTATIVA IDEAL (Com Limites Nutricionais) ---
     let modelIdeal = buildModel(ingredients, targets, true);
     let solutionIdeal = solver.Solve(modelIdeal);
 
     if (solutionIdeal.feasible) {
-        // Se a solução ideal funcionar, retornamos apenas ela.
         return {
             hasConflict: false,
             result: processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, "Solução Ótima Encontrada", true),
@@ -167,11 +169,10 @@ function calculateDiet(animalInput, ingredients) {
         };
     }
 
-    // --- 2. TENTATIVA REALISTA (Sem Limites Nutricionais, Respeitando SÓ Limites do Usuário) ---
+    // TENTATIVA REALISTA (Sem Limites Nutricionais, Respeitando SÓ Limites do Usuário) ---
     let modelRealistic = buildModel(ingredients, targets, false);
     let solutionRealistic = solver.Solve(modelRealistic);
 
-    // Se a Tentativa Ideal falhar, retornamos as duas opções para o frontend decidir.
     const resultIdeal = processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, 
         "Alerta: Inviável! Viola limites do usuário para atingir nutrição.", false);
     
@@ -180,7 +181,7 @@ function calculateDiet(animalInput, ingredients) {
 
 
     return {
-        hasConflict: true, // Avisa o frontend para abrir a modal
+        hasConflict: true,
         resultIdeal: resultIdeal,
         resultRealistic: resultRealistic,
         animalRequirements: requirements

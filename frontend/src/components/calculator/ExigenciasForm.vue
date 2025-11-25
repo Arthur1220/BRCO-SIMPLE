@@ -56,11 +56,10 @@
 <script setup>
 import { reactive, ref, watch, onMounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
-// 1. IMPORTAR O STORE DA DIETA
 import { useDietStore } from '@/stores/dietStore';
 
 const store = useCalculationStore();
-const dietStore = useDietStore(); // 2. INSTANCIAR O STORE
+const dietStore = useDietStore();
 
 const props = defineProps({
   isDietMode: {
@@ -77,7 +76,6 @@ const genotipos = ref([
   { id: 3, name: 'Corte' },
 ]);
 
-// Inicializamos com números para combinar com o store e com os :value
 const formData = reactive({
   especieId: 1,
   categoriaAnimalId: 1,
@@ -87,19 +85,15 @@ const formData = reactive({
   GMD: null,
 });
 
-// 3. LÓGICA DE RECUPERAÇÃO DE DADOS ATUALIZADA
 onMounted(() => {
-  // Se estiver no modo Dieta, tenta recuperar do dietStore
   if (props.isDietMode && dietStore.animalData) {
      Object.assign(formData, dietStore.animalData);
   }
-  // Se estiver no modo Calculadora normal, recupera do calculationStore
   else if (!props.isDietMode && store.lastFormData && store.calculationType === 'requirements') {
     Object.assign(formData, store.lastFormData);
   }
 });
 
-// Observador para resetar o sexo se a espécie mudar para Ovino
 watch(() => formData.especieId, (newEspecie) => {
     if (newEspecie === 2) {
         formData.categoriaAnimalId = null;
@@ -124,26 +118,106 @@ const handleSubmit = async () => {
   };
 
   if (props.isDietMode) {
-    // Se estiver na tela de Dieta, apenas emite os dados para o pai
     emit('submit-data', payload);
   } else {
-    // Comportamento normal
     await store.performCalculation('requirements', payload);
   }
 };
 </script>
 
 <style scoped>
-/* Estilos inalterados */
-.form-container { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--grey-light); }
-.grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.form-section { margin-bottom: 1.5rem; }
-label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--black-light); }
-input[type="number"], select { width: 100%; padding: 0.8rem; border: 1px solid var(--grey); border-radius: 5px; font-size: 1rem; }
-.radio-group { display: flex; gap: 2rem; }
-.radio-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: normal; }
-button { width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: bold; margin-top: 1rem; background-color: var(--orange); color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
-button:disabled { background-color: var(--grey); cursor: not-allowed; }
-button:not(:disabled):hover { background-color: var(--light-orange); }
-@media (max-width: 600px) { .grid-2-cols { grid-template-columns: 1fr; gap: 0; } .form-section { margin-bottom: 1rem; } }
+/* =========================================
+   1. Containers & Layout do Formulário
+   ========================================= */
+.form-container {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--grey-light);
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* =========================================
+   2. Elementos de Entrada (Inputs & Labels)
+   ========================================= */
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--black-light);
+}
+
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--grey);
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Grupo de Radio Buttons */
+.radio-group {
+  display: flex;
+  gap: 2rem;
+}
+
+.radio-group label {
+  /* Sobrescreve o display block padrão para alinhar com o radio */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+}
+
+/* =========================================
+   3. Botões & Ações
+   ========================================= */
+button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  background-color: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:disabled {
+  background-color: var(--grey);
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  background-color: var(--light-orange);
+}
+
+/* =========================================
+   4. Responsividade (Mobile)
+   ========================================= */
+@media (max-width: 600px) {
+  .grid-2-cols {
+    grid-template-columns: 1fr; /* Empilha as colunas */
+    gap: 0;
+  }
+
+  .form-section {
+    margin-bottom: 1rem;
+  }
+}
 </style>

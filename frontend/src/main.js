@@ -16,7 +16,7 @@ app.use(router)
 app.mount('#app')
 
 AOS.init({
-  duration: 800, // Duração da animação em milissegundos
-  once: true,    // A animação acontece apenas uma vez
-  offset: 120,   // Começa a animar quando o elemento está a 120px da parte inferior da tela
+  duration: 800,
+  once: true,
+  offset: 120,
 });

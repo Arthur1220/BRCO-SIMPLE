@@ -52,25 +52,32 @@
 </script>
 
 <style scoped>
-/* --- Estrutura Principal do Footer --- */
+/* =========================================
+   1. Estrutura Principal (Layout)
+   ========================================= */
 .site-footer {
   width: 100%;
   background-color: var(--black);
   color: var(--grey);
   padding: 4rem 0 2rem;
   font-size: 0.95rem;
+
+  /* Cria o recorte diagonal no topo do rodapé */
   clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 100%);
 }
 
 .footer-grid {
   display: grid;
+  /* Cria colunas responsivas que se ajustam (min 250px) */
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 3rem;
   padding-bottom: 1rem;
   padding-left: 1.5rem;
 }
 
-/* --- Estilos das Colunas --- */
+/* =========================================
+   2. Tipografia e Colunas
+   ========================================= */
 .footer-column h4 {
   font-size: 1.2rem;
   font-weight: 600;
@@ -79,6 +86,8 @@
   margin-bottom: 1.5rem;
   position: relative;
 }
+
+/* Linha decorativa abaixo do título (Underline) */
 .footer-column h4::after {
   content: '';
   position: absolute;
@@ -88,11 +97,16 @@
   height: 2px;
   background-color: var(--orange);
 }
+
 .footer-about-text {
   line-height: 1.7;
   padding-right: 1rem;
   text-align: justify;
 }
+
+/* =========================================
+   3. Links e Navegação
+   ========================================= */
 .footer-links {
   display: flex;
   flex-direction: row;
@@ -100,51 +114,67 @@
   gap: 0.5rem;
   list-style: none;
 }
+
 .footer-links li {
   margin-bottom: 0.8rem;
 }
+
 .footer-links a {
   color: var(--grey);
   text-decoration: none;
+  /* Suaviza a mudança de cor e o movimento lateral */
   transition: color 0.3s ease, padding-left 0.3s ease;
 }
+
 .footer-links a:hover {
   color: var(--white);
-  padding-left: 5px;
+  padding-left: 5px; /* Efeito de "empurrãozinho" para a direita */
 }
 
-/* --- Logos de Apoio --- */
+/* =========================================
+   4. Logos de Apoio (Parceiros)
+   ========================================= */
 .support-logos {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
   align-items: center;
 }
+
 .support-logos img {
   max-height: 40px;
+  /* Transforma logos coloridas em monocromáticas claras */
   filter: grayscale(100%) brightness(150%);
   opacity: 0.7;
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
+
+/* Ao passar o mouse, restaura a cor original */
 .support-logos a:hover img {
   opacity: 1;
   filter: none;
 }
 
-/* --- Seção Inferior (Copyright) --- */
+/* =========================================
+   5. Rodapé Inferior (Copyright)
+   ========================================= */
 .footer-bottom {
   border-top: 1px solid var(--black-light);
   padding-top: 2rem;
   text-align: center;
   font-size: 0.85rem;
 }
+
 .footer-bottom p {
   margin: 0;
 }
 
-/* --- Responsividade --- */
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 768px) {
   .site-footer {
+    /* Remove o recorte diagonal em telas pequenas para ganhar espaço */
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     padding: 2rem 0 1.5rem;
   }
@@ -154,6 +184,5 @@
     margin-left: 1rem;
     text-align: center;
   }
-
 }
 </style>

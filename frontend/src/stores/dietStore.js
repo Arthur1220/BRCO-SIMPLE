@@ -2,11 +2,16 @@ import { ref, computed, reactive } from 'vue';
 import { defineStore } from 'pinia';
 import { getFoods, calculateDiet } from '@/services/apiService';
 
+/*
+ * Store para gerenciar o estado da criação e cálculo de dietas.
+ * Inclui etapas do formulário, dados dos alimentos, dados do animal, resultados, estado de carregamento, erros e controle de conflitos.
+ */
 export const useDietStore = defineStore('diet', () => {
-  // --- STATE (Estado) ---
 
-  // Controle do Passo a Passo (Wizard)
-  // 1: Introdução, 2: Dados do Animal, 3: Seleção de Alimentos, 4: Balanceamento, 5: Resultados
+  // Função auxiliar para criar um delay (pausa)
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // --- STATE (Estado) ---
   const currentStep = ref(1);
   const totalSteps = 5;
 
@@ -52,7 +57,6 @@ export const useDietStore = defineStore('diet', () => {
 
   // Busca a lista de alimentos do backend
   async function fetchFoods() {
-    // Só busca se ainda não tiver buscado para economizar requisições
     if (availableFoods.value.length > 0) return;
 
     isLoading.value = true;
@@ -85,7 +89,7 @@ export const useDietStore = defineStore('diet', () => {
       min: 0,
       max: 100,
       isCustom: !food.id,
-      price: 0 // Inicializa preço zerado
+      price: 0
     });
   }
 
@@ -113,7 +117,11 @@ export const useDietStore = defineStore('diet', () => {
     isLoading.value = true;
     error.value = null;
     dietResults.value = null;
-    showConflictModal.value = false; // Reseta o modal
+    showConflictModal.value = false;
+
+    // Tempo mínimo de loading para melhor UX
+    const minLoadingTime = 2000;
+    const startTime = Date.now();
 
     try {
       const payload = {
@@ -131,14 +139,20 @@ export const useDietStore = defineStore('diet', () => {
         showConflictModal.value = true;
         // NÃO avança o passo aqui, espera a escolha
       } else {
-        // Sem conflito: aplica o resultado direto (que vem dentro de 'result' ou direto no response dependendo do backend,
-        // mas no nosso último código backend 'result' vinha dentro de response.result se hasConflict=false)
-        // Ajuste conforme o retorno exato do seu backend.
-        // Baseado no último código: return { hasConflict: false, result: ... }
         applyResult(response.result || response);
       }
 
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < minLoadingTime) {
+        await sleep(minLoadingTime - elapsedTime);
+      }
+
     } catch (err) {
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < minLoadingTime) {
+        await sleep(minLoadingTime - elapsedTime);
+      }
+
       console.error("Erro no cálculo:", err);
       error.value = err.response?.data?.error || "Erro ao calcular a dieta.";
     } finally {

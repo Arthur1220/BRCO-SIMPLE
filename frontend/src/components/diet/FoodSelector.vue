@@ -172,7 +172,7 @@ const groupedFoods = computed(() => {
 });
 
 const isAdded = (food) => {
-    return store.selectedIngredients.some(i => i.name === food.name); // Verifica por nome (funciona para customizados sem ID)
+    return store.selectedIngredients.some(i => i.name === food.name);
 };
 
 const removeFood = (food) => {
@@ -184,23 +184,13 @@ const selectFood = (food) => {
     if (!isAdded(food)) store.addIngredient(food);
 };
 
-// --- LÓGICA NOVA: Criar e Adicionar à Lista ---
 const createCustomFood = () => {
-    // 1. Cria o objeto do novo alimento
     const newFood = { ...customFood, id: 'custom_' + Date.now() }; // Adiciona um ID falso para o sistema
-
-    // 2. Adiciona ao store de disponíveis (para aparecer na lista visualmente)
-    // Usamos unshift para ele aparecer no topo da categoria ou da lista
     store.availableFoods.push(newFood);
-
-    // 3. Seleciona ele automaticamente para a dieta
     store.addIngredient(newFood);
-
-    // 4. Limpeza
     showCreateModal.value = false;
     Object.assign(customFood, initialCustomState);
 };
-// ----------------------------------------------
 
 const openPreview = (food) => { previewFood.value = food; showPreviewModal.value = true; };
 const closePreview = () => { showPreviewModal.value = false; previewFood.value = null; };
@@ -211,60 +201,275 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ... (Estilos anteriores mantidos) ... */
+/* =========================================
+   1. Container Principal (Seletor)
+   ========================================= */
+.food-selector-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 600px;
+  border: 1px solid var(--grey-light);
+  border-radius: 8px;
+  background: var(--white);
+  overflow: hidden; /* Mantém tudo dentro das bordas arredondadas */
+}
 
-.food-selector-container { display: flex; flex-direction: column; height: 100%; max-height: 600px; border: 1px solid var(--grey-light); border-radius: 8px; background: var(--white); overflow: hidden; }
-.search-wrapper { padding: 1rem; border-bottom: 1px solid var(--grey-light); background: #f9f9f9; }
-.search-input { width: 100%; padding: 0.7rem; border: 1px solid var(--grey); border-radius: 6px; font-size: 0.95rem; }
-.food-list { flex-grow: 1; overflow-y: auto; padding-bottom: 1rem; }
-.category-header { background: #f0f2f5; color: var(--black-light); padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--grey-light); position: sticky; top: 0; z-index: 10; }
-.food-item { padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
-.food-item.is-selected { background-color: #e8f5e9; }
-.food-item:hover:not(.is-selected) { background-color: #f8f9fa; }
-.food-info { display: flex; align-items: center; gap: 0.5rem; }
-.food-name { font-size: 0.95rem; color: var(--black); }
-.food-actions { display: flex; gap: 0.5rem; align-items: center; }
-.btn-icon { width: 32px; height: 32px; border-radius: 6px; border: 1px solid #e0e0e0; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
-.btn-preview:hover { background-color: #f0f0f0; border-color: #ccc; }
-.btn-add:hover { background-color: #e8f5e9; border-color: #27ae60; }
-.btn-remove:hover { background-color: #ffebee; border-color: #e74c3c; }
-.category-badge { width: 20px; height: 20px; border-radius: 50%; color: white; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-left: 8px; text-transform: uppercase; }
-.volumoso { background-color: #27ae60; } .concentrado { background-color: #f39c12; } .suplemento { background-color: #8e44ad; }
+/* =========================================
+   2. Área de Busca
+   ========================================= */
+.search-wrapper {
+  padding: 1rem;
+  border-bottom: 1px solid var(--grey-light);
+  background: #f9f9f9;
+}
 
-/* --- CORREÇÃO RESPONSIVA DO MODAL --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+.search-input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--grey);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* =========================================
+   3. Lista de Alimentos (Scroll)
+   ========================================= */
+.food-list {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  overflow-y: auto;
+  padding-bottom: 1rem;
+}
+
+/* Cabeçalho da Categoria (Sticky) */
+.category-header {
+  background: #f0f2f5;
+  color: var(--black-light);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--grey-light);
+
+  /* Faz o cabeçalho "grudar" no topo ao rolar */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* =========================================
+   4. Item de Alimento (Linha)
+   ========================================= */
+.food-item {
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.food-item.is-selected {
+  background-color: #e8f5e9; /* Verde claro indicando seleção */
+}
+
+.food-item:hover:not(.is-selected) {
+  background-color: #f8f9fa;
+}
+
+.food-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.food-name {
+  font-size: 0.95rem;
+  color: var(--black);
+}
+
+/* =========================================
+   5. Ações e Botões do Item
+   ========================================= */
+.food-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Botão Base (Ícone) */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+/* Variações de Hover dos Botões */
+.btn-preview:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.btn-add:hover {
+  background-color: #e8f5e9;
+  border-color: #27ae60;
+}
+
+.btn-remove:hover {
+  background-color: #ffebee;
+  border-color: #e74c3c;
+}
+
+/* =========================================
+   6. Badges de Categoria
+   ========================================= */
+.category-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
+/* Cores das Categorias */
+.volumoso   { background-color: #27ae60; }
+.concentrado { background-color: #f39c12; }
+.suplemento { background-color: #8e44ad; }
+
+/* =========================================
+   7. Rodapé do Seletor (Custom Food)
+   ========================================= */
+.custom-food-footer {
+  padding: 1rem;
+  text-align: center;
+  border-top: 1px solid var(--grey-light);
+}
+
+.btn-custom {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px dashed var(--orange);
+  color: var(--orange);
+  background: white;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-custom:hover {
+  background: var(--orange);
+  color: white;
+  border-style: solid;
+}
+
+/* =========================================
+   8. Modal de Cadastro (Overlay & Content)
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+}
 
 .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    max-height: 90vh;
-    overflow-y: auto;
-    /* Correção Mobile */
-    width: 95%;
-    max-width: 600px;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  /* Largura Responsiva */
+  width: 95%;
+  max-width: 600px;
 }
 
+/* =========================================
+   9. Formulário do Modal (Grid)
+   ========================================= */
 .form-grid {
-    display: grid;
-    /* Correção Mobile: 1 coluna em telas pequenas, 2 em maiores */
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 2rem;
+  display: grid;
+  /* Mobile First: 1 coluna por padrão */
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--black);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--grey);
+  border-radius: 5px;
+}
+
+.field.full-width {
+  grid-column: 1 / -1; /* Ocupa toda a linha */
+}
+
+/* Ações do Modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-cancel {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--grey);
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  background: var(--blue);
+  color: white;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* =========================================
+   10. Media Queries (Desktop)
+   ========================================= */
 @media (min-width: 600px) {
-    .form-grid { grid-template-columns: 1fr 1fr; }
+  /* Em telas maiores, o formulário usa 2 colunas */
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
-
-.field.full-width { grid-column: 1 / -1; }
-.field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--black); }
-.field input, .field select { width: 100%; padding: 0.6rem; border: 1px solid var(--grey); border-radius: 5px; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; }
-.custom-food-footer { padding: 1rem; text-align: center; border-top: 1px solid var(--grey-light); }
-.btn-custom { width: 100%; padding: 0.7rem; border: 1px dashed var(--orange); color: var(--orange); background: white; border-radius: 6px; font-weight: 600; cursor: pointer; }
-.btn-custom:hover { background: var(--orange); color: white; border-style: solid; }
-.btn-cancel { padding: 0.6rem 1.2rem; border: 1px solid var(--grey); background: white; border-radius: 6px; cursor: pointer; }
-.btn-confirm { padding: 0.6rem 1.2rem; border: none; background: var(--blue); color: white; border-radius: 6px; font-weight: bold; cursor: pointer; }
 </style>

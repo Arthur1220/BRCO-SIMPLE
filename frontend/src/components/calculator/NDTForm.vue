@@ -77,13 +77,10 @@ const formData = reactive({
   PIDA: 0,
 });
 
-// Recupera dados salvos ao carregar o componente
 onMounted(() => {
   if (store.lastFormData && store.calculationType === 'ndt') {
-    // Copia os valores do store para o formulário local
     Object.assign(formData, store.lastFormData);
 
-    // Restaura a opção do radio button
     if (formData.PIDN > 0 || formData.PIDA > 0) {
       option.value = 'sim';
     } else {
@@ -99,33 +96,39 @@ const handleSubmit = async () => {
     FDN: Number(formData.FDN) || 0,
     Ligrina: Number(formData.Ligrina) || 0,
     MO: Number(formData.MO) || 0,
-    // Lógica condicional para PIDN e PIDA
     PIDN: option.value === 'sim' ? (Number(formData.PIDN) || 0) : 0,
     PIDA: option.value === 'sim' ? (Number(formData.PIDA) || 0) : 0,
   };
 
-  // Chama a action do store com o payload seguro
   await store.performCalculation('ndt', payload);
 };
 </script>
 
 <style scoped>
-/* Estilos permanecem os mesmos, pois já estão bem estruturados */
+/* =========================================
+   1. Containers & Layout do Formulário
+   ========================================= */
 .form-container {
   background: var(--white);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--grey-light);
 }
+
 .grid-2-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
+
 .form-section {
   margin-bottom: 1.5rem;
 }
+
+/* =========================================
+   2. Elementos de Entrada (Inputs & Labels)
+   ========================================= */
 label {
   display: block;
   font-weight: 500;
@@ -133,6 +136,7 @@ label {
   font-size: 0.9rem;
   color: var(--black-light);
 }
+
 input[type="number"] {
   width: 100%;
   padding: 0.8rem;
@@ -140,16 +144,24 @@ input[type="number"] {
   border-radius: 5px;
   font-size: 1rem;
 }
+
+/* Grupo de Radio Buttons */
 .radio-group {
   display: flex;
   gap: 2rem;
 }
+
 .radio-group label {
+  /* Alinhamento flex para ícone/texto do radio */
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: normal;
 }
+
+/* =========================================
+   3. Botões & Interações
+   ========================================= */
 button {
   width: 100%;
   padding: 1rem;
@@ -163,18 +175,25 @@ button {
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
 button:disabled {
   background-color: var(--grey);
   cursor: not-allowed;
 }
+
 button:not(:disabled):hover {
   background-color: var(--light-orange);
 }
+
+/* =========================================
+   4. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 600px) {
   .grid-2-cols {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Transforma grid em coluna única */
     gap: 0;
   }
+
   .form-section {
     margin-bottom: 1rem;
   }

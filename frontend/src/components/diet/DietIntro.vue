@@ -45,6 +45,9 @@ const store = useDietStore();
 </script>
 
 <style scoped>
+/* =========================================
+   1. Layout Principal & Container
+   ========================================= */
 .diet-intro {
   display: flex;
   justify-content: center;
@@ -53,26 +56,36 @@ const store = useDietStore();
   text-align: center;
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .content {
   max-width: 600px;
 }
 
+/* =========================================
+   2. Iconografia (Hero Icon)
+   ========================================= */
 .icon-container {
   width: 80px;
   height: 80px;
-  background-color: #e8f5e9;
-  color: #27ae60;
+  background-color: #e8f5e9; /* Verde muito claro (fundo) */
+  color: #27ae60; /* Verde vibrante (ícone) */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 2rem;
+  margin: 0 auto 2rem; /* Centraliza horizontalmente e dá margem inferior */
 }
-.icon-container svg { width: 40px; height: 40px; }
 
+.icon-container svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* =========================================
+   3. Tipografia
+   ========================================= */
 h2 {
   color: var(--orange);
   font-size: 2rem;
@@ -86,6 +99,9 @@ p {
   margin-bottom: 2.5rem;
 }
 
+/* =========================================
+   4. Lista de Passos (Steps)
+   ========================================= */
 .steps-list {
   list-style: none;
   padding: 0;
@@ -93,7 +109,7 @@ p {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Permite quebrar linha se faltar espaço */
 }
 
 .steps-list li {
@@ -120,6 +136,9 @@ p {
   font-weight: bold;
 }
 
+/* =========================================
+   5. Botões & Ações
+   ========================================= */
 .btn-start {
   padding: 1rem 3rem;
   font-size: 1.2rem;
@@ -130,16 +149,30 @@ p {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 10px rgba(245, 130, 32, 0.3);
+  box-shadow: 0 4px 10px rgba(245, 130, 32, 0.3); /* Sombra laranja suave */
 }
 
 .btn-start:hover {
   background-color: var(--light-orange);
-  transform: translateY(-2px);
+  transform: translateY(-2px); /* Efeito de elevação */
 }
 
+/* =========================================
+   6. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 600px) {
-  .steps-list { flex-direction: column; align-items: center; gap: 1.5rem; }
-  .steps-list li { flex-direction: row; text-align: left; width: 100%; justify-content: flex-start; }
+  .steps-list {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .steps-list li {
+    /* No mobile, o passo fica lado a lado com o texto (ex: (1) Texto) */
+    flex-direction: row;
+    text-align: left;
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>

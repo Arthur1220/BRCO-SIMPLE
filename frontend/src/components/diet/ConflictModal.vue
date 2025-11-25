@@ -76,6 +76,9 @@ const formatMoney = (val) => {
 </script>
 
 <style scoped>
+/* =========================================
+   1. Estrutura do Modal (Overlay & Container)
+   ========================================= */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -87,8 +90,8 @@ const formatMoney = (val) => {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  backdrop-filter: blur(4px);
-  padding: 1rem; /* Garante uma margem de segurança nas bordas em telas muito pequenas */
+  backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+  padding: 1rem; /* Margem de segurança para telas muito pequenas */
 }
 
 .modal-content {
@@ -96,30 +99,59 @@ const formatMoney = (val) => {
   width: 95%;
   max-width: 750px;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   border: 1px solid #e0e0e0;
+
+  /* Layout Flex para gerenciar header/body fixos vs roláveis */
   display: flex;
   flex-direction: column;
-  max-height: 90vh; /* Limita a altura a 90% da tela para garantir que caiba */
+  max-height: 90vh; /* Limita altura para caber na tela */
+  overflow: hidden;
 }
 
+/* =========================================
+   2. Cabeçalho do Modal
+   ========================================= */
 .modal-header {
-  background-color: #fff3cd;
+  background-color: #fff3cd; /* Amarelo claro (alerta/atenção) */
   color: #856404;
   padding: 1.5rem;
   border-bottom: 1px solid #ffeeba;
-  flex-shrink: 0; /* Garante que o cabeçalho não encolha */
+  flex-shrink: 0; /* Impede que o header encolha quando o conteúdo é grande */
 }
-.modal-header h2 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
 
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* =========================================
+   3. Corpo e Tipografia Geral
+   ========================================= */
 .modal-body {
   padding: 2rem;
-  overflow-y: auto; /* Adiciona rolagem apenas no corpo se necessário */
+  overflow-y: auto; /* Scroll apenas aqui dentro, header fica fixo */
 }
-.modal-body p { color: #555; line-height: 1.5; margin-bottom: 1rem; }
-.question { font-weight: 700; font-size: 1.1rem; color: #333; margin-top: 1.5rem; }
 
+.modal-body p {
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.question {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #333;
+  margin-top: 1.5rem;
+}
+
+/* =========================================
+   4. Grid de Opções (Cards de Comparação)
+   ========================================= */
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -135,19 +167,59 @@ const formatMoney = (val) => {
   flex-direction: column;
   transition: all 0.2s;
 }
-.option-card:hover { border-color: var(--orange); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-.card-header h3 { margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--black); }
-.tag-warning { font-size: 0.75rem; background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; }
+.option-card:hover {
+  border-color: var(--orange);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
 
-.pros-cons { list-style: none; padding: 0; margin: 1rem 0; flex-grow: 1; }
-.pros-cons li { font-size: 0.9rem; margin-bottom: 0.5rem; }
+.card-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--black);
+}
+
+/* =========================================
+   5. Elementos Internos do Card
+   ========================================= */
+.tag-warning {
+  font-size: 0.75rem;
+  background: #fff3cd;
+  color: #856404;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.pros-cons {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  flex-grow: 1; /* Empurra o conteúdo abaixo para o fundo do card */
+}
+
+.pros-cons li {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
 .pro { color: #27ae60; }
 .con { color: #e74c3c; }
 
-.cost-info { margin: 1rem 0; font-size: 0.9rem; color: #555; text-align: center; background: #f9f9f9; padding: 0.5rem; border-radius: 4px; }
+.cost-info {
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  background: #f9f9f9;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
 
-/* Botões */
+/* =========================================
+   6. Botões
+   ========================================= */
 .btn-option {
   width: 100%;
   padding: 0.8rem;
@@ -159,28 +231,48 @@ const formatMoney = (val) => {
   transition: background 0.2s;
 }
 
-.btn-option.primary { background-color: var(--orange); color: white; }
-.btn-option.primary:hover { background-color: var(--light-orange); }
+/* Variação Primária (Laranja) */
+.btn-option.primary {
+  background-color: var(--orange);
+  color: white;
+}
 
-.btn-option.secondary { background-color: var(--grey); color: white; }
-.btn-option.secondary:hover { background-color: #7f8c8d; }
+.btn-option.primary:hover {
+  background-color: var(--light-orange);
+}
 
-/* --- RESPONSIVIDADE --- */
+/* Variação Secundária (Cinza) */
+.btn-option.secondary {
+  background-color: var(--grey);
+  color: white;
+}
+
+.btn-option.secondary:hover {
+  background-color: #7f8c8d;
+}
+
+/* =========================================
+   7. Responsividade (Mobile)
+   ========================================= */
 @media (max-width: 700px) {
-  .options-grid { grid-template-columns: 1fr; } /* Empilha os cards no mobile */
+  .options-grid {
+    grid-template-columns: 1fr; /* Empilha os cards */
+  }
 
   .modal-content {
-    max-height: 85vh; /* Um pouco menor no mobile para garantir espaço para barras do navegador */
+    max-height: 85vh; /* Ajuste para navegadores móveis (barra de endereço) */
   }
 
   .modal-body {
-    padding: 1.5rem; /* Reduz o padding interno no mobile */
+    padding: 1.5rem;
   }
 
   .modal-header {
     padding: 1rem 1.5rem;
   }
 
-  .modal-header h2 { font-size: 1.2rem; }
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
 }
 </style>

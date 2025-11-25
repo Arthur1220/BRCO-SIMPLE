@@ -18,7 +18,7 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/formulacao-dieta', // Mudamos de /formulacaoDieta para kebab-case
+      path: '/formulacao-dieta',
       name: 'diet',
       component: () => import('../views/DietView.vue')
     },

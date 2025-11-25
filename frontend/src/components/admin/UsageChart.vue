@@ -9,11 +9,10 @@ import { computed } from 'vue';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 
-// Registra os componentes do Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 const props = defineProps({
-  data: { type: Array, required: true } // Array de { date: '...', count: 0 }
+  data: { type: Array, required: true }
 });
 
 const chartDataConfig = computed(() => ({
@@ -24,14 +23,14 @@ const chartDataConfig = computed(() => ({
   datasets: [
     {
       label: 'Cálculos Realizados',
-      backgroundColor: 'rgba(245, 130, 32, 0.2)', // Laranja transparente
-      borderColor: '#f58220', // Laranja da marca
+      backgroundColor: 'rgba(245, 130, 32, 0.2)',
+      borderColor: '#f58220',
       pointBackgroundColor: '#f58220',
       borderWidth: 2,
       pointRadius: 4,
       fill: true,
       data: props.data.map(d => d.count),
-      tension: 0.4 // Suaviza a linha (curva)
+      tension: 0.4
     }
   ]
 }));
@@ -51,7 +50,7 @@ const chartOptions = {
   scales: {
     y: {
         beginAtZero: true,
-        ticks: { precision: 0 }, // Apenas números inteiros
+        ticks: { precision: 0 },
         grid: { color: '#f0f0f0' }
     },
     x: { grid: { display: false } }
@@ -66,6 +65,6 @@ const chartOptions = {
   border-radius: 12px;
   border: 1px solid var(--grey-light);
   box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-  height: 300px; /* Altura fixa para o gráfico */
+  height: 300px;
 }
 </style>

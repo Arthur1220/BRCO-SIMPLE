@@ -101,7 +101,6 @@ const form = reactive({
   MS: 0, MO: 0, EE: 0, PB: 0, NDT: 0, FDNcp: 0, CNF: 0, Ca: 0, P: 0, PDR: 0, PNDR: 0
 });
 
-// Paginação
 const currentPage = ref(1);
 const itemsPerPage = 8;
 const totalPages = computed(() => Math.ceil(foods.value.length / itemsPerPage) || 1);
@@ -112,7 +111,6 @@ const paginatedFoods = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
 const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
 
-// Carregar dados
 const loadFoods = async () => {
   try {
     foods.value = await getFoods();
@@ -121,16 +119,14 @@ const loadFoods = async () => {
   }
 };
 
-// Abrir Modal
 const openModal = (food = null) => {
   if (food) {
     isEditing.value = true;
     editingId.value = food.id;
-    Object.assign(form, food); // Preenche o formulário
+    Object.assign(form, food);
   } else {
     isEditing.value = false;
     editingId.value = null;
-    // Reseta o formulário
     Object.keys(form).forEach(key => form[key] = (key === 'category' ? 'VOLUMOSO' : (key === 'name' ? '' : 0)));
   }
   showModal.value = true;
@@ -140,7 +136,6 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-// Salvar (Criar ou Editar)
 const saveFood = async () => {
   isSaving.value = true;
   try {
@@ -149,7 +144,7 @@ const saveFood = async () => {
     } else {
       await createFood(form);
     }
-    await loadFoods(); // Recarrega a lista
+    await loadFoods();
     closeModal();
   } catch (error) {
     alert("Erro ao salvar alimento.");
@@ -158,7 +153,6 @@ const saveFood = async () => {
   }
 };
 
-// Excluir
 const confirmDelete = async (food) => {
   if (confirm(`Tem certeza que deseja excluir "${food.name}"?`)) {
     try {
@@ -174,50 +168,250 @@ onMounted(loadFoods);
 </script>
 
 <style scoped>
-.foods-manager { margin-top: 4rem; }
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-h2 { font-size: 1.8rem; color: var(--black); margin: 0; }
+/* =========================================
+   1. Layout & Containers Gerais
+   ========================================= */
+.foods-manager {
+  margin-top: 4rem;
+}
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: var(--black);
+  margin: 0;
+}
+
+/* =========================================
+   2. Tabela de Dados (Data Grid)
+   ========================================= */
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* Garante scroll horizontal em telas pequenas */
+  border: 1px solid var(--grey-light);
+  border-radius: 8px;
+  background: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--grey-light);
+  white-space: nowrap; /* Evita que o texto quebre linhas na célula */
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--black-light);
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* =========================================
+   3. Botões & Elementos Interativos
+   ========================================= */
+/* Botão Principal de Adicionar */
 .btn-add {
-  background-color: var(--orange); color: white; border: none; padding: 0.7rem 1.2rem;
-  border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;
+  background-color: var(--orange);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
 }
-.btn-add:hover { background-color: var(--light-orange); }
 
-.table-container { width: 100%; overflow-x: auto; border: 1px solid var(--grey-light); border-radius: 8px; background: white; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--grey-light); white-space: nowrap; }
-th { background-color: #f8f9fa; font-weight: 600; font-size: 0.9rem; color: var(--black-light); }
-.font-medium { font-weight: 600; color: var(--black); }
+.btn-add:hover {
+  background-color: var(--light-orange);
+}
 
-.actions-cell { display: flex; gap: 0.5rem; }
-.btn-icon { background: none; border: none; cursor: pointer; padding: 0.4rem; border-radius: 4px; color: var(--grey); transition: all 0.2s; }
-.btn-icon:hover { background-color: var(--grey-light); }
-.btn-icon.edit:hover { color: var(--orange); }
-.btn-icon.delete:hover { color: var(--red-error); }
-.w-5 { width: 20px; height: 20px; }
+/* Botões de ícone (Editar/Excluir) */
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 4px;
+  color: var(--grey);
+  transition: all 0.2s;
+}
 
+.btn-icon:hover {
+  background-color: var(--grey-light);
+}
+
+.btn-icon.edit:hover {
+  color: var(--orange);
+}
+
+.btn-icon.delete:hover {
+  color: var(--red-error);
+}
+
+/* =========================================
+   4. Badges & Indicadores
+   ========================================= */
 .category-badge {
-  font-size: 0.7rem; font-weight: bold; color: white; background-color: #999;
-  width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: white;
+  background-color: #999; /* Cor default */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
 }
+
+/* Modificadores de Categoria */
 .category-badge.volumoso { background-color: #27ae60; }
 .category-badge.concentrado { background-color: #f39c12; }
 .category-badge.suplemento { background-color: #8e44ad; }
 
-/* Modal Styles */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(2px); }
-.modal-content { background: white; padding: 2rem; border-radius: 12px; width: 95%; max-width: 700px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; margin-top: 1.5rem;}
-.field.full-width { grid-column: 1 / -1; }
-.field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--black-light); }
-.field input, .field select { width: 100%; padding: 0.6rem; border: 1px solid var(--grey); border-radius: 6px; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; }
-.btn-cancel { padding: 0.7rem 1.5rem; border: 1px solid var(--grey); background: white; color: var(--black); border-radius: 6px; cursor: pointer; font-weight: bold; }
-.btn-confirm { padding: 0.7rem 1.5rem; border: none; background: var(--orange); color: white; border-radius: 6px; cursor: pointer; font-weight: bold; }
-.btn-confirm:disabled { opacity: 0.7; cursor: not-allowed; }
+/* =========================================
+   5. Modal & Formulários
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px); /* Efeito de desfoque no fundo */
+}
 
-.pagination { display: flex; justify-content: flex-end; align-items: center; padding: 1rem; gap: 1rem; background: #fafafa; border-top: 1px solid var(--grey-light); }
-.page-btn { background: white; border: 1px solid var(--grey); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
-.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 700px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Grid do Formulário */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  margin-top: 1.5rem;
+}
+
+.field.full-width {
+  grid-column: 1 / -1; /* Ocupa toda a largura da grid */
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--black-light);
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--grey);
+  border-radius: 6px;
+}
+
+/* Ações do Modal (Rodapé) */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-cancel {
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--grey);
+  background: white;
+  color: var(--black);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-confirm {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  background: var(--orange);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   6. Paginação
+   ========================================= */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+  background: #fafafa;
+  border-top: 1px solid var(--grey-light);
+}
+
+.page-btn {
+  background: white;
+  border: 1px solid var(--grey);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   7. Utilitários
+   ========================================= */
+.font-medium {
+  font-weight: 600;
+  color: var(--black);
+}
+
+.w-5 {
+  width: 20px;
+  height: 20px;
+}
 </style>
