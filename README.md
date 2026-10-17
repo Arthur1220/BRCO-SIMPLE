@@ -77,8 +77,24 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
 5.  **Acesse a Aplicação:**
     * **Frontend:** [http://localhost:8080](http://localhost:8080)
     * **Backend API (via Caddy):** [https://localhost](https://localhost)
-    * **Documentação da API (Swagger):** [https://localhost/api-docs](https://localhost/api-docs)
+    * **Documentação da API v1 (gerada do código):** [https://localhost/api-docs/v1](https://localhost/api-docs/v1)
+    * **Documentação da API v0 (legado):** [https://localhost/api-docs](https://localhost/api-docs)
     * **Painel de Admin (Login):** [http://localhost:8080/admin](http://localhost:8080/admin)
+
+## 🧭 API v1 (contrato de apresentação)
+
+O backend concentra todas as regras; o frontend apenas exibe e coleta dados. A v1 convive com a v0 (`/api/...`) até a migração do frontend.
+
+| Pasta (backend) | Papel |
+|---|---|
+| `domain/` | Fórmulas científicas puras (exigências, NDT, dieta, CSV) |
+| `catalog/` | Espécies, genótipos, sexos e regras da dieta |
+| `contracts/` | Schemas Zod: validação de entrada, schema de resposta e geração do OpenAPI |
+| `controllers/v1`, `routes/v1` | Endpoints da v1 |
+
+* `GET /api/v1/catalog`: opções, campos (label, unidade, limites) e regras para montar as telas, com `ETag` e cache de 1 hora.
+* Erros da v1 sempre no formato `{ "error": { "code", "message", "fields": [{ "path", "code", "message" }] } }`.
+* Limites e regras dos campos ficam em `contracts/fields.js` e `contracts/*.js`, e uma única definição gera a validação e o catálogo.
 
 ## 🧪 Testes
 
