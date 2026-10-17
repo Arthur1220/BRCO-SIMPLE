@@ -114,19 +114,15 @@ const format = (value) =>
   margin-bottom: 28px;
 }
 
-/* Arte da capa: mesmas cores do livro (laranja da marca clareado) */
+/* Arte da capa do livro, sem fundo (traço direto sobre a página) */
 .cover-art {
   display: grid;
   place-items: center;
-  aspect-ratio: 5 / 4;
-  padding: 40px;
-  border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--brand) 26%, #fff);
 }
 
 .cover-art img {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   height: auto;
   mix-blend-mode: multiply;
 }
@@ -240,7 +236,6 @@ const format = (value) =>
 
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; padding-bottom: 48px; }
-  .cover-art { aspect-ratio: auto; padding: 28px; }
   .cover-art img { max-width: 280px; }
   .sample-section { grid-template-columns: 1fr; gap: 16px; padding-bottom: 56px; }
   .source { grid-template-columns: 1fr; gap: 24px; }
