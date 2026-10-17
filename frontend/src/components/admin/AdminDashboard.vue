@@ -5,12 +5,12 @@
     </section>
 
     <section class="section">
-      <h3 class="section-title">Uso nos Últimos Dias</h3>
+      <h3 class="section-title">{{ $t('admin.usageTitle') }}</h3>
       <UsageChart :data="chartData" />
     </section>
 
     <section class="section">
-      <h3 class="section-title">Histórico de Atividades</h3>
+      <h3 class="section-title">{{ $t('admin.activityTitle') }}</h3>
       <LogsTable :logs="logs" />
     </section>
   </div>

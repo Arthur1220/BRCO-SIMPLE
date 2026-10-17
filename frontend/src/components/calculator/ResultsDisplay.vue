@@ -1,10 +1,10 @@
 <template>
   <div class="results-wrapper">
     <div class="results-header">
-      <h2>Resultados do Cálculo</h2>
+      <h2>{{ $t('results.title') }}</h2>
       <div class="export-buttons">
         <button @click="exportToCsv" class="btn-export csv" :disabled="isExporting">
-          {{ isExporting ? 'Gerando...' : 'Exportar CSV' }}
+          {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
         </button>
       </div>
     </div>
@@ -18,9 +18,9 @@
 
     <div class="details-section">
       <div class="accordion-controls">
-         <h4 class="details-title">Detalhamento</h4>
+         <h4 class="details-title">{{ $t('results.details') }}</h4>
          <button @click="toggleAll" class="btn-toggle-all">
-           {{ allExpanded ? 'Fechar Todos' : 'Abrir Todos' }}
+           {{ allExpanded ? $t('results.collapseAll') : $t('results.expandAll') }}
          </button>
       </div>
 
@@ -46,17 +46,17 @@
             <table>
               <thead>
                 <tr>
-                  <th>Parâmetro</th>
-                  <th class="center">Valor {{ hasMaxValue ? 'Requerido' : '' }}</th>
-                  <th class="center" v-if="hasMaxValue">Valor Máximo</th>
-                  <th class="center">Unidade</th>
+                  <th>{{ $t('results.parameter') }}</th>
+                  <th class="center">{{ hasMaxValue ? $t('results.requiredValue') : $t('results.value') }}</th>
+                  <th class="center" v-if="hasMaxValue">{{ $t('results.maxValue') }}</th>
+                  <th class="center">{{ $t('results.unit') }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="item in group.items.filter((i) => i.value > 0)" :key="item.code">
                   <td>{{ item.label }}</td>
                   <td class="center data-value">{{ format(item) }}</td>
-                  <td v-if="hasMaxValue" class="center data-value">{{ item.max !== undefined ? format(item, item.max) : 'N/A' }}</td>
+                  <td v-if="hasMaxValue" class="center data-value">{{ item.max !== undefined ? format(item, item.max) : $t('common.notAvailable') }}</td>
                   <td class="center">{{ item.unit }}</td>
                 </tr>
               </tbody>
@@ -73,11 +73,13 @@
 import { ref, computed, reactive, watch } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
 import { downloadCalculationCsv } from '@/services/apiService';
-import { parseApiError, API_LOCALE } from '@/services/axiosSetup';
+import { useI18n } from 'vue-i18n';
+import { parseApiError } from '@/services/axiosSetup';
 import { saveAs } from 'file-saver';
 
 // Highlights, grupos, labels, unidades e resumos vêm prontos da API v1.
 const store = useCalculationStore();
+const { t, locale } = useI18n();
 const results = computed(() => store.results);
 
 const expandedGroups = reactive({});
@@ -85,7 +87,7 @@ const allExpanded = ref(false);
 const isExporting = ref(false);
 
 const format = (item, value = item.value) =>
-  Number(value).toLocaleString(API_LOCALE, { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals });
+  Number(value).toLocaleString(locale.value, { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals });
 
 const hasMaxValue = computed(() =>
   results.value.groups.some((group) => group.items.some((item) => item.max !== undefined))
@@ -112,7 +114,7 @@ const exportToCsv = async () => {
     const { blob, filename } = await downloadCalculationCsv(results.value.calculationId);
     saveAs(blob, filename);
   } catch (error) {
-    alert(parseApiError(error, 'Não foi possível gerar o CSV.').message);
+    alert(parseApiError(error, t('errors.csv')).message);
   } finally {
     isExporting.value = false;
   }

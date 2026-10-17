@@ -5,7 +5,7 @@
       <input
         type="text"
         v-model="searchQuery"
-        placeholder="Buscar alimento (ex: Milho, Soja...)"
+        :placeholder="$t('foodSelector.searchPlaceholder')"
         class="search-input"
       />
     </div>
@@ -14,7 +14,7 @@
 
     <div class="food-list">
       <div v-if="store.isLoading && store.availableFoods.length === 0" class="loading-text">
-        Carregando alimentos...
+        {{ $t('foodSelector.loading') }}
       </div>
 
       <div v-else>
@@ -33,7 +33,7 @@
             </div>
 
             <div class="food-actions">
-              <button @click.stop="openPreview(food)" class="btn-icon btn-preview" title="Ver Nutrientes">
+              <button @click.stop="openPreview(food)" class="btn-icon btn-preview" :title="$t('foodSelector.viewNutrients')">
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
                   <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
                   <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" />
@@ -44,7 +44,7 @@
                 v-if="!store.isSelected(food)"
                 @click="store.addIngredient(food)"
                 class="btn-icon btn-add"
-                title="Adicionar"
+                :title="$t('common.add')"
               >
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
                   <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
@@ -55,7 +55,7 @@
                 v-else
                 @click="removeFood(food)"
                 class="btn-icon btn-remove"
-                title="Remover da lista"
+                :title="$t('foodSelector.removeFromList')"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
                   <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.477a8.666 8.666 0 013.751 0zm-2.546 10.716a.75.75 0 00-1.5 0v-5.43a.75.75 0 00-1.5 0v5.43a.75.75 0 001.5 0zm3 0a.75.75 0 00-1.5 0v-5.43a.75.75 0 00-1.5 0v5.43zM9 15.194a.75.75 0 01-1.5 0v-5.43a.75.75 0 011.5 0v5.43z" clip-rule="evenodd" />
@@ -67,15 +67,15 @@
         </template>
 
         <div v-if="!store.isLoading && groupedFoods.length === 0" class="no-results">
-          Nenhum alimento encontrado.
+          {{ $t('foodSelector.noResults') }}
         </div>
       </div>
     </div>
 
     <div class="custom-food-footer">
-      <p>Não encontrou o que procura?</p>
+      <p>{{ $t('foodSelector.notFound') }}</p>
       <button @click="showCreateModal = true" class="btn-custom">
-        + Criar Alimento Personalizado
+        {{ $t('foodSelector.createCustom') }}
       </button>
     </div>
 
@@ -90,23 +90,23 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button @click="closePreview" class="btn-cancel">Fechar</button>
-                <button v-if="!store.isSelected(previewFood)" @click="store.addIngredient(previewFood); closePreview()" class="btn-confirm">Adicionar</button>
+                <button @click="closePreview" class="btn-cancel">{{ $t('common.close') }}</button>
+                <button v-if="!store.isSelected(previewFood)" @click="store.addIngredient(previewFood); closePreview()" class="btn-confirm">{{ $t('common.add') }}</button>
             </div>
         </div>
     </div>
 
     <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
       <div class="modal-content">
-        <h3>Novo Alimento</h3>
+        <h3>{{ $t('foodSelector.newFood') }}</h3>
         <form @submit.prevent="createCustomFood">
           <div class="form-grid">
             <div class="field full-width">
-              <label>Nome</label>
+              <label>{{ $t('common.name') }}</label>
               <input v-model="customFood.name" type="text" required>
             </div>
             <div class="field full-width">
-              <label>Categoria</label>
+              <label>{{ $t('common.category') }}</label>
               <select v-model="customFood.category" required>
                 <option v-for="category in catalog.diet.categories" :key="category.code" :value="category.code">{{ category.label }}</option>
               </select>
@@ -118,8 +118,8 @@
             </div>
           </div>
           <div class="modal-actions">
-            <button type="button" @click="showCreateModal = false" class="btn-cancel">Cancelar</button>
-            <button type="submit" class="btn-confirm">Criar e Adicionar</button>
+            <button type="button" @click="showCreateModal = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
+            <button type="submit" class="btn-confirm">{{ $t('foodSelector.createAndAdd') }}</button>
           </div>
         </form>
       </div>

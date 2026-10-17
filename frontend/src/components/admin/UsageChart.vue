@@ -6,6 +6,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 
@@ -15,14 +16,15 @@ const props = defineProps({
   data: { type: Array, required: true }
 });
 
+const { t, locale } = useI18n();
+
 const chartDataConfig = computed(() => ({
-  labels: props.data.map(d => {
-      const date = new Date(d.date);
-      return `${date.getDate()}/${date.getMonth() + 1}`;
-  }),
+  labels: props.data.map(d =>
+      new Date(d.date).toLocaleDateString(locale.value, { day: 'numeric', month: 'numeric' })
+  ),
   datasets: [
     {
-      label: 'Cálculos Realizados',
+      label: t('admin.chartLabel'),
       backgroundColor: 'rgba(245, 130, 32, 0.2)',
       borderColor: '#f58220',
       pointBackgroundColor: '#f58220',

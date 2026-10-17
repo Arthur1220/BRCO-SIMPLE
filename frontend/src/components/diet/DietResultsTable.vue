@@ -2,14 +2,14 @@
   <div class="diet-results" v-if="solution">
 
     <div class="recipe-section">
-      <h4 class="section-title">Receita Sugerida (Base Matéria Seca)</h4>
+      <h4 class="section-title">{{ $t('dietResults.recipeTitle') }}</h4>
       <div class="table-container">
         <table class="recipe-table">
           <thead>
             <tr>
-              <th>Ingrediente</th>
-              <th class="center">Proporção Final (%)</th>
-              <th class="center">Quantidade (kg MS/dia)</th>
+              <th>{{ $t('dietResults.ingredient') }}</th>
+              <th class="center">{{ $t('dietResults.finalProportion') }}</th>
+              <th class="center">{{ $t('dietResults.quantity') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -27,26 +27,26 @@
 
     <div class="summary-cards">
       <div class="card">
-        <span class="label">Consumo Total Estimado (MS)</span>
+        <span class="label">{{ $t('dietResults.totalIntake') }}</span>
         <span class="value">{{ formatNum(solution.totals.intakeKgPerDay) }} kg</span>
       </div>
        <div class="card">
-        <span class="label">Custo Total Estimado</span>
-        <span class="value">R$ {{ formatNum(solution.totals.costPerDay) }}</span>
+        <span class="label">{{ $t('dietResults.totalCost') }}</span>
+        <span class="value">{{ $t('common.currency', { value: formatNum(solution.totals.costPerDay) }) }}</span>
       </div>
     </div>
 
     <div class="balance-section">
-      <h4 class="section-title">Análise Nutricional (Balanço)</h4>
+      <h4 class="section-title">{{ $t('dietResults.balanceTitle') }}</h4>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>Nutriente</th>
-              <th class="center">Requerido (Meta)</th>
-              <th class="center">Fornecido (Dieta)</th>
-              <th class="center">Balanço</th>
-              <th class="center">Status</th>
+              <th>{{ $t('dietResults.nutrient') }}</th>
+              <th class="center">{{ $t('dietResults.required') }}</th>
+              <th class="center">{{ $t('dietResults.supplied') }}</th>
+              <th class="center">{{ $t('dietResults.balance') }}</th>
+              <th class="center">{{ $t('dietResults.status') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -68,7 +68,7 @@
 
     <div class="export-row">
       <button @click="exportToCsv" class="btn-export" :disabled="isExporting">
-        {{ isExporting ? 'Gerando...' : 'Exportar CSV' }}
+        {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
       </button>
     </div>
   </div>
@@ -78,11 +78,13 @@
 import { ref, computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
 import { downloadCalculationCsv } from '@/services/apiService';
-import { parseApiError, API_LOCALE } from '@/services/axiosSetup';
+import { useI18n } from 'vue-i18n';
+import { parseApiError } from '@/services/axiosSetup';
 import { saveAs } from 'file-saver';
 
 // kg/dia, custo, balanço e status vêm calculados da API v1.
 const store = useDietStore();
+const { t, locale } = useI18n();
 const solution = computed(() => store.dietResults?.solution);
 const isExporting = ref(false);
 
@@ -90,7 +92,7 @@ const isExporting = ref(false);
 const STATUS_CLASS = { ideal: 'badge-success', deficit: 'badge-warning', excess: 'badge-info', info: 'badge-info' };
 
 const formatNum = (num, decimals = 2) =>
-  Number(num || 0).toLocaleString(API_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  Number(num || 0).toLocaleString(locale.value, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 const exportToCsv = async () => {
   isExporting.value = true;
@@ -98,7 +100,7 @@ const exportToCsv = async () => {
     const { blob, filename } = await downloadCalculationCsv(store.dietResults.calculationId);
     saveAs(blob, filename);
   } catch (error) {
-    alert(parseApiError(error, 'Não foi possível gerar o CSV.').message);
+    alert(parseApiError(error, t('errors.csv')).message);
   } finally {
     isExporting.value = false;
   }

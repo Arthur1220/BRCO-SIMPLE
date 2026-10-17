@@ -9,7 +9,7 @@
       :min="field.min"
       :max="field.max"
       :required="field.required"
-      :placeholder="`Ex: ${field.placeholder}`"
+      :placeholder="$t('common.examplePlaceholder', { value: field.placeholder })"
       :class="{ 'has-error': error }"
     />
     <small v-if="error" class="field-error">{{ error }}</small>

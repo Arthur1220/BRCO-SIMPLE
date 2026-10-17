@@ -1,17 +1,17 @@
 <template>
   <div class="diet-balancer">
     <div class="header-row">
-      <h4>Ingredientes Selecionados</h4>
-      <small class="hint">Defina preço e limites para otimizar</small>
+      <h4>{{ $t('balancer.title') }}</h4>
+      <small class="hint">{{ $t('balancer.hint') }}</small>
     </div>
 
     <div v-if="store.selectedIngredients.length === 0" class="empty-state">
-      <p>Nenhum alimento selecionado.</p>
+      <p>{{ $t('balancer.empty') }}</p>
     </div>
 
     <div v-else-if="fields" class="ingredients-list">
       <div class="list-header">
-        <span class="col-name">Alimento</span>
+        <span class="col-name">{{ $t('balancer.food') }}</span>
         <span class="col-input" v-for="field in fields" :key="field.name">{{ field.label }} ({{ field.unit }})</span>
         <span class="col-action"></span>
       </div>
@@ -42,7 +42,7 @@
           </div>
         </div>
 
-        <button @click="store.removeIngredient(index)" class="btn-remove" title="Remover">
+        <button @click="store.removeIngredient(index)" class="btn-remove" :title="$t('common.remove')">
           &times;
         </button>
       </div>

@@ -2,9 +2,9 @@
   <div class="equipe-page">
     <div class="container">
       <main class="equipe-main">
-        <h1>Nossa Equipe</h1>
+        <h1>{{ $t('team.title') }}</h1>
         <p class="intro-text">
-          Conheça as mentes brilhantes e o esforço tecnológico e humano por trás deste projeto.
+          {{ $t('team.intro') }}
         </p>
         <div class="team-grid">
           <div
@@ -12,23 +12,23 @@
             v-for="(member, index) in teamMembers"
             :key="index"
             @click="redirectToPage(member.pageUrl)"
-            :title="'Clique para ver o perfil de ' + member.name"
+            :title="$t('team.profileTitle', { name: member.name })"
             :class="{ 'highlight-card': index === 0 }"
           >
             <div class="card-content">
               <div class="profile-image">
-                <img :src="member.image" :alt="'Foto de ' + member.name" loading="lazy">
+                <img :src="member.image" :alt="$t('team.photoAlt', { name: member.name })" loading="lazy">
               </div>
               <div class="member-info">
                 <h3>{{ member.name }}</h3>
-                <p class="role">{{ member.role }}</p>
+                <p class="role">{{ $t(`team.roles.${member.role}`) }}</p>
               </div>
               <div class="card-footer">
                 <div class="social-link" v-if="member.pageUrl">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="link-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                   </svg>
-                  <span>Ver Perfil</span>
+                  <span>{{ $t('team.viewProfile') }}</span>
                 </div>
               </div>
             </div>
@@ -40,12 +40,13 @@
 </template>
 
 <script setup>
+// role: chave em team.roles das mensagens de i18n
 const teamMembers = [
-  { name: 'Arthur Azevedo', role: 'Desenvolvimento & Design do Site', image: 'https://avatars.githubusercontent.com/u/68549693?v=4', pageUrl: 'https://github.com/Arthur1220' },
-  { name: 'Elzania Sales Pereira', role: 'Coord. Exigências Nutricionais Ovinos', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4763473Z5', pageUrl: 'http://lattes.cnpq.br/4011686548866427' },
-  { name: 'Izabelle Teixeira', role: 'Coord. Exigências Nutricionais Caprinos', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4794675J1', pageUrl: 'http://lattes.cnpq.br/6293663565260182' },
-  { name: 'José Augusto Azevêdo', role: 'Coord. Predição Consumo Matéria Seca', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4737784T8', pageUrl: 'http://lattes.cnpq.br/9391454312997091' },
-  { name: 'Stefanie Santos', role: 'Coord. Valor Energético, Proteína Microbiana', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4734900T6', pageUrl: 'http://lattes.cnpq.br/6751268658250102' }
+  { name: 'Arthur Azevedo', role: 'development', image: 'https://avatars.githubusercontent.com/u/68549693?v=4', pageUrl: 'https://github.com/Arthur1220' },
+  { name: 'Elzania Sales Pereira', role: 'sheepRequirements', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4763473Z5', pageUrl: 'http://lattes.cnpq.br/4011686548866427' },
+  { name: 'Izabelle Teixeira', role: 'goatRequirements', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4794675J1', pageUrl: 'http://lattes.cnpq.br/6293663565260182' },
+  { name: 'José Augusto Azevêdo', role: 'dryMatterIntake', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4737784T8', pageUrl: 'http://lattes.cnpq.br/9391454312997091' },
+  { name: 'Stefanie Santos', role: 'energyProtein', image: 'http://servicosweb.cnpq.br/wspessoa/servletrecuperafoto?tipo=1&id=K4734900T6', pageUrl: 'http://lattes.cnpq.br/6751268658250102' }
 ];
 
 const redirectToPage = (url) => {

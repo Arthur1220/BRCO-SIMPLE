@@ -2,7 +2,7 @@
   <div class="spinner-overlay">
     <div class="spinner-card">
       <div class="spinner"></div>
-      <p>Processando...</p>
+      <p>{{ $t('common.processing') }}</p>
     </div>
   </div>
 </template>

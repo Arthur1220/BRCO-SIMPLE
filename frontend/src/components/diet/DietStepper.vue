@@ -16,7 +16,7 @@
           <span v-if="store.currentStep > step.id">✓</span>
           <span v-else>{{ step.id }}</span>
         </div>
-        <span class="step-label">{{ step.label }}</span>
+        <span class="step-label">{{ $t(`diet.steps.${step.key}`) }}</span>
 
         <div class="step-line" v-if="step.id !== steps.length"></div>
       </div>
@@ -30,11 +30,11 @@ import { useDietStore } from '@/stores/dietStore';
 const store = useDietStore();
 
 const steps = [
-  { id: 1, label: 'Início' },
-  { id: 2, label: 'Animal' },
-  { id: 3, label: 'Alimentos' },
-  { id: 4, label: 'Balanço' },
-  { id: 5, label: 'Resultado' },
+  { id: 1, key: 'start' },
+  { id: 2, key: 'animal' },
+  { id: 3, key: 'foods' },
+  { id: 4, key: 'balance' },
+  { id: 5, key: 'result' },
 ];
 
 // Só permite clicar para voltar ou ir para um passo já visitado/válido

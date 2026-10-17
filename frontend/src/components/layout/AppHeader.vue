@@ -10,24 +10,42 @@
       <nav class="main-nav" :class="{ 'is-open': isMenuOpen }">
         <ul class="nav-links" @click.stop>
           <li class="nav-item-dropdown">
-            <span class="dropdown-toggle">Calculadoras</span>
+            <span class="dropdown-toggle">{{ $t('nav.calculators') }}</span>
             <ul class="dropdown-menu">
-              <li><router-link to="/calcular/exigencias" @click="closeMenu">Exigências Nutricionais</router-link></li>
-              <li><router-link to="/calcular/ndt" @click="closeMenu">Cálculo de NDT</router-link></li>
+              <li><router-link to="/calcular/exigencias" @click="closeMenu">{{ $t('nav.requirements') }}</router-link></li>
+              <li><router-link to="/calcular/ndt" @click="closeMenu">{{ $t('nav.ndt') }}</router-link></li>
             </ul>
           </li>
-          <li><router-link to="/formulacao-dieta" @click="closeMenu">Gerador de Dieta</router-link></li>
-          <li><router-link to="/equipe" @click="closeMenu">Equipe</router-link></li>
+          <li><router-link to="/formulacao-dieta" @click="closeMenu">{{ $t('nav.diet') }}</router-link></li>
+          <li><router-link to="/equipe" @click="closeMenu">{{ $t('nav.team') }}</router-link></li>
         </ul>
       </nav>
 
-      <button class="menu-toggle" @click="toggleMenu" aria-label="Toggle menu">
-        <div class="icon-wrapper">
-          <div class="bar bar-top" :class="{ 'is-open': isMenuOpen }"></div>
-          <div class="bar bar-middle" :class="{ 'is-open': isMenuOpen }"></div>
-          <div class="bar bar-bottom" :class="{ 'is-open': isMenuOpen }"></div>
+      <div class="header-actions">
+        <div class="lang-switcher" role="group" :aria-label="$t('language.label')">
+          <button
+            v-for="lang in SUPPORTED_LOCALES"
+            :key="lang"
+            type="button"
+            class="lang-option"
+            :class="{ active: locale === lang }"
+            :aria-pressed="locale === lang"
+            :title="$t(`language.${lang}`)"
+            :lang="lang"
+            @click="setLocale(lang)"
+          >
+            {{ LANG_SHORT[lang] }}
+          </button>
         </div>
-      </button>
+
+        <button class="menu-toggle" @click="toggleMenu" :aria-label="$t('nav.toggleMenu')">
+          <div class="icon-wrapper">
+            <div class="bar bar-top" :class="{ 'is-open': isMenuOpen }"></div>
+            <div class="bar bar-middle" :class="{ 'is-open': isMenuOpen }"></div>
+            <div class="bar bar-bottom" :class="{ 'is-open': isMenuOpen }"></div>
+          </div>
+        </button>
+      </div>
     </div>
   </header>
 </template>
@@ -35,6 +53,11 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { SUPPORTED_LOCALES, setLocale } from '@/i18n';
+
+const { locale } = useI18n();
+const LANG_SHORT = { 'pt-BR': 'PT', en: 'EN' };
 
 const isMenuOpen = ref(false);
 const route = useRoute();
@@ -97,6 +120,44 @@ watch(() => route.path, () => {
 
 .logo h3 strong {
   color: var(--orange);
+}
+
+/* Ações à direita: seletor de idioma + hambúrguer (mobile) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1001;
+}
+
+.lang-switcher {
+  display: inline-flex;
+  border: 1px solid var(--grey-light);
+  border-radius: 999px;
+  padding: 2px;
+  background-color: var(--white);
+}
+
+.lang-option {
+  border: none;
+  background: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--black-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lang-option:hover {
+  color: var(--black);
+}
+
+.lang-option.active {
+  background-color: var(--orange);
+  color: var(--white);
 }
 
 /* Botão Toggle (Hambúrguer) - Invisível por padrão no Desktop */

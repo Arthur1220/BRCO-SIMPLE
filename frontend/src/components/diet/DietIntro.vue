@@ -7,33 +7,30 @@
         </svg>
       </div>
 
-      <h2>Formulação de Dieta Otimizada</h2>
-      <p>
-        Utilize nossa ferramenta inteligente para criar dietas balanceadas de mínimo custo.
-        O sistema irá calcular automaticamente a melhor combinação de alimentos para atender às exigências do seu animal.
-      </p>
+      <h2>{{ $t('dietIntro.title') }}</h2>
+      <p>{{ $t('dietIntro.text') }}</p>
 
       <ul class="steps-list">
         <li>
           <span class="step-num">1</span>
-          <span>Defina as características do animal</span>
+          <span>{{ $t('dietIntro.step1') }}</span>
         </li>
         <li>
           <span class="step-num">2</span>
-          <span>Escolha os alimentos disponíveis</span>
+          <span>{{ $t('dietIntro.step2') }}</span>
         </li>
         <li>
           <span class="step-num">3</span>
-          <span>Defina limites e preços (Opcional)</span>
+          <span>{{ $t('dietIntro.step3') }}</span>
         </li>
         <li>
           <span class="step-num">4</span>
-          <span>Receba a receita pronta!</span>
+          <span>{{ $t('dietIntro.step4') }}</span>
         </li>
       </ul>
 
       <button @click="store.nextStep()" class="btn-start">
-        Iniciar Formulação
+        {{ $t('dietIntro.start') }}
       </button>
     </div>
   </div>

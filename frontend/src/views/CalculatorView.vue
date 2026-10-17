@@ -2,10 +2,10 @@
   <div class="container">
     <div class="calculator-wrapper">
       <aside class="sidebar">
-        <h2>Cálculos</h2>
+        <h2>{{ $t('calculator.sidebarTitle') }}</h2>
         <nav>
-          <router-link to="/calcular/exigencias" class="nav-item" active-class="active">Exigências Nutricionais</router-link>
-          <router-link to="/calcular/ndt" class="nav-item" active-class="active">Nutrientes Digestíveis Totais (NDT)</router-link>
+          <router-link to="/calcular/exigencias" class="nav-item" active-class="active">{{ $t('calculator.navRequirements') }}</router-link>
+          <router-link to="/calcular/ndt" class="nav-item" active-class="active">{{ $t('calculator.navNdt') }}</router-link>
         </nav>
       </aside>
 
@@ -19,24 +19,24 @@
 
             <div v-else-if="store.error" class="state-container">
               <div class="error-message">
-                <h3>Ocorreu um Erro</h3>
+                <h3>{{ $t('calculator.errorTitle') }}</h3>
                 <p>{{ store.error }}</p>
-                <button @click="returnToForm" class="btn-return">Tentar Novamente</button>
+                <button @click="returnToForm" class="btn-return">{{ $t('calculator.tryAgain') }}</button>
               </div>
             </div>
 
             <div v-else-if="viewMode === 'form'">
               <div v-if="type === 'exigencias'">
                 <div class="info-header">
-                  <h1>Calcular Exigências</h1>
-                  <p>Utilize esta ferramenta para determinar as exigências nutricionais específicas de ovinos e caprinos.</p>
+                  <h1>{{ $t('calculator.requirementsTitle') }}</h1>
+                  <p>{{ $t('calculator.requirementsIntro') }}</p>
                 </div>
                 <ExigenciasForm />
               </div>
               <div v-if="type === 'ndt'">
                 <div class="info-header">
-                  <h1>Calcular NDT</h1>
-                  <p>O NDT é um parâmetro para expressar a energia de um alimento. É a soma de todos os nutrientes orgânicos digestíveis.</p>
+                  <h1>{{ $t('calculator.ndtTitle') }}</h1>
+                  <p>{{ $t('calculator.ndtIntro') }}</p>
                 </div>
                 <NDTForm />
               </div>
@@ -44,11 +44,11 @@
 
             <div v-else-if="viewMode === 'results'">
               <div class="results-container">
-                <button @click="returnToForm" class="return-button" title="Fazer novo cálculo">
+                <button @click="returnToForm" class="return-button" :title="$t('calculator.newCalculation')">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                   </svg>
-                  <span>Editar Dados</span>
+                  <span>{{ $t('calculator.editData') }}</span>
                 </button>
                 <ResultsDisplay />
               </div>

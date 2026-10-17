@@ -1,9 +1,7 @@
 import axios from 'axios';
+import { locale, t } from '@/i18n';
 
 const ADMIN_TOKEN_KEY = 'brcoAdminToken';
-
-// Idioma pedido à API (textos, labels e mensagens de erro vêm do backend).
-export const API_LOCALE = 'pt-BR';
 
 // A API é sempre servida em /api no mesmo domínio:
 // proxy do Vite (dev), nginx (Docker local) ou proxy do Netlify (produção).
@@ -12,7 +10,6 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Accept-Language': API_LOCALE,
   }
 });
 
@@ -39,6 +36,9 @@ export const hasValidAdminToken = () => {
 
 // Envia o token de sessão em todas as rotas administrativas
 apiClient.interceptors.request.use((config) => {
+  // Idioma pedido à API (textos, labels e mensagens de erro vêm do backend).
+  // Segue o idioma da interface, salvo quando a chamada já fixou um.
+  if (!config.headers['Accept-Language']) config.headers['Accept-Language'] = locale.value;
   const token = getAdminToken();
   if (token && isAdminUrl(config.url)) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -61,7 +61,7 @@ apiClient.interceptors.response.use(response => response, errorInterceptor);
  * Extrai o erro no formato da API v1: { message, fields: { caminho: mensagem } }.
  * As mensagens já vêm prontas (e traduzidas) do backend.
  */
-export const parseApiError = (error, fallback = 'Ocorreu um erro inesperado.') => {
+export const parseApiError = (error, fallback = t('errors.unexpected')) => {
   const apiError = error?.response?.data?.error;
   if (apiError && typeof apiError === 'object') {
     const fields = {};

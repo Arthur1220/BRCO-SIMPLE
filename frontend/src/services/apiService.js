@@ -5,9 +5,10 @@ import apiClient from './axiosSetup.js';
 
 /**
  * Catálogo: espécies, formulários (campos, limites, regras) e regras da dieta.
+ * @param {string} locale - Idioma do catálogo ('pt-BR' ou 'en').
  */
-export const getCatalog = async () => {
-  const response = await apiClient.get('/v1/catalog');
+export const getCatalog = async (locale) => {
+  const response = await apiClient.get('/v1/catalog', { headers: { 'Accept-Language': locale } });
   return response.data;
 };
 

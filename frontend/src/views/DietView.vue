@@ -1,8 +1,8 @@
 <template>
   <div class="container diet-page">
     <header class="page-header">
-      <h1>Formulação de Dieta</h1>
-      <p>Sistema de otimização de custos e nutrientes.</p>
+      <h1>{{ $t('diet.title') }}</h1>
+      <p>{{ $t('diet.subtitle') }}</p>
     </header>
 
     <DietStepper />
@@ -16,16 +16,16 @@
 
           <div v-else-if="store.currentStep === 2" class="step-wrapper form-step" key="animal">
             <div class="step-header">
-              <h3>Passo 1: Defina o Animal</h3>
-              <p>Informe as características para calcularmos as exigências nutricionais.</p>
+              <h3>{{ $t('diet.animalStepTitle') }}</h3>
+              <p>{{ $t('diet.animalStepText') }}</p>
             </div>
             <ExigenciasForm :isDietMode="true" @submit-data="handleAnimalData" />
           </div>
 
           <div v-else-if="store.currentStep === 3" class="step-wrapper food-step" key="foods">
             <div class="step-header">
-              <h3>Passo 2: Escolha os Alimentos</h3>
-              <p>Selecione os ingredientes disponíveis na sua propriedade ou crie novos.</p>
+              <h3>{{ $t('diet.foodsStepTitle') }}</h3>
+              <p>{{ $t('diet.foodsStepText') }}</p>
             </div>
 
             <div class="selector-container">
@@ -33,21 +33,21 @@
             </div>
 
             <div class="nav-buttons">
-              <button @click="store.prevStep()" class="btn-secondary">Voltar</button>
+              <button @click="store.prevStep()" class="btn-secondary">{{ $t('common.back') }}</button>
               <button
                 @click="store.nextStep()"
                 class="btn-primary"
                 :disabled="store.selectedIngredients.length === 0"
               >
-                Próximo: Balancear
+                {{ $t('diet.nextBalance') }}
               </button>
             </div>
           </div>
 
           <div v-else-if="store.currentStep === 4" class="step-wrapper balance-step" key="balance">
             <div class="step-header">
-              <h3>Passo 3: Ajuste Fino</h3>
-              <p>Defina preços e limites (mín/máx) para o otimizador.</p>
+              <h3>{{ $t('diet.balanceStepTitle') }}</h3>
+              <p>{{ $t('diet.balanceStepText') }}</p>
             </div>
 
             <DietBalancer />
@@ -56,17 +56,17 @@
 
             <div class="calculation-area">
                <div class="total-bar" :class="totalStatusClass">
-                  <span>Soma Atual: <strong>{{ store.totalPercent.toFixed(1) }}%</strong></span>
+                  <span>{{ $t('diet.currentTotal') }} <strong>{{ store.totalPercent.toFixed(1) }}%</strong></span>
                   <span v-if="Math.abs(store.totalPercent - 100) > 0.1" class="info-text">
-                     (O sistema ajustará automaticamente para 100%)
+                     {{ $t('diet.autoAdjust') }}
                   </span>
-                  <span v-else class="success-text">✔ Fechado em 100%</span>
+                  <span v-else class="success-text">{{ $t('diet.closedAt100') }}</span>
                </div>
 
                <div class="nav-buttons">
-                  <button @click="store.prevStep()" class="btn-secondary">Voltar</button>
+                  <button @click="store.prevStep()" class="btn-secondary">{{ $t('common.back') }}</button>
                   <button @click="store.performDietCalculation" class="btn-calc" :disabled="store.isLoading">
-                      Calcular Otimização
+                      {{ $t('diet.calculate') }}
                   </button>
                </div>
             </div>
@@ -74,17 +74,17 @@
 
           <div v-else-if="store.currentStep === 5" class="step-wrapper results-step" key="results">
             <div class="results-top-bar">
-                <h3>Resultado da Otimização</h3>
+                <h3>{{ $t('diet.resultTitle') }}</h3>
                 <button @click="store.goToStep(4)" class="btn-edit">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                  Editar Parâmetros
+                  {{ $t('diet.editParameters') }}
                 </button>
             </div>
 
             <DietResultsTable />
 
             <div class="nav-buttons final-actions">
-                 <button @click="store.resetDiet()" class="btn-outline">Iniciar Nova Dieta</button>
+                 <button @click="store.resetDiet()" class="btn-outline">{{ $t('diet.restart') }}</button>
             </div>
           </div>
 

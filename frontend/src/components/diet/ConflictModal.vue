@@ -2,13 +2,13 @@
   <div class="modal-overlay" v-if="isVisible">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>⚠️ Conflito na Formulação</h2>
+        <h2>{{ $t('conflict.title') }}</h2>
       </div>
 
       <div class="modal-body">
         <p>{{ statusLabel }}</p>
 
-        <p class="question">Qual cenário você prefere ver?</p>
+        <p class="question">{{ $t('conflict.question') }}</p>
 
         <!-- Opções, textos e custos vêm prontos da API v1 -->
         <div class="options-grid">
@@ -23,14 +23,14 @@
             </div>
             <p class="option-description">{{ option.description }}</p>
             <div class="cost-info">
-              Custo Estimado: <strong>R$ {{ formatMoney(option.solution.totals.costPerDay) }}</strong>
+              {{ $t('conflict.estimatedCost') }} <strong>{{ $t('common.currency', { value: formatMoney(option.solution.totals.costPerDay) }) }}</strong>
             </div>
             <button
               @click="emit('select-option', option.code)"
               class="btn-option"
               :class="option.code === 'ideal' ? 'primary' : 'secondary'"
             >
-              Ver este resultado
+              {{ $t('conflict.viewResult') }}
             </button>
           </div>
         </div>
@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { API_LOCALE } from '@/services/axiosSetup';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
   isVisible: Boolean,
@@ -50,9 +50,10 @@ defineProps({
 });
 
 const emit = defineEmits(['select-option']);
+const { locale } = useI18n();
 
 const formatMoney = (val) =>
-  Number(val || 0).toLocaleString(API_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  Number(val || 0).toLocaleString(locale.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 </script>
 
 <style scoped>

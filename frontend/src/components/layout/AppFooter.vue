@@ -4,37 +4,37 @@
       <div class="footer-grid">
 
         <div class="footer-column">
-          <h4>Sobre o BRCO</h4>
+          <h4>{{ $t('footer.aboutTitle') }}</h4>
           <p class="footer-about-text">
-            Um portal de acesso livre para otimizar a nutrição de caprinos e ovinos, baseado em pesquisas científicas brasileiras.
+            {{ $t('footer.aboutText') }}
           </p>
         </div>
 
         <div class="footer-column">
-          <h4>Navegação</h4>
+          <h4>{{ $t('footer.navTitle') }}</h4>
           <ul class="footer-links">
-            <li><router-link to="/">Home</router-link></li>
-            <li><router-link to="/calcular/exigencias">Calculadoras</router-link></li>
-            <li><router-link to="/formulacao-dieta">Gerador de Dieta</router-link></li>
-            <li><router-link to="/equipe">Equipe</router-link></li>
-            <li><router-link to="/admin">Admin</router-link></li>
+            <li><router-link to="/">{{ $t('nav.home') }}</router-link></li>
+            <li><router-link to="/calcular/exigencias">{{ $t('nav.calculators') }}</router-link></li>
+            <li><router-link to="/formulacao-dieta">{{ $t('nav.diet') }}</router-link></li>
+            <li><router-link to="/equipe">{{ $t('nav.team') }}</router-link></li>
+            <li><router-link to="/admin">{{ $t('nav.admin') }}</router-link></li>
             </ul>
         </div>
 
         <div class="footer-column">
-          <h4>Apoio</h4>
+          <h4>{{ $t('footer.supportTitle') }}</h4>
           <div class="support-logos">
             <a href="https://www.cnpq.br/" target="_blank" rel="noopener noreferrer" title="CNPq">
-              <img src="@/assets/logos/cnpq.jpg" alt="Logo CNPq">
+              <img src="@/assets/logos/cnpq.jpg" :alt="$t('footer.logoAlt', { name: 'CNPq' })">
             </a>
             <a href="https://www.uesc.br/" target="_blank" rel="noopener noreferrer" title="UESC">
-              <img src="@/assets/logos/uesc.png" alt="Logo UESC">
+              <img src="@/assets/logos/uesc.png" :alt="$t('footer.logoAlt', { name: 'UESC' })">
             </a>
             <a href="https://www.ufc.br/" target="_blank" rel="noopener noreferrer" title="UFC">
-              <img src="@/assets/logos/ufc.png" alt="Logo UFC">
+              <img src="@/assets/logos/ufc.png" :alt="$t('footer.logoAlt', { name: 'UFC' })">
             </a>
             <a href="https://www.ufba.br/" target="_blank" rel="noopener noreferrer" title="UFBA">
-              <img src="@/assets/logos/ufba.png" alt="Logo UFBA">
+              <img src="@/assets/logos/ufba.png" :alt="$t('footer.logoAlt', { name: 'UFBA' })">
             </a>
           </div>
         </div>
@@ -42,7 +42,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; {{ new Date().getFullYear() }} BRCO - Todos os direitos reservados. Desenvolvido com base no livro "Exigências Nutricionais de Caprinos e Ovinos - BR-Caprinos e Ovinos".</p>
+        <p>&copy; {{ new Date().getFullYear() }} {{ $t('footer.copyright') }}</p>
       </div>
     </div>
   </footer>

@@ -1,6 +1,6 @@
 <template>
   <div class="form-container">
-    <div v-if="!form" class="catalog-state">{{ catalog.error || 'Carregando opções...' }}</div>
+    <div v-if="!form" class="catalog-state">{{ catalog.error || $t('common.loadingOptions') }}</div>
 
     <form v-else @submit.prevent="handleSubmit">
       <div class="grid-2-cols">
@@ -11,10 +11,10 @@
         <label>{{ group.label }}</label>
         <div class="radio-group">
           <label>
-            <input type="radio" :value="true" v-model="enabledGroups[group.code]"> Sim
+            <input type="radio" :value="true" v-model="enabledGroups[group.code]"> {{ $t('common.yes') }}
           </label>
           <label>
-            <input type="radio" :value="false" v-model="enabledGroups[group.code]"> Não
+            <input type="radio" :value="false" v-model="enabledGroups[group.code]"> {{ $t('common.no') }}
           </label>
         </div>
 
@@ -30,7 +30,7 @@
       </div>
 
       <button type="submit" :disabled="store.isLoading">
-        {{ store.isLoading ? 'Calculando...' : 'Calcular NDT' }}
+        {{ store.isLoading ? $t('common.calculating') : $t('ndtForm.submit') }}
       </button>
     </form>
   </div>

@@ -1,34 +1,50 @@
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { defineStore } from 'pinia';
 import { getCatalog } from '@/services/apiService';
 import { parseApiError } from '@/services/axiosSetup';
+import { locale, t } from '@/i18n';
 
 /*
  * Catálogo da API v1 (espécies, formulários, regras da dieta).
- * Carregado uma vez; o navegador ainda revalida via ETag.
+ * Guarda um catálogo por idioma; ao trocar o idioma da interface carrega o novo
+ * e mantém o anterior na tela até ele chegar. O navegador ainda revalida via ETag.
  */
 export const useCatalogStore = defineStore('catalog', () => {
+  const byLocale = ref({});
   const catalog = ref(null);
   const error = ref(null);
-  let pending = null;
+  const pending = {};
+  let requested = false;
 
-  async function load() {
-    if (catalog.value) return catalog.value;
-    if (!pending) {
-      pending = getCatalog()
+  function load(lang = locale.value) {
+    requested = true;
+    if (byLocale.value[lang]) {
+      if (lang === locale.value) catalog.value = byLocale.value[lang];
+      return Promise.resolve(byLocale.value[lang]);
+    }
+    if (!pending[lang]) {
+      pending[lang] = getCatalog(lang)
         .then((data) => {
-          catalog.value = data;
-          error.value = null;
+          byLocale.value[lang] = data;
+          if (lang === locale.value) {
+            catalog.value = data;
+            error.value = null;
+          }
           return data;
         })
         .catch((err) => {
-          error.value = parseApiError(err, 'Não foi possível carregar as opções do sistema.').message;
+          if (lang === locale.value) error.value = parseApiError(err, t('errors.catalog')).message;
           throw err;
         })
-        .finally(() => { pending = null; });
+        .finally(() => { delete pending[lang]; });
     }
-    return pending;
+    return pending[lang];
   }
+
+  // Só recarrega se o catálogo já foi pedido alguma vez nesta sessão.
+  watch(locale, (lang) => {
+    if (requested) load(lang).catch(() => {});
+  });
 
   const species = computed(() => catalog.value?.species ?? []);
   const diet = computed(() => catalog.value?.diet ?? null);

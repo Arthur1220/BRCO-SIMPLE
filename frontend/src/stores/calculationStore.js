@@ -1,7 +1,8 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { calculateRequirements, calculateNdt } from '@/services/apiService'
+import { calculateRequirements, calculateNdt, getCalculation } from '@/services/apiService'
 import { parseApiError } from '@/services/axiosSetup'
+import { locale } from '@/i18n'
 
 /*
  * Store para gerenciar o estado dos cálculos (exigências e NDT).
@@ -58,6 +59,18 @@ export const useCalculationStore = defineStore('calculation', () => {
       isLoading.value = false
     }
   }
+
+  // Ao trocar o idioma, busca o cálculo salvo de novo para receber os labels traduzidos.
+  watch(locale, async () => {
+    const id = results.value?.calculationId
+    if (!id) return
+    try {
+      const response = await getCalculation(id)
+      if (results.value?.calculationId === id) results.value = response
+    } catch {
+      // Mantém o resultado no idioma anterior.
+    }
+  })
 
   function clearCalculationState() {
     results.value = null;

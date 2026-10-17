@@ -1,8 +1,9 @@
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import { defineStore } from 'pinia';
-import { getFoods, calculateDiet } from '@/services/apiService';
+import { getFoods, calculateDiet, getCalculation } from '@/services/apiService';
 import { parseApiError } from '@/services/axiosSetup';
 import { useCatalogStore } from '@/stores/catalogStore';
+import { locale, t } from '@/i18n';
 
 /*
  * Store da formulação de dieta (API v1).
@@ -23,7 +24,7 @@ export const useDietStore = defineStore('diet', () => {
   const selectedIngredients = ref([]);
   const animalData = ref(null);
 
-  // Resultados: { calculationId, solution, requirements }
+  // Resultados: { calculationId, option, solution, requirements } (option: escolha no conflito)
   const dietResults = ref(null);
   const isLoading = ref(false);
   const error = ref(null);
@@ -69,7 +70,7 @@ export const useDietStore = defineStore('diet', () => {
     try {
       availableFoods.value = await getFoods();
     } catch (err) {
-      error.value = parseApiError(err, "Falha ao carregar a lista de alimentos.").message;
+      error.value = parseApiError(err, t('errors.foods')).message;
     } finally {
       isLoading.value = false;
     }
@@ -87,11 +88,11 @@ export const useDietStore = defineStore('diet', () => {
     notice.value = null;
 
     if (selectedIngredients.value.length >= rules.maxIngredients) {
-      notice.value = `Máximo de ${rules.maxIngredients} alimentos permitidos.`;
+      notice.value = t('diet.maxIngredients', { max: rules.maxIngredients });
       return;
     }
     if (!rules.allowDuplicates && isSelected(food)) {
-      notice.value = "Este alimento já foi adicionado à lista.";
+      notice.value = t('diet.duplicateIngredient');
       return;
     }
 
@@ -114,8 +115,8 @@ export const useDietStore = defineStore('diet', () => {
   }
 
   // Aplica a solução escolhida e avança para o resultado
-  function applyResult(calculationId, solution, requirements) {
-    dietResults.value = { calculationId, solution, requirements };
+  function applyResult(calculationId, solution, requirements, option = null) {
+    dietResults.value = { calculationId, option, solution, requirements };
 
     // Atualiza a lista visual com as porcentagens calculadas pelo solver
     solution.ingredients.forEach((ing, index) => {
@@ -170,7 +171,7 @@ export const useDietStore = defineStore('diet', () => {
       }
     } catch (err) {
       await waitMinimum();
-      const parsed = parseApiError(err, "Erro ao calcular a dieta.");
+      const parsed = parseApiError(err, t('errors.diet'));
       const details = Object.values(parsed.fields);
       error.value = details.length ? `${parsed.message} ${details.join(' ')}` : parsed.message;
     } finally {
@@ -181,9 +182,30 @@ export const useDietStore = defineStore('diet', () => {
   // Ação chamada pelo Modal quando o usuário escolhe uma opção ('ideal' ou 'realistic')
   function finalizeCalculation(choice) {
     const option = conflictData.options.find((o) => o.code === choice);
-    applyResult(conflictData.calculationId, option.solution, conflictData.requirements);
+    applyResult(conflictData.calculationId, option.solution, conflictData.requirements, choice);
     showConflictModal.value = false;
   }
+
+  // Ao trocar o idioma, busca o cálculo salvo de novo para receber os textos traduzidos
+  // (labels do balanço, status e opções do conflito). Os números não mudam.
+  watch(locale, async () => {
+    const id = showConflictModal.value ? conflictData.calculationId : dietResults.value?.calculationId;
+    if (!id) return;
+    try {
+      const response = await getCalculation(id);
+      if (showConflictModal.value && conflictData.calculationId === id) {
+        conflictData.statusLabel = response.statusLabel;
+        conflictData.options = response.options;
+        conflictData.requirements = response.requirements;
+      } else if (dietResults.value?.calculationId === id) {
+        const { option } = dietResults.value;
+        const solution = option ? response.options.find((o) => o.code === option).solution : response.solution;
+        dietResults.value = { calculationId: id, option, solution, requirements: response.requirements };
+      }
+    } catch {
+      // Mantém o resultado no idioma anterior.
+    }
+  });
 
   function resetDiet() {
     currentStep.value = 1;

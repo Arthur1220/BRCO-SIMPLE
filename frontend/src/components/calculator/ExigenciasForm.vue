@@ -1,10 +1,10 @@
 <template>
   <div class="form-container">
-    <div v-if="!form" class="catalog-state">{{ catalog.error || 'Carregando opções...' }}</div>
+    <div v-if="!form" class="catalog-state">{{ catalog.error || $t('common.loadingOptions') }}</div>
 
     <form v-else @submit.prevent="handleSubmit">
       <div class="form-section">
-        <label>Espécie:</label>
+        <label>{{ $t('requirementsForm.species') }}</label>
         <div class="radio-group">
           <label v-for="species in catalog.species" :key="species.code">
             <input type="radio" :value="species.code" v-model="formData.especie" required> {{ species.label }}
@@ -13,7 +13,7 @@
       </div>
 
       <div class="form-section" v-if="currentSpecies?.genotypes.length">
-        <label for="genotipo">Genótipo animal:</label>
+        <label for="genotipo">{{ $t('requirementsForm.genotype') }}</label>
         <select id="genotipo" v-model="formData.genotipo">
           <option
             v-for="genotype in currentSpecies.genotypes"
@@ -28,7 +28,7 @@
       </div>
 
       <div class="form-section">
-        <label for="sexo">Sexo:</label>
+        <label for="sexo">{{ $t('requirementsForm.sex') }}</label>
         <select id="sexo" v-model="formData.sexo">
           <option v-for="sex in currentSpecies?.sexes" :key="sex.code" :value="sex.code">{{ sex.label }}</option>
         </select>
@@ -41,7 +41,7 @@
       <NumberField :field="fieldDef('GMD')" v-model="formData.GMD" :error="errors.GMD" />
 
       <button type="submit" :disabled="store.isLoading">
-         {{ isDietMode ? 'Confirmar Dados do Animal' : (store.isLoading ? 'Calculando...' : 'Calcular Exigências') }}
+         {{ isDietMode ? $t('requirementsForm.confirmAnimal') : (store.isLoading ? $t('common.calculating') : $t('requirementsForm.submit')) }}
       </button>
     </form>
   </div>

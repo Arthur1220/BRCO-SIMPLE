@@ -1,16 +1,16 @@
 <template>
   <div class="login-box">
-    <h2>Acesso Restrito</h2>
-    <p>Por favor, insira a senha para acessar o painel administrativo.</p>
+    <h2>{{ $t('admin.login.title') }}</h2>
+    <p>{{ $t('admin.login.text') }}</p>
     <form @submit.prevent="handleLogin">
       <input
         v-model="password"
         type="password"
-        placeholder="Senha do painel"
+        :placeholder="$t('admin.login.placeholder')"
         required
       />
       <button type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Verificando...' : 'Entrar' }}
+        {{ isLoading ? $t('admin.login.verifying') : $t('admin.login.submit') }}
       </button>
       <p v-if="error" class="error-message">{{ error }}</p>
     </form>
@@ -19,9 +19,11 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { loginAdmin } from '@/services/adminService';
 import { parseApiError } from '@/services/axiosSetup';
 
+const { t } = useI18n();
 const password = ref('');
 const isLoading = ref(false);
 const error = ref(null);
@@ -36,7 +38,7 @@ const handleLogin = async () => {
     emit('login-success');
   } catch (err) {
     // Mensagem pronta da API (senha incorreta, muitas tentativas...)
-    error.value = parseApiError(err, 'Não foi possível entrar. Tente novamente.').message;
+    error.value = parseApiError(err, t('errors.login')).message;
   } finally {
     isLoading.value = false;
   }

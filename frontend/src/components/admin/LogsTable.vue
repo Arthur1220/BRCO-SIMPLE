@@ -4,10 +4,10 @@
       <table>
         <thead>
           <tr>
-            <th>Tipo</th>
-            <th>Origem</th>
-            <th>Navegador</th>
-            <th>Data</th>
+            <th>{{ $t('admin.logs.type') }}</th>
+            <th>{{ $t('admin.logs.origin') }}</th>
+            <th>{{ $t('admin.logs.browser') }}</th>
+            <th>{{ $t('admin.logs.date') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -19,7 +19,7 @@
             </td>
             <td>{{ log.country || '-' }} <span class="region" v-if="log.region">({{ log.region }})</span></td>
             <td class="truncate" :title="log.userAgent">{{ formatUserAgent(log.userAgent) }}</td>
-            <td>{{ new Date(log.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }}</td>
+            <td>{{ new Date(log.createdAt).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }}</td>
           </tr>
         </tbody>
       </table>
@@ -35,8 +35,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({ logs: Array });
+const { t, locale } = useI18n();
 
 const currentPage = ref(1);
 const itemsPerPage = 10;
@@ -58,8 +60,8 @@ const getTypeClass = (t) => {
 };
 const formatUserAgent = (ua) => {
     if (!ua) return '-';
-    if (ua.includes('Mobile')) return '📱 Mobile';
-    return '💻 Desktop';
+    if (ua.includes('Mobile')) return t('admin.logs.mobile');
+    return t('admin.logs.desktop');
 };
 </script>
 

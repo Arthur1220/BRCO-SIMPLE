@@ -2,25 +2,25 @@
   <div class="admin-view container">
     <header class="admin-header">
       <div class="header-content">
-        <h1 v-if="isAuthenticated">Painel Administrativo</h1>
-        <p v-if="isAuthenticated">Visão geral do uso do sistema de cálculos.</p>
+        <h1 v-if="isAuthenticated">{{ $t('admin.title') }}</h1>
+        <p v-if="isAuthenticated">{{ $t('admin.subtitle') }}</p>
       </div>
-      <button v-if="isAuthenticated" @click="handleLogout" class="logout-button">Sair</button>
+      <button v-if="isAuthenticated" @click="handleLogout" class="logout-button">{{ $t('admin.logout') }}</button>
     </header>
 
     <AdminLogin v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
 
     <div v-else>
       <div class="filter-controls">
-        <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">Últimos 7 dias</button>
-        <button @click="changeFilter('30d')" :class="{ active: activeFilter === '30d' }">Últimos 30 dias</button>
-        <button @click="changeFilter('all')" :class="{ active: activeFilter === 'all' }">Desde o início</button>
+        <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">{{ $t('admin.last7Days') }}</button>
+        <button @click="changeFilter('30d')" :class="{ active: activeFilter === '30d' }">{{ $t('admin.last30Days') }}</button>
+        <button @click="changeFilter('all')" :class="{ active: activeFilter === 'all' }">{{ $t('admin.allTime') }}</button>
       </div>
 
       <div v-if="isLoading" class="state-container"><LoadingSpinner /></div>
       <div v-else-if="error" class="state-container">
         <div class="error-box">
-          <h3>Ocorreu um erro ao buscar os dados</h3>
+          <h3>{{ $t('admin.fetchError') }}</h3>
           <p>{{ error }}</p>
         </div>
       </div>
@@ -31,7 +31,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getAdminStats, getAdminLogs, getAdminChartData, logoutAdmin } from '@/services/adminService';
 import { hasValidAdminToken, parseApiError } from '@/services/axiosSetup';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
@@ -47,6 +48,7 @@ const error = ref(null);
 
 const activeFilter = ref('all');
 const chartData = ref([]);
+const { locale } = useI18n();
 
 const fetchData = async (period) => {
   isLoading.value = true;
@@ -85,6 +87,11 @@ const handleLogout = () => {
   logs.value = [];
   error.value = null;
 };
+
+// Os labels por tipo vêm traduzidos da API: busca de novo ao trocar o idioma.
+watch(locale, () => {
+  if (isAuthenticated.value) fetchData(activeFilter.value);
+});
 
 onMounted(() => {
   if (hasValidAdminToken()) {
