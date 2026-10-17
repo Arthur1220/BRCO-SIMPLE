@@ -33,12 +33,12 @@ function requireAdmin(req, res, next) {
   const secret = process.env.ADMIN_JWT_SECRET;
   if (!secret) {
     logger.error('ERRO CRÍTICO: ADMIN_JWT_SECRET não configurada.');
-    return res.status(500).json({ error: 'Erro de configuração do servidor.' });
+    return sendError(req, res, 500, 'INTERNAL', 'Erro de configuração do servidor.');
   }
 
   const [scheme, token] = (req.headers.authorization || '').split(' ');
   if (scheme !== 'Bearer' || !token) {
-    return res.status(401).json({ error: 'Acesso não autorizado.' });
+    return sendError(req, res, 401, 'UNAUTHORIZED', 'Acesso não autorizado.');
   }
 
   try {
@@ -46,7 +46,7 @@ function requireAdmin(req, res, next) {
     if (payload.role !== 'admin') throw new Error('role inválida');
     return next();
   } catch {
-    return res.status(401).json({ error: 'Sessão expirada ou inválida.' });
+    return sendError(req, res, 401, 'UNAUTHORIZED', 'Sessão expirada ou inválida.');
   }
 }
 

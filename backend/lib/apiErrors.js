@@ -1,5 +1,16 @@
 const { ZodError } = require('zod');
 const logger = require('./logger');
+const { L, t, resolveLocale } = require('./i18n');
+
+// Mensagens padrão da v1 por código de erro.
+const V1_MESSAGES = {
+    VALIDATION: L('Dados de entrada inválidos.', 'Invalid input data.'),
+    NOT_FOUND: L('Recurso não encontrado.', 'Resource not found.'),
+    UNAUTHORIZED: L('Acesso não autorizado.', 'Unauthorized.'),
+    FORBIDDEN: L('Acesso não autorizado.', 'Access denied.'),
+    RATE_LIMITED: L('Muitas requisições. Tente novamente em alguns minutos.', 'Too many requests. Try again in a few minutes.'),
+    INTERNAL: L('Ocorreu um erro inesperado no servidor.', 'An unexpected server error occurred.'),
+};
 
 const isV1 = (req) => req.originalUrl.startsWith('/api/v1');
 
@@ -17,10 +28,14 @@ function zodToFields(error) {
 
 /**
  * Envia um erro no formato da versão da rota: v1 usa o envelope padrão
- * `{ error: { code, message, fields? } }`; a v0 mantém `{ error: message }`.
+ * `{ error: { code, message, fields? } }` no idioma da requisição; a v0 mantém
+ * `{ error: message }` com a mensagem em português.
+ * `v1Message` (texto ou L()) substitui a mensagem padrão do código na v1.
  */
-function sendError(req, res, status, code, message, fields) {
-    if (!isV1(req)) return res.status(status).json({ error: message });
+function sendError(req, res, status, code, v0Message, fields, v1Message) {
+    if (!isV1(req)) return res.status(status).json({ error: v0Message });
+    const locale = req.locale || resolveLocale(req);
+    const message = t(v1Message || V1_MESSAGES[code], locale);
     return res.status(status).json({ error: { code, message, ...(fields ? { fields } : {}) } });
 }
 
@@ -47,4 +62,4 @@ function v1ErrorHandler(err, req, res, next) {
     return sendError(req, res, 500, 'INTERNAL', 'Ocorreu um erro inesperado no servidor.');
 }
 
-module.exports = { sendError, zodToFields, v1NotFound, v1ErrorHandler };
+module.exports = { V1_MESSAGES, sendError, zodToFields, v1NotFound, v1ErrorHandler };

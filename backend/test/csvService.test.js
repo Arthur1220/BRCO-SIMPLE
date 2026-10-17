@@ -3,6 +3,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { generateCsv, toCsv, escapeCsvValue } = require('../domain/csvService');
 
+const BOM = String.fromCharCode(0xfeff);
+
 test('escapeCsvValue: escapa vírgulas, aspas e quebras de linha', () => {
   assert.equal(escapeCsvValue('simples'), 'simples');
   assert.equal(escapeCsvValue('a,b'), '"a,b"');
@@ -19,7 +21,7 @@ test('escapeCsvValue: neutraliza injeção de fórmulas no Excel', () => {
 });
 
 test('toCsv: gera cabeçalho, linhas e BOM UTF-8', () => {
-  assert.equal(toCsv([{ a: 1, b: 'x' }, { a: 2, b: 'y' }]), '﻿a,b\n1,x\n2,y');
+  assert.equal(toCsv([{ a: 1, b: 'x' }, { a: 2, b: 'y' }]), '\uFEFFa,b\n1,x\n2,y');
   assert.equal(toCsv([]), '');
 });
 
@@ -29,7 +31,7 @@ test('generateCsv: inclui parâmetros, valores, unidade e inputs', () => {
     inputs: { pesoInicial: 20 },
     results: { 'Consumo de matéria seca': { tipo: 'g/d', valor_requerido: 900.5, valor_maximo: 990.55 } },
   });
-  const [header, row] = csv.replace('﻿', '').split('\n');
+  const [header, row] = csv.replace(BOM, '').split('\n');
   assert.ok(header.startsWith('Parâmetro,Valor Requerido,Valor Máximo,Unidade,Tipo de Calculo'));
   assert.ok(header.endsWith('Input: pesoInicial'));
   assert.ok(row.startsWith('Consumo de matéria seca,900.5,990.55,g/d,Exigências'));

@@ -4,8 +4,11 @@ const assert = require('node:assert/strict');
 const { startServer } = require('./helpers/server');
 const { getCatalog } = require('../catalog');
 const { catalogSchema } = require('../contracts/catalog');
-const { requirementsInputSchema } = require('../contracts/requirements');
-const { ndtInputSchema } = require('../contracts/ndt');
+const { getRequirementsInputSchema } = require('../contracts/requirements');
+const { getNdtInputSchema } = require('../contracts/ndt');
+
+const requirementsInputSchema = getRequirementsInputSchema('pt-BR');
+const ndtInputSchema = getNdtInputSchema('pt-BR');
 const { calculateAllRequirements } = require('../domain/requirementService');
 
 const species = (code) => getCatalog().species.find((s) => s.code === code);
@@ -15,8 +18,23 @@ const field = (form, name) => getCatalog().forms[form].fields.find((f) => f.name
 // Conteúdo do catálogo
 // ------------------------------------------------------------------
 
-test('catálogo: segue exatamente o schema publicado no OpenAPI', () => {
-  catalogSchema.strict().parse(getCatalog());
+test('catálogo: segue exatamente o schema publicado no OpenAPI, nos dois idiomas', () => {
+  catalogSchema.strict().parse(getCatalog('pt-BR'));
+  catalogSchema.strict().parse(getCatalog('en'));
+});
+
+test('catálogo: textos traduzidos, codes e limites iguais entre idiomas', () => {
+  const pt = getCatalog('pt-BR');
+  const en = getCatalog('en');
+  assert.equal(pt.species[0].label, 'Caprino');
+  assert.equal(en.species[0].label, 'Goat');
+  assert.equal(en.forms.requirements.fields[0].label, 'Initial Body Weight');
+  assert.deepEqual(pt.species.map((s) => s.code), en.species.map((s) => s.code));
+  assert.deepEqual(
+    pt.forms.requirements.fields.map(({ name, min, max, unit }) => ({ name, min, max, unit })),
+    en.forms.requirements.fields.map(({ name, min, max, unit }) => ({ name, min, max, unit }))
+  );
+  assert.notEqual(pt.version, en.version);
 });
 
 test('catálogo: ovino não tem genótipo nem fêmea; caprino tem os 3 sexos', () => {
@@ -108,6 +126,19 @@ test('GET /api/v1/catalog: responde o catálogo com cache e ETag', async () => {
   assert.equal(res.headers.get('cache-control'), 'public, max-age=3600');
 });
 
+test('GET /api/v1/catalog: idioma por ?lang ou Accept-Language', async () => {
+  const byQuery = await server.request('GET', '/api/v1/catalog?lang=en');
+  assert.equal(byQuery.body.locale, 'en');
+  assert.equal(byQuery.headers.get('content-language'), 'en');
+  assert.match(byQuery.headers.get('vary'), /Accept-Language/);
+
+  const byHeader = await server.request('GET', '/api/v1/catalog', { headers: { 'Accept-Language': 'en-US,en;q=0.9' } });
+  assert.equal(byHeader.body.locale, 'en');
+
+  const fallback = await server.request('GET', '/api/v1/catalog', { headers: { 'Accept-Language': 'fr-FR' } });
+  assert.equal(fallback.body.locale, 'pt-BR');
+});
+
 test('GET /api/v1/catalog: responde 304 quando o cliente já tem a versão', async () => {
   const res = await server.rawGet('/api/v1/catalog', { 'If-None-Match': `"${getCatalog().version}"` });
   assert.equal(res.status, 304);
@@ -118,6 +149,9 @@ test('v1: rota inexistente responde no formato de erro padrão', async () => {
   const res = await server.request('GET', '/api/v1/nao-existe');
   assert.equal(res.status, 404);
   assert.deepEqual(res.body, { error: { code: 'NOT_FOUND', message: 'Recurso não encontrado.' } });
+
+  const en = await server.request('GET', '/api/v1/nao-existe?lang=en');
+  assert.deepEqual(en.body, { error: { code: 'NOT_FOUND', message: 'Resource not found.' } });
 });
 
 test('v0 continua funcionando ao lado da v1', async () => {

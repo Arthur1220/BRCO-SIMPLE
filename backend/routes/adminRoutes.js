@@ -1,5 +1,4 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 // Controladores
@@ -7,18 +6,8 @@ const adminController = require('../controllers/adminController.js');
 const dietController = require('../controllers/dietController.js');
 
 // Middleware de Segurança
-const { requireAdmin, getClientIp } = require('../middleware/authMiddleware.js');
-
-// Limita tentativas de login (força bruta na senha do painel)
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  skipSuccessfulRequests: true,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: getClientIp,
-  message: { success: false, message: 'Muitas tentativas. Tente novamente em alguns minutos.' },
-});
+const { requireAdmin } = require('../middleware/authMiddleware.js');
+const { loginLimiter } = require('../middleware/loginLimiter');
 
 // ==================================================================
 // 1. ROTAS PÚBLICAS DE ADMIN

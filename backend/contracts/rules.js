@@ -1,3 +1,5 @@
+const { t } = require('../lib/i18n');
+
 /**
  * Regras entre campos. Cada regra é usada na validação (superRefine) e
  * publicada no catálogo (code + message + fields), para o frontend poder
@@ -6,12 +8,18 @@
 
 /**
  * Aplica as regras ao contexto do Zod, marcando o erro no primeiro campo da regra.
+ * (Em objetos aninhados o Zod já prefixa o caminho, ex.: animal.pesoFinal.)
  */
-function applyRules(rules) {
+function applyRules(rules, locale) {
     return (data, ctx) => {
         for (const rule of rules) {
             if (!rule.check(data)) {
-                ctx.addIssue({ code: 'custom', path: [rule.fields[0]], message: rule.message, params: { rule: rule.code } });
+                ctx.addIssue({
+                    code: 'custom',
+                    path: [rule.fields[0]],
+                    message: t(rule.message, locale),
+                    params: { rule: rule.code },
+                });
             }
         }
     };
@@ -20,8 +28,8 @@ function applyRules(rules) {
 /**
  * Representação pública de uma regra (sem a função).
  */
-function publicRule({ code, message, fields }) {
-    return { code, message, fields };
+function publicRule({ code, message, fields }, locale) {
+    return { code, message: t(message, locale), fields };
 }
 
 module.exports = { applyRules, publicRule };

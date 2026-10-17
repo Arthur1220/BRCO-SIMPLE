@@ -1,0 +1,124 @@
+const { z } = require('./zod');
+
+/**
+ * Schemas das RESPOSTAS da v1 (documentação OpenAPI e testes de contrato).
+ */
+const resultItemSchema = z
+    .object({
+        code: z.string().openapi({ example: 'cms_g_d', description: 'Identificador estável (não muda com o idioma).' }),
+        label: z.string(),
+        value: z.number(),
+        max: z.number().optional().openapi({ description: 'Valor máximo recomendado, quando existir.' }),
+        unit: z.string(),
+        decimals: z.number().int(),
+    })
+    .openapi('ResultItem');
+
+const resultGroupSchema = z
+    .object({
+        code: z.string(),
+        label: z.string(),
+        order: z.number().int(),
+        summary: resultItemSchema.optional().openapi({ description: 'Valor principal do grupo, para exibir no cabeçalho.' }),
+        items: z.array(resultItemSchema),
+    })
+    .openapi('ResultGroup');
+
+const groupedResultSchema = z.object({
+    highlights: z.array(resultItemSchema),
+    groups: z.array(resultGroupSchema),
+});
+
+const headerSchema = z.object({
+    calculationId: z.string(),
+    type: z.enum(['requirements', 'ndt', 'diet']),
+    engineVersion: z.string(),
+    createdAt: z.string().datetime(),
+    expiresAt: z.string().datetime().openapi({ description: 'Após esta data o cálculo é apagado (6 meses).' }),
+    input: z.record(z.any()).openapi({ description: 'Entrada validada e normalizada.' }),
+});
+
+const groupedCalculationSchema = headerSchema.merge(groupedResultSchema).openapi('GroupedCalculation');
+
+const dietSolutionSchema = z
+    .object({
+        feasible: z.boolean(),
+        ingredients: z.array(z.object({
+            foodId: z.number().int().nullable(),
+            name: z.string(),
+            category: z.string(),
+            categoryLabel: z.string(),
+            percent: z.number(),
+            kgPerDay: z.number().openapi({ description: 'kg de matéria seca por dia.' }),
+            costPerDay: z.number(),
+            min: z.number(),
+            max: z.number(),
+            price: z.number(),
+        })),
+        totals: z.object({ intakeKgPerDay: z.number(), costPerDay: z.number() }),
+        balance: z.array(z.object({
+            code: z.string(),
+            label: z.string(),
+            unit: z.string(),
+            required: z.number(),
+            supplied: z.number(),
+            diff: z.number(),
+            status: z.enum(['ideal', 'deficit', 'excess', 'info']),
+            statusLabel: z.string(),
+        })),
+    })
+    .openapi('DietSolution');
+
+const dietCalculationSchema = headerSchema
+    .extend({
+        status: z.enum(['optimal', 'conflict']),
+        statusLabel: z.string(),
+        solution: dietSolutionSchema.optional().openapi({ description: 'Presente quando status = optimal.' }),
+        options: z
+            .array(z.object({ code: z.enum(['ideal', 'realistic']), label: z.string(), description: z.string(), solution: dietSolutionSchema }))
+            .optional()
+            .openapi({ description: 'Presente quando status = conflict: o usuário escolhe uma opção.' }),
+        requirements: groupedResultSchema,
+    })
+    .openapi('DietCalculation');
+
+const foodSchema = z
+    .object({
+        id: z.number().int(),
+        name: z.string(),
+        category: z.string(),
+        categoryLabel: z.string(),
+        defaultMin: z.number().nullable(),
+        defaultMax: z.number().nullable(),
+        unit: z.string().openapi({ example: 'g/kg MS' }),
+        MS: z.number(), MO: z.number(), EE: z.number(), PB: z.number(), PDR: z.number(), PNDR: z.number(),
+        NDT: z.number(), FDNcp: z.number(), CNF: z.number(), Ca: z.number(), P: z.number(),
+        updatedAt: z.string().datetime(),
+    })
+    .openapi('Food');
+
+const statsSchema = z
+    .object({
+        totalCalculations: z.number().int(),
+        statsByType: z.array(z.object({ type: z.string(), label: z.string(), count: z.number().int() })),
+    })
+    .openapi('AdminStats');
+
+const usageLogSchema = z
+    .object({
+        id: z.string(),
+        type: z.string(),
+        label: z.string(),
+        createdAt: z.string().datetime(),
+        country: z.string().nullable(),
+        region: z.string().nullable(),
+        userAgent: z.string().nullable(),
+    })
+    .openapi('UsageLog');
+
+const usagePointSchema = z.object({ date: z.string(), count: z.number().int() }).openapi('UsagePoint');
+
+module.exports = {
+    groupedCalculationSchema, dietCalculationSchema, dietSolutionSchema,
+    foodSchema, statsSchema, usageLogSchema, usagePointSchema,
+};

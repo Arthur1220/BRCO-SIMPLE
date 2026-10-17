@@ -60,10 +60,15 @@ const formSchema = z
 const catalogSchema = z
     .object({
         version: z.string().openapi({ description: 'Muda sempre que o conteúdo do catálogo muda (também usado no ETag).' }),
+        locale: z.enum(['pt-BR', 'en']),
+        locales: z.array(z.string()),
         species: z.array(speciesSchema),
         forms: z.object({
             requirements: formSchema,
             ndt: formSchema,
+            dietAnimal: formSchema,
+            dietIngredient: formSchema,
+            customFood: formSchema,
         }),
         diet: z.object({
             maxIngredients: z.number().int(),

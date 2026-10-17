@@ -14,7 +14,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 const { verifyNetlifyProxy, getClientIp } = require('./middleware/authMiddleware');
-const { sendError } = require('./lib/apiErrors');
+const { sendError, v1ErrorHandler } = require('./lib/apiErrors');
 
 /**
  * Cria a aplicação Express (sem iniciar o servidor, para permitir testes).
@@ -89,6 +89,9 @@ function createApp() {
 
     // Middleware Global de Erros (Deve ser o último app.use)
     app.use((err, req, res, next) => {
+        // Erros em rotas da v1 (ex.: JSON malformado, antes do router) seguem o formato da v1
+        if (req.originalUrl.startsWith('/api/v1')) return v1ErrorHandler(err, req, res, next);
+
         // Erros de validação do Zod
         if (err.name === 'ZodError' || (err.issues && Array.isArray(err.issues))) {
             return res.status(400).json({

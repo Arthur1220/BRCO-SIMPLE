@@ -1,4 +1,4 @@
-const UTF8_BOM = '﻿';
+const UTF8_BOM = '\uFEFF';
 
 /**
  * Escapa um valor para CSV (RFC 4180): aspas duplicadas e campo entre aspas

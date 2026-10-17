@@ -52,7 +52,7 @@ async function startServer() {
     });
   }
 
-  return { request, rawGet, close: () => new Promise((resolve) => server.close(resolve)) };
+  return { baseUrl, request, rawGet, close: () => new Promise((resolve) => server.close(resolve)) };
 }
 
 module.exports = { migrateTestDb, startServer };

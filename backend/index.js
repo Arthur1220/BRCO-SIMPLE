@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const { createApp } = require('./app');
 const logger = require('./lib/logger');
+const { purgeExpiredCalculations } = require('./services/calculationService');
 
 const PORT = process.env.PORT || 3000;
 
@@ -40,5 +41,21 @@ validateEnv();
 
 createApp().listen(PORT, () => {
     logger.info(`🚀 Servidor rodando na porta ${PORT}`);
-    logger.info(`📝 Documentação disponível em http://localhost:${PORT}/api-docs`);
+    logger.info(`📝 Documentação disponível em http://localhost:${PORT}/api-docs/v1`);
 });
+
+// =========================================================
+// ==        RETENÇÃO: apaga cálculos com mais de 6 meses  ==
+// =========================================================
+
+async function runPurge() {
+    try {
+        const removed = await purgeExpiredCalculations();
+        if (removed > 0) logger.info(`Retenção: ${removed} cálculo(s) vencido(s) removido(s).`);
+    } catch (error) {
+        logger.error('Falha ao remover cálculos vencidos', { error: error.message });
+    }
+}
+
+runPurge();
+setInterval(runPurge, 24 * 60 * 60 * 1000).unref();

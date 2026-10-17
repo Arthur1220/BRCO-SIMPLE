@@ -45,3 +45,17 @@ model Food {
 
   @@map("foods")
 }
+// Cálculos da API v1 (entrada + resultado bruto do domínio), guardados por até 6 meses.
+// A apresentação (labels, grupos, idioma) é gerada na leitura.
+model Calculation {
+  id            String   @id @default(cuid())
+  type          String   // 'requirements' | 'ndt' | 'diet'
+  engineVersion String
+  input         String   // JSON
+  output        String   // JSON
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+
+  @@index([expiresAt])
+  @@map("calculations")
+}
