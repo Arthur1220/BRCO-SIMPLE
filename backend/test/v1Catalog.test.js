@@ -154,11 +154,16 @@ test('v1: rota inexistente responde no formato de erro padrão', async () => {
   assert.deepEqual(en.body, { error: { code: 'NOT_FOUND', message: 'Resource not found.' } });
 });
 
-test('v0 continua funcionando ao lado da v1', async () => {
+test('v0 continua funcionando ao lado da v1, marcada como depreciada', async () => {
   const res = await server.request('POST', '/api/calculate/ndt', {
     body: { PB: 9.55, EE: 2.36, FDN: 63.54, Ligrina: 5.2, MO: 89.26, PIDN: 2.1, PIDA: 0.9 },
   });
   assert.equal(res.status, 200);
+  assert.equal(res.headers.get('deprecation'), 'true');
+  assert.match(res.headers.get('link'), /successor-version/);
+
+  const v1 = await server.request('GET', '/api/v1/catalog');
+  assert.equal(v1.headers.get('deprecation'), null);
 });
 
 test('OpenAPI v1 gerado do Zod está publicado', async () => {

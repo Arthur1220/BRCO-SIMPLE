@@ -15,6 +15,7 @@ const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 const { verifyNetlifyProxy, getClientIp } = require('./middleware/authMiddleware');
 const { sendError, v1ErrorHandler } = require('./lib/apiErrors');
+const { deprecateV0 } = require('./middleware/deprecateV0');
 
 /**
  * Cria a aplicação Express (sem iniciar o servidor, para permitir testes).
@@ -72,6 +73,9 @@ function createApp() {
 
     // API v1 (contrato de apresentação). Montada antes da v0, que também atende /api/*
     app.use('/api/v1', v1Routes);
+
+    // API v0 (legado): depreciada, mantida até o frontend novo estar no ar
+    app.use('/api', deprecateV0);
 
     // Rotas de Admin (Mais específicas primeiro)
     // A segurança é aplicada dentro do adminRoutes.js
