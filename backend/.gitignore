@@ -33,3 +33,5 @@ coverage
 # Arquivos temporários do editor
 .vscode
 .idea
+# Volume local do banco e backups
+data
