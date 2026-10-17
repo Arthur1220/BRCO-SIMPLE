@@ -33,11 +33,12 @@ const handleLogin = async () => {
   try {
     const response = await loginAdmin(password.value);
     if (response.success) {
-      sessionStorage.setItem('isAdminAuthenticated', 'true');
       emit('login-success');
     }
   } catch (err) {
-    error.value = 'Senha incorreta. Tente novamente.';
+    error.value = err.response?.status === 429
+      ? 'Muitas tentativas. Aguarde alguns minutos.'
+      : 'Senha incorreta. Tente novamente.';
   } finally {
     isLoading.value = false;
   }

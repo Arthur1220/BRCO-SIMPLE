@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { publicApiKeyAuth } = require('../middleware/authMiddleware');
 
 // Importa os controladores
 const requirementController = require('../controllers/requirementController');
@@ -8,12 +7,7 @@ const ndtController = require('../controllers/ndtController');
 const csvController = require('../controllers/csvController');
 const dietController = require('../controllers/dietController');
 
-// ==================================================================
-// BARREIRA DE SEGURANÇA
-// Todas as rotas públicas exigem a chave de API Pública (x-api-key).
-// Isso previne uso não autorizado da API por outros sites.
-// ==================================================================
-router.use(publicApiKeyAuth);
+// A origem das requisições é validada em app.js (proxy assinado do Netlify).
 
 // ==================================================================
 // ROTAS DE CÁLCULO

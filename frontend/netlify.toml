@@ -1,5 +1,17 @@
+# Proxy da API: o navegador chama /api no próprio domínio do Netlify e o Netlify
+# repassa para o backend via HTTPS (Caddy no EC2).
+# `signed` faz o Netlify assinar cada requisição (header X-Nf-Sign) com o valor da
+# variável de ambiente API_SIGNATURE_TOKEN do site; o backend só aceita requisições
+# assinadas (NETLIFY_PROXY_SECRET com o mesmo valor).
 [[redirects]]
   from = "/api/*"
-  to = "http://98.94.173.47:3000/api/:splat"
+  to = "https://98-94-173-47.sslip.io/api/:splat"
   status = 200
   force = true
+  signed = "API_SIGNATURE_TOKEN"
+
+# Rotas do SPA (Vue Router em modo history)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

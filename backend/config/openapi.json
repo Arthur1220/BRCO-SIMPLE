@@ -30,7 +30,7 @@
       "post": {
         "tags": ["Cálculos Públicos"],
         "summary": "Calcula as exigências nutricionais para um animal.",
-        "security": [{ "PublicApiKey": [] }],
+        "security": [{ "NetlifyProxySignature": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -59,7 +59,7 @@
       "post": {
         "tags": ["Cálculos Públicos"],
         "summary": "Calcula o NDT de um alimento.",
-        "security": [{ "PublicApiKey": [] }],
+        "security": [{ "NetlifyProxySignature": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -83,7 +83,7 @@
         "post": {
           "tags": ["Relatórios Públicos"],
           "summary": "Gera um relatório em CSV.",
-          "security": [{ "PublicApiKey": [] }],
+          "security": [{ "NetlifyProxySignature": [] }],
           "requestBody": {
             "required": true,
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CsvPayload" } } }
@@ -103,8 +103,9 @@
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminLogin" } } }
         },
         "responses": {
-          "200": { "description": "Login bem-sucedido." },
-          "401": { "description": "Senha incorreta." }
+          "200": { "description": "Login bem-sucedido. Retorna `token` (JWT, válido por 2h) para o header Authorization: Bearer." },
+          "401": { "description": "Senha incorreta." },
+          "429": { "description": "Muitas tentativas de login." }
         }
       }
     },
@@ -112,13 +113,13 @@
       "get": {
         "tags": ["Admin"],
         "summary": "Busca as estatísticas de uso da aplicação.",
-        "security": [{ "AdminApiKey": [] }],
+        "security": [{ "AdminBearer": [] }],
         "parameters": [
           { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "all"] }, "description": "Filtra os dados pelo período." }
         ],
         "responses": {
           "200": { "description": "Sucesso. Retorna as estatísticas." },
-          "401": { "description": "Não autorizado. Chave de API de admin inválida ou ausente." }
+          "401": { "description": "Não autorizado. Token de sessão inválido, expirado ou ausente." }
         }
       }
     },
@@ -126,13 +127,13 @@
       "get": {
         "tags": ["Admin"],
         "summary": "Busca os logs de cálculos recentes.",
-        "security": [{ "AdminApiKey": [] }],
+        "security": [{ "AdminBearer": [] }],
         "parameters": [
           { "name": "period", "in": "query", "schema": { "type": "string", "enum": ["7d", "30d", "all"] }, "description": "Filtra os dados pelo período." }
         ],
         "responses": {
           "200": { "description": "Sucesso. Retorna uma lista dos últimos logs." },
-          "401": { "description": "Não autorizado. Chave de API de admin inválida ou ausente." }
+          "401": { "description": "Não autorizado. Token de sessão inválido, expirado ou ausente." }
         }
       }
     },
@@ -141,7 +142,7 @@
         "tags": ["Cálculos Públicos"],
         "summary": "Calcula o balanço nutricional de uma dieta.",
         "description": "Recebe os dados do animal e uma lista de ingredientes com porcentagens (soma 100%) e retorna o balanço nutricional.",
-        "security": [{ "PublicApiKey": [] }],
+        "security": [{ "NetlifyProxySignature": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -187,17 +188,17 @@
   },
   "components": {
     "securitySchemes": {
-      "PublicApiKey": {
+      "NetlifyProxySignature": {
         "type": "apiKey",
         "in": "header",
-        "name": "x-api-key",
-        "description": "Chave de API necessária para acessar os endpoints públicos de cálculo e relatório."
+        "name": "X-Nf-Sign",
+        "description": "Em produção a API só aceita requisições vindas do proxy do Netlify, que assina cada uma (JWS HS256) com NETLIFY_PROXY_SECRET."
       },
-      "AdminApiKey": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-api-key",
-        "description": "Chave de API necessária para acessar os endpoints de administração."
+      "AdminBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token obtido em POST /api/admin/login."
       }
     },
     "schemas": {

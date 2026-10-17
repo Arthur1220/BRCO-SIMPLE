@@ -1,11 +1,6 @@
 import apiClient from './axiosSetup.js';
 
-const publicKey = import.meta.env.VITE_PUBLIC_API_KEY;
 
-// Criamos um objeto de configuração com o header que será usado em todas as chamadas públicas
-const config = {
-    headers: { 'x-api-key': publicKey }
-};
 /**
  * Envia os dados para o cálculo de exigências.
  * @param {object} data - O objeto com os dados do formulário.
@@ -13,7 +8,7 @@ const config = {
  */
 export const calculateRequirements = async (data) => {
   // apiClient já sabe a URL base, então só precisamos do caminho do endpoint.
-  const response = await apiClient.post('/calculate/requirements', data, config);
+  const response = await apiClient.post('/calculate/requirements', data);
   return response.data; // Retornamos apenas os dados da resposta
 };
 
@@ -23,7 +18,7 @@ export const calculateRequirements = async (data) => {
  * @returns {Promise<object>} - A promessa com os resultados do cálculo.
  */
 export const calculateNdt = async (data) => {
-  const response = await apiClient.post('/calculate/ndt', data, config);
+  const response = await apiClient.post('/calculate/ndt', data);
   return response.data;
 };
 
@@ -32,7 +27,7 @@ export const calculateNdt = async (data) => {
  * @returns {Promise<Blob>} - A promessa com o arquivo CSV em formato Blob.
  */
 export const generateCsv = async (data) => {
-  const csvConfig = { ...config, responseType: 'blob' };
+  const csvConfig = { responseType: 'blob' };
   const response = await apiClient.post('/generate-csv', data, csvConfig);
   return response.data;
 };
@@ -41,7 +36,7 @@ export const generateCsv = async (data) => {
  * @returns {Promise<object[]>} - A promessa com a lista de alimentos.
  */
 export const getFoods = async () => {
-  const response = await apiClient.get('/foods', config);
+  const response = await apiClient.get('/foods');
   return response.data;
 };
 
@@ -50,6 +45,6 @@ export const getFoods = async () => {
  * @returns {Promise<object>} - A promessa com os resultados do cálculo de dieta.
  */
 export const calculateDiet = async (data) => {
-  const response = await apiClient.post('/calculate/diet', data, config);
+  const response = await apiClient.post('/calculate/diet', data);
   return response.data;
 };

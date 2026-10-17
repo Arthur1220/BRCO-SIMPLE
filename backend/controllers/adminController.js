@@ -1,5 +1,6 @@
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
+const { safeEqual, issueAdminToken } = require('../middleware/authMiddleware');
 
 /**
  * Auxiliar: Cria um objeto Date para filtrar logs baseado no período.
@@ -26,14 +27,15 @@ const getDateFilter = (period) => {
 };
 
 /**
- * Realiza o login do admin verificando a senha.
+ * Realiza o login do admin verificando a senha e devolve um token de sessão.
  */
 async function login(req, res) {
-  const { password } = req.body;
-  
-  if (password && password === process.env.PANEL_PASSWORD) {
-    res.json({ success: true, message: 'Login bem-sucedido.' });
+  const { password } = req.body || {};
+
+  if (process.env.PANEL_PASSWORD && safeEqual(password, process.env.PANEL_PASSWORD)) {
+    res.json({ success: true, message: 'Login bem-sucedido.', token: issueAdminToken() });
   } else {
+    logger.warn('Tentativa de login no painel com senha incorreta.');
     res.status(401).json({ success: false, message: 'Senha incorreta.' });
   }
 }

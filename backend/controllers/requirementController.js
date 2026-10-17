@@ -1,8 +1,7 @@
 const { z } = require('zod');
 const { calculateAllRequirements } = require('../services/requirementService');
-const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
-const geoip = require('geoip-lite');
+const { logCalculation } = require('../lib/usageLog');
 
 // Validação dos dados de entrada usando Zod
 const requirementInputSchema = z.object({
@@ -21,18 +20,7 @@ async function handleRequirementCalculation(req, res) {
     const inputData = requirementInputSchema.parse(req.body);
     const result = calculateAllRequirements(inputData);
 
-    const userAgent = req.headers['user-agent'];
-    const ip = req.ip;
-    const geo = geoip.lookup(ip);
-
-    await prisma.calculationLog.create({
-        data: { 
-            calculationType: `requirement_especie_${inputData.especieId}`,
-            userAgent: userAgent,
-            country: geo ? geo.country : 'Unknown',
-            region: geo ? geo.region : 'Unknown',
-        },
-    });
+    await logCalculation(req, `requirement_especie_${inputData.especieId}`);
 
     logger.info('Requirement calculation successful')
     res.status(200).json(result);

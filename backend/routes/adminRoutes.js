@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 
 // Controladores
@@ -6,7 +7,18 @@ const adminController = require('../controllers/adminController.js');
 const dietController = require('../controllers/dietController.js');
 
 // Middleware de Segurança
-const { adminApiKeyAuth } = require('../middleware/authMiddleware.js');
+const { requireAdmin, getClientIp } = require('../middleware/authMiddleware.js');
+
+// Limita tentativas de login (força bruta na senha do painel)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getClientIp,
+  message: { success: false, message: 'Muitas tentativas. Tente novamente em alguns minutos.' },
+});
 
 // ==================================================================
 // 1. ROTAS PÚBLICAS DE ADMIN
@@ -14,15 +26,15 @@ const { adminApiKeyAuth } = require('../middleware/authMiddleware.js');
 
 /**
  * POST /api/admin/login
- * Realiza o login no painel (verifica a senha do .env).
+ * Realiza o login no painel (verifica a senha do .env) e devolve um token de sessão.
  */
-router.post('/login', adminController.login);
+router.post('/login', loginLimiter, adminController.login);
 
 // ==================================================================
 // 2. BARREIRA DE SEGURANÇA
-// Todas as rotas abaixo exigem a chave de API de Admin (x-api-key).
+// Todas as rotas abaixo exigem o token de sessão (Authorization: Bearer).
 // ==================================================================
-router.use(adminApiKeyAuth);
+router.use(requireAdmin);
 
 // ==================================================================
 // 3. ROTAS PROTEGIDAS (DASHBOARD)

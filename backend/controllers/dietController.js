@@ -1,8 +1,9 @@
 const { z } = require('zod');
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
-const geoip = require('geoip-lite');
+const { logCalculation } = require('../lib/usageLog');
 const { calculateDiet } = require('../services/dietService');
+const { createFoodSchema, updateFoodSchema, foodIdSchema } = require('../validation/foodSchema');
 
 // --- SCHEMAS DE VALIDAÇÃO (ZOD) ---
 
@@ -61,18 +62,7 @@ async function handleDietCalculation(req, res) {
         
         const result = calculateDiet(animalData, ingredients);
         
-        const userAgent = req.headers['user-agent'];
-        const ip = req.ip;
-        const geo = geoip.lookup(ip);
-
-        await prisma.calculationLog.create({
-        data: { 
-            calculationType: 'diet_calculation',
-            userAgent: userAgent,
-            country: geo ? geo.country : 'Unknown',
-            region: geo ? geo.region : 'Unknown',
-        },
-    });
+        await logCalculation(req, 'diet_calculation');
 
         logger.info('Diet calculation successful');
         res.json(result);
@@ -89,14 +79,33 @@ async function handleDietCalculation(req, res) {
 }
 
 // --- FUNÇÕES DE GERENCIAMENTO DE ALIMENTOS (ADMIN) ---
+
+/**
+ * Responde 400 para dados inválidos e 404 para alimento inexistente.
+ * Retorna true se o erro foi tratado.
+ */
+function handleFoodError(error, res) {
+    if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Dados do alimento inválidos.", details: error.errors });
+        return true;
+    }
+    if (error.code === 'P2025') {
+        res.status(404).json({ error: "Alimento não encontrado." });
+        return true;
+    }
+    return false;
+}
+
 /** 
  * Cria um novo alimento no banco de dados.
  */
 async function createFood(req, res) {
     try {
-        const food = await prisma.food.create({ data: req.body });
-        res.json(food);
+        const data = createFoodSchema.parse(req.body);
+        const food = await prisma.food.create({ data });
+        res.status(201).json(food);
     } catch (error) { 
+        if (handleFoodError(error, res)) return;
         logger.error("Erro ao criar alimento:", error);
         res.status(500).json({ error: "Erro ao criar alimento." }); 
     }
@@ -106,14 +115,13 @@ async function createFood(req, res) {
  * Atualiza um alimento no banco de dados.
  */
 async function updateFood(req, res) {
-    const { id } = req.params;
     try {
-        const food = await prisma.food.update({
-            where: { id: Number(id) },
-            data: req.body
-        });
+        const id = foodIdSchema.parse(req.params.id);
+        const data = updateFoodSchema.parse(req.body);
+        const food = await prisma.food.update({ where: { id }, data });
         res.json(food);
     } catch (error) { 
+        if (handleFoodError(error, res)) return;
         logger.error("Erro ao atualizar alimento:", error);
         res.status(500).json({ error: "Erro ao atualizar." }); 
     }
@@ -123,11 +131,12 @@ async function updateFood(req, res) {
  * Deleta um alimento do banco de dados.
  */
 async function deleteFood(req, res) {
-    const { id } = req.params;
     try {
-        await prisma.food.delete({ where: { id: Number(id) } });
+        const id = foodIdSchema.parse(req.params.id);
+        await prisma.food.delete({ where: { id } });
         res.json({ success: true });
     } catch (error) { 
+        if (handleFoodError(error, res)) return;
         logger.error("Erro ao deletar alimento:", error);
         res.status(500).json({ error: "Erro ao deletar." }); 
     }

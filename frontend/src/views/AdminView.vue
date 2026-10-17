@@ -32,7 +32,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getAdminStats, getAdminLogs, getAdminChartData } from '@/services/adminService';
+import { getAdminStats, getAdminLogs, getAdminChartData, logoutAdmin } from '@/services/adminService';
+import { hasValidAdminToken } from '@/services/axiosSetup';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
 import FoodsManager from '@/components/admin/FoodsManager.vue';
@@ -73,13 +74,12 @@ const changeFilter = (newPeriod) => {
 };
 
 const handleLoginSuccess = () => {
-  sessionStorage.setItem('isAdminAuthenticated', 'true');
   isAuthenticated.value = true;
   fetchData(activeFilter.value);
 };
 
 const handleLogout = () => {
-  sessionStorage.removeItem('isAdminAuthenticated');
+  logoutAdmin();
   isAuthenticated.value = false;
   stats.value = null;
   logs.value = [];
@@ -87,7 +87,7 @@ const handleLogout = () => {
 };
 
 onMounted(() => {
-  if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
+  if (hasValidAdminToken()) {
     isAuthenticated.value = true;
     fetchData(activeFilter.value);
   } else {
