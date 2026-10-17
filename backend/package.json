@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "backup": "node scripts/backup-db.js",
+    "test:update-golden": "node test/fixtures/updateGolden.js"
   },
   "keywords": [],
   "author": "",
@@ -21,16 +23,19 @@
     "geoip-lite": "^1.4.10",
     "helmet": "^8.1.0",
     "javascript-lp-solver": "^0.4.24",
-    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "prisma": "^6.10.1",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "prisma": "^6.10.1"
+    "nodemon": "^3.1.10"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
