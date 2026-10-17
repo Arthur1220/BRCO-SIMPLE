@@ -30,11 +30,12 @@ O projeto foi construído com uma stack de JavaScript moderna, separando clarame
 * **Backend:**
     * [Node.js](https://nodejs.org/) com [Express](https://expressjs.com/pt-br/)
     * [Prisma](https://www.prisma.io/) como ORM para interação com o banco de dados
-    * **Banco de Dados:** [SQLite](https://www.sqlite.org/index.html) (para desenvolvimento)
-    * **Geração de CSV:** [json2csv](https://www.npmjs.com/package/json2csv)
+    * **Banco de Dados:** [SQLite](https://www.sqlite.org/index.html) (volume Docker persistente)
+    * **Autenticação do admin:** token JWT de sessão
+    * **Testes:** `node:test` (runner nativo do Node)
 * **Orquestração e Deploy:**
     * [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) para containerização
-    * **Servidor:** [AWS EC2](https://aws.amazon.com/ec2/)
+    * **Servidor:** [AWS EC2](https://aws.amazon.com/ec2/) com [Caddy](https://caddyserver.com/) (HTTPS automático)
 
 ## ⚙️ Configuração e Instalação Local
 
@@ -42,7 +43,7 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
 
 ### Pré-requisitos
 * [Git](https://git-scm.com/)
-* [Node.js](https://nodejs.org/en) (versão 18 ou superior)
+* [Node.js](https://nodejs.org/en) (versão 24, ver `.nvmrc`)
 * [Docker](https://www.docker.com/products/docker-desktop/) e Docker Compose
 
 ### Passos
@@ -62,28 +63,39 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
 
 3.  **Configure o Frontend:**
     * Navegue até a pasta do frontend: `cd frontend`
-    * Crie um arquivo de ambiente local: `cp .env.local.example .env.local` (ou crie-o manualmente).
-    * Preencha as variáveis de ambiente no arquivo `.env.local`.
-    * Instale as dependências: `npm install`
+    * Instale as dependências: `npm install` (o frontend não precisa de variáveis de ambiente)
     * Volte para a pasta raiz: `cd ..`
 
 4.  **Inicie a Aplicação com Docker Compose:**
     Na raiz do projeto (onde está o arquivo `docker-compose.yml`), rode o comando:
     ```bash
-    docker-compose up --build -d
+    docker compose --profile local up --build -d
     ```
-    Isso irá construir as imagens e iniciar os containers do frontend e do backend.
+    Isso irá construir as imagens e iniciar o backend, o Caddy e o frontend (perfil `local`).
+    Sem Docker, rode `npm run dev` no backend e no frontend (o Vite encaminha `/api` para a porta 3000).
 
 5.  **Acesse a Aplicação:**
     * **Frontend:** [http://localhost:8080](http://localhost:8080)
-    * **Backend API:** [http://localhost:3000](http://localhost:3000)
-    * **Documentação da API (Swagger):** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-    * **Painel de Admin (Login):** [http://localhost:8080/admin-login](http://localhost:8080/admin-login)
+    * **Backend API (via Caddy):** [https://localhost](https://localhost)
+    * **Documentação da API (Swagger):** [https://localhost/api-docs](https://localhost/api-docs)
+    * **Painel de Admin (Login):** [http://localhost:8080/admin](http://localhost:8080/admin)
+
+## 🧪 Testes
+
+```bash
+cd backend
+npm test
+```
+
+Os testes cobrem as fórmulas (valores de referência em `test/fixtures/golden.json`), o solver de dieta, o CSV, a validação dos alimentos e a autenticação. Ao corrigir uma fórmula de propósito, regenere as referências com `npm run test:update-golden` e revise o diff.
 
 ## ☁️ Estratégia de Deploy
 
-* O **Backend** é containerizado com Docker e implantado em uma instância **AWS EC2**. A segurança é gerenciada por chaves de API e um Security Group na AWS.
-* O **Frontend** é implantado na **Netlify**, que se conecta ao backend na AWS. Um proxy do Netlify (`netlify.toml`) é usado para resolver o problema de "Mixed Content" (HTTPS -> HTTP).
+* O **Backend** é containerizado com Docker e implantado em uma instância **AWS EC2**, atrás do **Caddy** (HTTPS automático). Só as portas 80 e 443 ficam abertas.
+* O **Frontend** é implantado na **Netlify**. O proxy do Netlify (`netlify.toml`) encaminha `/api` para o backend via HTTPS e **assina** cada requisição; o backend recusa o que não vem assinado.
+* O painel admin usa login por senha, que gera um token de sessão de 2 horas. Nenhuma chave fica no código do frontend.
+
+Passo a passo completo, variáveis e migração do servidor atual: **[DEPLOY.md](DEPLOY.md)**.
 
 ---
 
