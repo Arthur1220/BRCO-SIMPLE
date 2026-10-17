@@ -1,0 +1,1976 @@
+{
+  "requirements": {
+    "caprino categoria 1 sexo 1": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 851.39,
+        "valor_maximo": 936.53
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.72,
+        "valor_maximo": 0.76
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.31,
+        "valor_maximo": 0.33
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.03,
+        "valor_maximo": 1.09
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.16,
+        "valor_maximo": 1.22
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.83,
+        "valor_maximo": 0.87
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2,
+        "valor_maximo": 2.1
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.34,
+        "valor_maximo": 2.46
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.61,
+        "valor_maximo": 2.74
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.24,
+        "valor_maximo": 2.36
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 510.14,
+        "valor_maximo": 535.64
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 599.18,
+        "valor_maximo": 629.14
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 14.04,
+        "valor_maximo": 15.45
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 22.2,
+        "valor_maximo": 24.42
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 36.24,
+        "valor_maximo": 39.87
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.33,
+        "valor_maximo": 46.56
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.69,
+        "valor_maximo": 46.96
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 85.02,
+        "valor_maximo": 93.52
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.98,
+        "valor_maximo": 47.28
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 71.89,
+        "valor_maximo": 79.07
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 114.87,
+        "valor_maximo": 126.35
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 134.92,
+        "valor_maximo": 148.41
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.52,
+        "valor_maximo": 0.68
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      }
+    },
+    "caprino categoria 1 sexo 2": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 830.56,
+        "valor_maximo": 913.62
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.72,
+        "valor_maximo": 0.76
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.38,
+        "valor_maximo": 0.4
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.1,
+        "valor_maximo": 1.15
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.16,
+        "valor_maximo": 1.22
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.91,
+        "valor_maximo": 0.96
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.07,
+        "valor_maximo": 2.18
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.5,
+        "valor_maximo": 2.62
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.78,
+        "valor_maximo": 2.92
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.33,
+        "valor_maximo": 2.45
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 530.3,
+        "valor_maximo": 556.82
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 638.48,
+        "valor_maximo": 670.41
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 14.04,
+        "valor_maximo": 15.45
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 22.2,
+        "valor_maximo": 24.42
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 36.24,
+        "valor_maximo": 39.87
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.33,
+        "valor_maximo": 46.56
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.69,
+        "valor_maximo": 46.96
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 85.02,
+        "valor_maximo": 93.52
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 44.18,
+        "valor_maximo": 48.59
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 70.93,
+        "valor_maximo": 78.02
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 115.11,
+        "valor_maximo": 126.62
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 138.59,
+        "valor_maximo": 152.45
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.52,
+        "valor_maximo": 0.68
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      }
+    },
+    "caprino categoria 1 sexo 3": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 809.74,
+        "valor_maximo": 890.71
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.61,
+        "valor_maximo": 0.64
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.46,
+        "valor_maximo": 0.48
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.07,
+        "valor_maximo": 1.12
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.97,
+        "valor_maximo": 1.02
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.97,
+        "valor_maximo": 1.02
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.94,
+        "valor_maximo": 2.04
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.4,
+        "valor_maximo": 2.52
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.66,
+        "valor_maximo": 2.8
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.18,
+        "valor_maximo": 2.29
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 495.93,
+        "valor_maximo": 520.73
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 612.46,
+        "valor_maximo": 643.09
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 14.04,
+        "valor_maximo": 15.45
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 20.12,
+        "valor_maximo": 22.13
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 34.16,
+        "valor_maximo": 37.58
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.33,
+        "valor_maximo": 46.56
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 38.69,
+        "valor_maximo": 42.56
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 81.01,
+        "valor_maximo": 89.11
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 42.14,
+        "valor_maximo": 46.35
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 67.56,
+        "valor_maximo": 74.31
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 109.69,
+        "valor_maximo": 120.66
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 135.47,
+        "valor_maximo": 149.02
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.52,
+        "valor_maximo": 0.68
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 0,
+        "valor_maximo": 0
+      }
+    },
+    "ovino sexo 1": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 1125.81,
+        "valor_maximo": 1238.39
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.67,
+        "valor_maximo": 0.71
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.58,
+        "valor_maximo": 0.6
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.25,
+        "valor_maximo": 1.31
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.11
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.99,
+        "valor_maximo": 2.09
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.04,
+        "valor_maximo": 3.19
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.7,
+        "valor_maximo": 2.84
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 3.18,
+        "valor_maximo": 3.34
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.58,
+        "valor_maximo": 3.76
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 811.42,
+        "valor_maximo": 851.99
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 720.75,
+        "valor_maximo": 756.78
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.71,
+        "valor_maximo": 15.08
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 17.13,
+        "valor_maximo": 18.84
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 30.84,
+        "valor_maximo": 33.92
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 41.02,
+        "valor_maximo": 45.12
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 68.52,
+        "valor_maximo": 75.38
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 109.54,
+        "valor_maximo": 120.49
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 60.84,
+        "valor_maximo": 66.93
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 88.25,
+        "valor_maximo": 97.08
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 149.09,
+        "valor_maximo": 164
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 132.43,
+        "valor_maximo": 145.68
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.71,
+        "valor_maximo": 0.92
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.84,
+        "valor_maximo": 2.39
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.55,
+        "valor_maximo": 3.32
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 4.71,
+        "valor_maximo": 6.12
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 4.18,
+        "valor_maximo": 5.43
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.76,
+        "valor_maximo": 0.99
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.88,
+        "valor_maximo": 1.14
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.64,
+        "valor_maximo": 2.13
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.05,
+        "valor_maximo": 2.67
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 1.82,
+        "valor_maximo": 2.37
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 2.29,
+        "valor_maximo": 2.98
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.08,
+        "valor_maximo": 0.1
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.06,
+        "valor_maximo": 0.08
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.14,
+        "valor_maximo": 0.18
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.66,
+        "valor_maximo": 2.16
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 1.48,
+        "valor_maximo": 1.92
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.21,
+        "valor_maximo": 0.27
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.39,
+        "valor_maximo": 0.51
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 4.83,
+        "valor_maximo": 6.28
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 4.29,
+        "valor_maximo": 5.58
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.34,
+        "valor_maximo": 0.44
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.7,
+        "valor_maximo": 0.91
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.92,
+        "valor_maximo": 18.1
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 12.37,
+        "valor_maximo": 16.08
+      },
+      "Cobre Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.37
+      },
+      "Cobre Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.56,
+        "valor_maximo": 0.73
+      },
+      "Cobre Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.61,
+        "valor_maximo": 2.09
+      },
+      "Cobre Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 7,
+        "valor_maximo": 9.1
+      },
+      "Cobre Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 6.22,
+        "valor_maximo": 8.09
+      },
+      "Ferro Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.19,
+        "valor_maximo": 1.55
+      },
+      "Ferro Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 11.91,
+        "valor_maximo": 15.48
+      },
+      "Ferro Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 13.09,
+        "valor_maximo": 17.02
+      },
+      "Ferro Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 100.72,
+        "valor_maximo": 130.94
+      },
+      "Ferro Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 89.47,
+        "valor_maximo": 116.31
+      },
+      "Manganês Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Manganês Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.73,
+        "valor_maximo": 0.95
+      },
+      "Manganês Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.92,
+        "valor_maximo": 1.2
+      },
+      "Manganês Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 130.74,
+        "valor_maximo": 169.96
+      },
+      "Manganês Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 116.13,
+        "valor_maximo": 150.97
+      },
+      "Zinco Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 5.82,
+        "valor_maximo": 7.57
+      },
+      "Zinco Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 7.16,
+        "valor_maximo": 9.31
+      },
+      "Zinco Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 12.98,
+        "valor_maximo": 16.87
+      },
+      "Zinco Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 45.22,
+        "valor_maximo": 58.79
+      },
+      "Zinco Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 40.17,
+        "valor_maximo": 52.22
+      },
+      "Cobalto Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Cobalto Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.25,
+        "valor_maximo": 0.33
+      },
+      "Cobalto Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.43,
+        "valor_maximo": 0.56
+      },
+      "Cobalto Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 3.12,
+        "valor_maximo": 4.06
+      },
+      "Cobalto Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 2.77,
+        "valor_maximo": 3.6
+      },
+      "Cromo Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Cromo Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.62,
+        "valor_maximo": 0.81
+      },
+      "Cromo Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.97,
+        "valor_maximo": 1.26
+      },
+      "Cromo Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 11.27,
+        "valor_maximo": 14.65
+      },
+      "Cromo Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 10.01,
+        "valor_maximo": 13.01
+      }
+    },
+    "ovino sexo 2": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 1125.81,
+        "valor_maximo": 1238.39
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.67,
+        "valor_maximo": 0.71
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.62,
+        "valor_maximo": 0.66
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.3,
+        "valor_maximo": 1.36
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.11
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.15,
+        "valor_maximo": 2.26
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.21,
+        "valor_maximo": 3.37
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.85,
+        "valor_maximo": 2.99
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 3.35,
+        "valor_maximo": 3.52
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.77,
+        "valor_maximo": 3.96
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 855.43,
+        "valor_maximo": 898.21
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 759.84,
+        "valor_maximo": 797.83
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.71,
+        "valor_maximo": 15.08
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 11.69,
+        "valor_maximo": 12.86
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 25.39,
+        "valor_maximo": 27.93
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 41.02,
+        "valor_maximo": 45.12
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 46.75,
+        "valor_maximo": 51.43
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 87.77,
+        "valor_maximo": 96.54
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 63.45,
+        "valor_maximo": 69.8
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 58.95,
+        "valor_maximo": 64.84
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 122.4,
+        "valor_maximo": 134.64
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 108.72,
+        "valor_maximo": 119.59
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.71,
+        "valor_maximo": 0.92
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.09,
+        "valor_maximo": 2.72
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.8,
+        "valor_maximo": 3.64
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 5.16,
+        "valor_maximo": 6.71
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 4.59,
+        "valor_maximo": 5.97
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.76,
+        "valor_maximo": 0.99
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.04,
+        "valor_maximo": 1.35
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.8,
+        "valor_maximo": 2.34
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.25,
+        "valor_maximo": 2.93
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 2,
+        "valor_maximo": 2.6
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 2.29,
+        "valor_maximo": 2.98
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.08,
+        "valor_maximo": 0.1
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.08,
+        "valor_maximo": 0.1
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.16,
+        "valor_maximo": 0.21
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.89,
+        "valor_maximo": 2.46
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 1.68,
+        "valor_maximo": 2.18
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.21,
+        "valor_maximo": 0.27
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.25,
+        "valor_maximo": 0.33
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.46,
+        "valor_maximo": 0.6
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 5.63,
+        "valor_maximo": 7.32
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 5,
+        "valor_maximo": 6.5
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.34,
+        "valor_maximo": 0.44
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.7,
+        "valor_maximo": 0.91
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.92,
+        "valor_maximo": 18.1
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 12.37,
+        "valor_maximo": 16.08
+      },
+      "Cobre Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.37
+      },
+      "Cobre Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.56,
+        "valor_maximo": 0.73
+      },
+      "Cobre Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.61,
+        "valor_maximo": 2.09
+      },
+      "Cobre Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 7,
+        "valor_maximo": 9.1
+      },
+      "Cobre Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 6.22,
+        "valor_maximo": 8.09
+      },
+      "Ferro Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.19,
+        "valor_maximo": 1.55
+      },
+      "Ferro Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 9.07,
+        "valor_maximo": 11.79
+      },
+      "Ferro Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 10.26,
+        "valor_maximo": 13.34
+      },
+      "Ferro Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 78.94,
+        "valor_maximo": 102.62
+      },
+      "Ferro Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 70.12,
+        "valor_maximo": 91.16
+      },
+      "Manganês Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Manganês Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.2,
+        "valor_maximo": 0.26
+      },
+      "Manganês Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.38,
+        "valor_maximo": 0.49
+      },
+      "Manganês Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 54.63,
+        "valor_maximo": 71.02
+      },
+      "Manganês Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 48.53,
+        "valor_maximo": 63.09
+      },
+      "Zinco Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 5.82,
+        "valor_maximo": 7.57
+      },
+      "Zinco Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 6.67,
+        "valor_maximo": 8.67
+      },
+      "Zinco Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 12.49,
+        "valor_maximo": 16.24
+      },
+      "Zinco Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 43.51,
+        "valor_maximo": 56.56
+      },
+      "Zinco Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 38.64,
+        "valor_maximo": 50.23
+      },
+      "Cobalto Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Cobalto Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.25,
+        "valor_maximo": 0.33
+      },
+      "Cobalto Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.43,
+        "valor_maximo": 0.56
+      },
+      "Cobalto Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 3.12,
+        "valor_maximo": 4.06
+      },
+      "Cobalto Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 2.77,
+        "valor_maximo": 3.6
+      },
+      "Cromo Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Cromo Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.72,
+        "valor_maximo": 0.94
+      },
+      "Cromo Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.07,
+        "valor_maximo": 1.39
+      },
+      "Cromo Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 12.4,
+        "valor_maximo": 16.12
+      },
+      "Cromo Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 11.01,
+        "valor_maximo": 14.31
+      }
+    },
+    "ovino sexo 3": {
+      "Consumo de matéria seca": {
+        "tipo": "g/d",
+        "valor_requerido": 1125.81,
+        "valor_maximo": 1238.39
+      },
+      "Energia líquida de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.67,
+        "valor_maximo": 0.71
+      },
+      "Energia líquida de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 0.62,
+        "valor_maximo": 0.66
+      },
+      "Energia líquida total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.3,
+        "valor_maximo": 1.36
+      },
+      "Energia metabolizável de mantença": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.11
+      },
+      "Energia metabolizável de ganho": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 2.15,
+        "valor_maximo": 2.26
+      },
+      "Energia metabolizável total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.21,
+        "valor_maximo": 3.37
+      },
+      "Energia metabolizável": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 2.85,
+        "valor_maximo": 2.99
+      },
+      "Energia digestível": {
+        "tipo": "Mcal/kg MS",
+        "valor_requerido": 3.35,
+        "valor_maximo": 3.52
+      },
+      "Energia digestível total": {
+        "tipo": "Mcal/d",
+        "valor_requerido": 3.77,
+        "valor_maximo": 3.96
+      },
+      "Nutrientes digestíveis totais1": {
+        "tipo": "g/d",
+        "valor_requerido": 855.43,
+        "valor_maximo": 898.21
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 759.84,
+        "valor_maximo": 797.83
+      },
+      "Proteína líquida de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.71,
+        "valor_maximo": 15.08
+      },
+      "Proteína líquida de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 11.69,
+        "valor_maximo": 12.86
+      },
+      "Proteína líquida total": {
+        "tipo": "g/dia",
+        "valor_requerido": 25.39,
+        "valor_maximo": 27.93
+      },
+      "Proteína metabolizável de mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 41.02,
+        "valor_maximo": 45.12
+      },
+      "Proteína metabolizável de ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 46.75,
+        "valor_maximo": 51.43
+      },
+      "Proteína metabolizável total": {
+        "tipo": "g/dia",
+        "valor_requerido": 87.77,
+        "valor_maximo": 96.54
+      },
+      "Proteína degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 63.45,
+        "valor_maximo": 69.8
+      },
+      "Proteína não degradável no rúmen": {
+        "tipo": "g/dia",
+        "valor_requerido": 58.95,
+        "valor_maximo": 64.84
+      },
+      "Proteína bruta 1": {
+        "tipo": "g/dia",
+        "valor_requerido": 122.4,
+        "valor_maximo": 134.64
+      },
+      "Proteína bruta": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 108.72,
+        "valor_maximo": 119.59
+      },
+      "Cálcio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.71,
+        "valor_maximo": 0.92
+      },
+      "Cálcio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.01,
+        "valor_maximo": 2.61
+      },
+      "Cálcio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.72,
+        "valor_maximo": 3.54
+      },
+      "Cálcio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 5.01,
+        "valor_maximo": 6.51
+      },
+      "Cálcio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 4.45,
+        "valor_maximo": 5.79
+      },
+      "Fósforo Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.76,
+        "valor_maximo": 0.99
+      },
+      "Fósforo Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 1,
+        "valor_maximo": 1.3
+      },
+      "Fósforo Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.76,
+        "valor_maximo": 2.29
+      },
+      "Fósforo Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 2.2,
+        "valor_maximo": 2.86
+      },
+      "Fósforo Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 1.96,
+        "valor_maximo": 2.55
+      },
+      "Relação Ca:P": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 2.27,
+        "valor_maximo": 2.95
+      },
+      "Magnésio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.08,
+        "valor_maximo": 0.1
+      },
+      "Magnésio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.07,
+        "valor_maximo": 0.09
+      },
+      "Magnésio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.15,
+        "valor_maximo": 0.2
+      },
+      "Magnésio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 1.71,
+        "valor_maximo": 2.22
+      },
+      "Magnésio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 1.52,
+        "valor_maximo": 1.98
+      },
+      "Sódio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.21,
+        "valor_maximo": 0.27
+      },
+      "Sódio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.33,
+        "valor_maximo": 0.43
+      },
+      "Sódio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.54,
+        "valor_maximo": 0.7
+      },
+      "Sódio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 6.69,
+        "valor_maximo": 8.7
+      },
+      "Sódio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 5.94,
+        "valor_maximo": 7.72
+      },
+      "Potássio Mantença": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Potássio Ganho": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.34,
+        "valor_maximo": 0.44
+      },
+      "Potássio Líquido Total": {
+        "tipo": "g/dia",
+        "valor_requerido": 0.7,
+        "valor_maximo": 0.91
+      },
+      "Potássio Dietético": {
+        "tipo": "g/dia",
+        "valor_requerido": 13.92,
+        "valor_maximo": 18.1
+      },
+      "Potássio Total": {
+        "tipo": "g/kgMS",
+        "valor_requerido": 12.37,
+        "valor_maximo": 16.08
+      },
+      "Cobre Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.05,
+        "valor_maximo": 1.37
+      },
+      "Cobre Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.56,
+        "valor_maximo": 0.73
+      },
+      "Cobre Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.61,
+        "valor_maximo": 2.09
+      },
+      "Cobre Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 7,
+        "valor_maximo": 9.1
+      },
+      "Cobre Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 6.22,
+        "valor_maximo": 8.09
+      },
+      "Ferro Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 1.19,
+        "valor_maximo": 1.55
+      },
+      "Ferro Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 3.89,
+        "valor_maximo": 5.06
+      },
+      "Ferro Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 5.07,
+        "valor_maximo": 6.59
+      },
+      "Ferro Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 39.04,
+        "valor_maximo": 50.75
+      },
+      "Ferro Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 34.67,
+        "valor_maximo": 45.07
+      },
+      "Manganês Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Manganês Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.38,
+        "valor_maximo": 0.49
+      },
+      "Manganês Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.56,
+        "valor_maximo": 0.73
+      },
+      "Manganês Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 79.87,
+        "valor_maximo": 103.83
+      },
+      "Manganês Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 70.94,
+        "valor_maximo": 92.22
+      },
+      "Zinco Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 5.82,
+        "valor_maximo": 7.57
+      },
+      "Zinco Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 2.1,
+        "valor_maximo": 2.73
+      },
+      "Zinco Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 7.92,
+        "valor_maximo": 10.3
+      },
+      "Zinco Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 27.59,
+        "valor_maximo": 35.87
+      },
+      "Zinco Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 24.51,
+        "valor_maximo": 31.86
+      },
+      "Cobalto Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.18,
+        "valor_maximo": 0.23
+      },
+      "Cobalto Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.25,
+        "valor_maximo": 0.33
+      },
+      "Cobalto Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.43,
+        "valor_maximo": 0.56
+      },
+      "Cobalto Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 3.12,
+        "valor_maximo": 4.06
+      },
+      "Cobalto Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 2.77,
+        "valor_maximo": 3.6
+      },
+      "Cromo Mantença": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.35,
+        "valor_maximo": 0.45
+      },
+      "Cromo Ganho": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.09,
+        "valor_maximo": 0.12
+      },
+      "Cromo Líquido Total": {
+        "tipo": "mg/dia",
+        "valor_requerido": 0.44,
+        "valor_maximo": 0.57
+      },
+      "Cromo Dietético": {
+        "tipo": "mg/dia",
+        "valor_requerido": 5.15,
+        "valor_maximo": 6.7
+      },
+      "Cromo Total": {
+        "tipo": "mg/kgMS",
+        "valor_requerido": 4.57,
+        "valor_maximo": 5.94
+      }
+    }
+  },
+  "ndt": {
+    "com frações proteicas": {
+      "Proteína bruta verdadeiramente digestível": {
+        "tipo": "%",
+        "valor": 8.25
+      },
+      "Extrato etéreo verdadeiramente digestível": {
+        "tipo": "%",
+        "valor": 4.51
+      },
+      "Fibra em detergente neutro digestível": {
+        "tipo": "%",
+        "valor": 40.48
+      },
+      "Carboidratos não-fibrosos verdadeiramente digestíveis": {
+        "tipo": "%",
+        "valor": 9.27
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "%",
+        "valor": 62.5
+      },
+      "Energia digestivel": {
+        "tipo": "Mcal/dia",
+        "valor": 2.76
+      },
+      "Energia metabolizável para caprinos": {
+        "tipo": "Mcal/dia",
+        "valor": 2.36
+      },
+      "Energia metabolizável para ovinos": {
+        "tipo": "Mcal/dia",
+        "valor": 2.19
+      }
+    },
+    "sem PIDN/PIDA": {
+      "Proteína bruta verdadeiramente digestível": {
+        "tipo": "%",
+        "valor": 13.4
+      },
+      "Extrato etéreo verdadeiramente digestível": {
+        "tipo": "%",
+        "valor": 7.48
+      },
+      "Fibra em detergente neutro digestível": {
+        "tipo": "%",
+        "valor": 23.09
+      },
+      "Carboidratos não-fibrosos verdadeiramente digestíveis": {
+        "tipo": "%",
+        "valor": 27.94
+      },
+      "Nutrientes digestíveis totais": {
+        "tipo": "%",
+        "valor": 71.91
+      },
+      "Energia digestivel": {
+        "tipo": "Mcal/dia",
+        "valor": 3.17
+      },
+      "Energia metabolizável para caprinos": {
+        "tipo": "Mcal/dia",
+        "valor": 2.73
+      },
+      "Energia metabolizável para ovinos": {
+        "tipo": "Mcal/dia",
+        "valor": 2.54
+      }
+    }
+  }
+}
