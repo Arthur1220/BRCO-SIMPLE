@@ -8,8 +8,8 @@ const { L } = require('../lib/i18n');
  * vem aqui, sem regras próprias.
  */
 const SEXES = {
-    inteiro: { id: 1, code: 'inteiro', label: L('Macho Inteiro', 'Intact Male') },
-    castrado: { id: 2, code: 'castrado', label: L('Macho Castrado', 'Castrated Male') },
+    inteiro: { id: 1, code: 'inteiro', label: L('Macho inteiro', 'Intact male') },
+    castrado: { id: 2, code: 'castrado', label: L('Macho castrado', 'Castrated male') },
     femea: { id: 3, code: 'femea', label: L('Fêmea', 'Female') },
 };
 

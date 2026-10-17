@@ -1,3 +1,4 @@
+const { defaultErrorMap } = require('zod');
 const { L, t, SUPPORTED_LOCALES } = require('../lib/i18n');
 
 /**
@@ -23,13 +24,18 @@ const GENERIC = {
 
 /**
  * Mensagens genéricas do Zod no idioma pedido, para os casos em que o schema
- * não define uma mensagem específica.
+ * não define uma mensagem específica. O mapa passado no parse tem prioridade
+ * sobre o do schema no Zod 3, então mensagens próprias do schema (ex.:
+ * "Peso Corporal Inicial é obrigatório.") são preservadas explicitamente.
  */
 function errorMapFor(locale) {
     return (issue, ctx) => {
+        if (ctx.defaultError !== defaultErrorMap(issue, { ...ctx, defaultError: '' }).message) {
+            return { message: ctx.defaultError };
+        }
         switch (issue.code) {
             case 'invalid_type':
-                return { message: t(issue.received === 'undefined' ? GENERIC.required : GENERIC.invalidType, locale) };
+                return { message: t(['undefined', 'null'].includes(issue.received) ? GENERIC.required : GENERIC.invalidType, locale) };
             case 'invalid_enum_value':
             case 'invalid_union_discriminator':
                 return { message: t(GENERIC.invalidOption, locale).replace('{options}', (issue.options || []).join(', ')) };

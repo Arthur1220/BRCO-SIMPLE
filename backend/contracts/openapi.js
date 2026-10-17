@@ -53,7 +53,7 @@ function buildOpenApiDocument() {
         security: publicSecurity,
         request: { query: langParam },
         responses: {
-            200: { description: 'Catálogo no idioma pedido. Inclui ETag e Cache-Control (1 hora).', content: json(catalogSchema) },
+            200: { description: 'Catálogo no idioma pedido. Inclui ETag; Cache-Control no-cache (o cliente revalida e recebe 304 se nada mudou).', content: json(catalogSchema) },
             304: { description: 'O cliente já tem a versão atual (If-None-Match).' },
             ...common,
         },

@@ -73,7 +73,7 @@ test('requirements: erros por campo, com código da regra e no idioma pedido', a
   assert.equal(res.body.error.code, 'VALIDATION');
   const byPath = Object.fromEntries(res.body.error.fields.map((f) => [f.path, f]));
   assert.equal(byPath.GMD.code, 'too_big');
-  assert.equal(byPath.GMD.message, 'Ganho Médio Diário deve estar entre 1 e 1000 g/d.');
+  assert.equal(byPath.GMD.message, 'Ganho médio diário deve estar entre 1 e 1000 g/d.');
 
   const en = await server.request('POST', '/api/v1/calculations/requirements?lang=en', { body: { ...requirementsInput, pesoFinal: 15 } });
   assert.deepEqual(en.body.error.fields, [{ path: 'pesoFinal', code: 'final_gt_initial', message: 'Final weight must be greater than initial weight.' }]);

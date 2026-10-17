@@ -8,9 +8,9 @@ const { L, t } = require('../lib/i18n');
  * Limites validados pela equipe de pesquisa.
  */
 const requirementFields = {
-    pesoInicial: { label: L('Peso Corporal Inicial', 'Initial Body Weight'), unit: 'kg', min: 0.1, max: 200, step: 0.1, placeholder: '20' },
-    pesoFinal: { label: L('Peso Corporal Final', 'Final Body Weight'), unit: 'kg', min: 0.1, max: 200, step: 0.1, placeholder: '30' },
-    GMD: { label: L('Ganho Médio Diário', 'Average Daily Gain'), unit: 'g/d', min: 1, max: 1000, step: 1, placeholder: '150' },
+    pesoInicial: { label: L('Peso corporal inicial', 'Initial body weight'), unit: 'kg', min: 0.1, max: 200, step: 0.1, placeholder: '20' },
+    pesoFinal: { label: L('Peso corporal final', 'Final body weight'), unit: 'kg', min: 0.1, max: 200, step: 0.1, placeholder: '30' },
+    GMD: { label: L('Ganho médio diário', 'Average daily gain'), unit: 'g/d', min: 1, max: 1000, step: 1, placeholder: '150' },
 };
 
 // Na dieta o GMD pode ser 0 (dieta de mantença).
@@ -21,13 +21,13 @@ const dietAnimalFields = {
 
 // Composição químico-bromatológica em % da matéria seca.
 const ndtFields = {
-    PB: { label: L('Proteína Bruta (PB)', 'Crude Protein (CP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '12.5' },
-    EE: { label: L('Extrato Etéreo (EE)', 'Ether Extract (EE)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '3.5' },
-    FDN: { label: L('Fibra em Detergente Neutro (FDN)', 'Neutral Detergent Fiber (NDF)'), unit: '%MS', min: 0.01, max: 100, step: 0.01, placeholder: '60.0' },
+    PB: { label: L('Proteína bruta (PB)', 'Crude protein (CP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '12.5' },
+    EE: { label: L('Extrato etéreo (EE)', 'Ether extract (EE)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '3.5' },
+    FDN: { label: L('Fibra em detergente neutro (FDN)', 'Neutral detergent fiber (NDF)'), unit: '%MS', min: 0.01, max: 100, step: 0.01, placeholder: '60.0' },
     Lignina: { label: L('Lignina', 'Lignin'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '5.0' },
-    MO: { label: L('Matéria Orgânica (MO)', 'Organic Matter (OM)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '90' },
-    PIDN: { label: L('Proteína Insolúvel em Detergente Neutro (PIDN)', 'Neutral Detergent Insoluble Protein (NDIP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '2.5' },
-    PIDA: { label: L('Proteína Insolúvel em Detergente Ácido (PIDA)', 'Acid Detergent Insoluble Protein (ADIP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '1.0' },
+    MO: { label: L('Matéria orgânica (MO)', 'Organic matter (OM)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '90' },
+    PIDN: { label: L('Proteína insolúvel em detergente neutro (PIDN)', 'Neutral detergent insoluble protein (NDIP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '2.5' },
+    PIDA: { label: L('Proteína insolúvel em detergente ácido (PIDA)', 'Acid detergent insoluble protein (ADIP)'), unit: '%MS', min: 0, max: 100, step: 0.01, placeholder: '1.0' },
 };
 
 // Ingredientes da dieta.
@@ -39,9 +39,9 @@ const ingredientFields = {
 
 // Composição de alimento personalizado, na mesma unidade dos alimentos cadastrados.
 const customFoodFields = {
-    MS: { label: L('Matéria Seca (MS)', 'Dry Matter (DM)'), unit: 'g/kg', min: 0, max: 1000, step: 0.1, placeholder: '880' },
-    PB: { label: L('Proteína Bruta (PB)', 'Crude Protein (CP)'), unit: 'g/kg MS', min: 0, max: 3000, step: 0.1, placeholder: '120' },
-    NDT: { label: L('Nutrientes Digestíveis Totais (NDT)', 'Total Digestible Nutrients (TDN)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.1, placeholder: '650' },
+    MS: { label: L('Matéria seca (MS)', 'Dry matter (DM)'), unit: 'g/kg', min: 0, max: 1000, step: 0.1, placeholder: '880' },
+    PB: { label: L('Proteína bruta (PB)', 'Crude protein (CP)'), unit: 'g/kg MS', min: 0, max: 3000, step: 0.1, placeholder: '120' },
+    NDT: { label: L('Nutrientes digestíveis totais (NDT)', 'Total digestible nutrients (TDN)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.1, placeholder: '650' },
     FDNcp: { label: L('FDN corrigida para cinzas e proteína', 'Ash- and protein-corrected NDF'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.1, placeholder: '450' },
     Ca: { label: L('Cálcio (Ca)', 'Calcium (Ca)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.01, placeholder: '5' },
     P: { label: L('Fósforo (P)', 'Phosphorus (P)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.01, placeholder: '3' },
@@ -69,8 +69,12 @@ function numberField(def, locale) {
     const range = format(t(MESSAGES.range, locale), values).replace(/ \./, '.');
     return z
         .number({
-            required_error: format(t(MESSAGES.required, locale), values),
-            invalid_type_error: format(t(MESSAGES.number, locale), values),
+            // Vazio (ausente ou null) é "obrigatório"; qualquer outro tipo é "deve ser um número".
+            errorMap: (issue, ctx) => {
+                if (issue.code !== 'invalid_type') return { message: ctx.defaultError };
+                const empty = issue.received === 'undefined' || issue.received === 'null';
+                return { message: format(t(empty ? MESSAGES.required : MESSAGES.number, locale), values) };
+            },
         })
         .finite()
         .min(def.min, range)

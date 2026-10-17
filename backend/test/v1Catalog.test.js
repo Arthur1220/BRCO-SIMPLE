@@ -28,7 +28,7 @@ test('catálogo: textos traduzidos, codes e limites iguais entre idiomas', () =>
   const en = getCatalog('en');
   assert.equal(pt.species[0].label, 'Caprino');
   assert.equal(en.species[0].label, 'Goat');
-  assert.equal(en.forms.requirements.fields[0].label, 'Initial Body Weight');
+  assert.equal(en.forms.requirements.fields[0].label, 'Initial body weight');
   assert.deepEqual(pt.species.map((s) => s.code), en.species.map((s) => s.code));
   assert.deepEqual(
     pt.forms.requirements.fields.map(({ name, min, max, unit }) => ({ name, min, max, unit })),
@@ -123,7 +123,7 @@ test('GET /api/v1/catalog: responde o catálogo com cache e ETag', async () => {
   assert.equal(res.status, 200);
   assert.equal(res.body.version, getCatalog().version);
   assert.equal(res.headers.get('etag'), `"${getCatalog().version}"`);
-  assert.equal(res.headers.get('cache-control'), 'public, max-age=3600');
+  assert.equal(res.headers.get('cache-control'), 'no-cache');
 });
 
 test('GET /api/v1/catalog: idioma por ?lang ou Accept-Language', async () => {

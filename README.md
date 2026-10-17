@@ -96,7 +96,7 @@ O backend concentra todas as regras; o frontend apenas exibe e coleta dados. Doc
 
 | Endpoint | Descrição |
 |---|---|
-| `GET /api/v1/catalog` | Opções, campos (label, unidade, limites) e regras para montar as telas (ETag, cache 1h) |
+| `GET /api/v1/catalog` | Opções, campos (label, unidade, limites) e regras para montar as telas (ETag, revalidado a cada acesso) |
 | `GET /api/v1/foods` | Alimentos cadastrados (nutrientes em g/kg MS) |
 | `POST /api/v1/calculations/{requirements,ndt,diet}` | Calcula, salva e devolve o resultado pronto para exibir |
 | `GET /api/v1/calculations/:id` | Cálculo salvo (link compartilhável) |
