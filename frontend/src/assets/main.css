@@ -522,5 +522,6 @@ fieldset > legend { margin-bottom: 6px; }
   .grid-2 { grid-template-columns: 1fr; }
   .panel-body { padding: 16px; }
   .panel-head { padding: 14px 16px; }
+  .stats { grid-template-columns: 1fr; }
   .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
 }

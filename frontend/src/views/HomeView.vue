@@ -17,22 +17,20 @@
       </figure>
     </section>
 
+    <!-- Exemplo real de saída da calculadora (valores do domínio, não ilustrativos),
+         em faixa de largura total, no mesmo padrão dos destaques da calculadora -->
     <section class="container sample-section" aria-labelledby="sample-title">
-      <div class="sample-intro">
+      <header class="sample-head">
         <h2 id="sample-title" class="section-title">{{ $t('home.exampleTitle') }}</h2>
-        <p>{{ $t('home.exampleNote') }}</p>
-      </div>
-
-      <!-- Exemplo real de saída da calculadora (valores do domínio, não ilustrativos) -->
-      <figure class="panel sample" :aria-label="$t('home.exampleTitle')">
-        <figcaption class="sample-head small muted">{{ $t('home.exampleAnimal') }}</figcaption>
-        <dl class="sample-rows">
-          <div v-for="row in sampleRows" :key="row.key" class="sample-row" :class="{ 'is-key': row.key === 'intake' }">
-            <dt>{{ $t(`home.example.${row.key}`) }}</dt>
-            <dd class="num">{{ format(row.value) }} <span>{{ row.unit }}</span></dd>
-          </div>
-        </dl>
-      </figure>
+        <span class="small muted">{{ $t('home.exampleAnimal') }}</span>
+      </header>
+      <dl class="stats sample">
+        <div v-for="(row, index) in sampleRows" :key="row.key" class="stat" :class="{ 'is-key': index === 0 }">
+          <dt class="stat-label">{{ $t(`home.example.${row.key}`) }}</dt>
+          <dd class="stat-value">{{ format(row.value) }}<small>{{ row.unit }}</small></dd>
+        </div>
+      </dl>
+      <p class="small muted sample-note">{{ $t('home.exampleNote') }}</p>
     </section>
 
     <section class="container tools" aria-labelledby="tools-title">
@@ -128,46 +126,23 @@ const format = (value) =>
 }
 
 /* Exemplo de resultado */
-.sample-section {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: 64px;
-  align-items: start;
-  padding-bottom: 72px;
-}
-
-.sample-intro p { max-width: 40ch; }
-
-.sample { overflow: hidden; }
+.sample-section { padding-bottom: 72px; }
 
 .sample-head {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
-}
-
-.sample-rows { margin: 0; }
-
-.sample-row {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  gap: 16px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
+  justify-content: space-between;
+  gap: 8px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
-.sample-row.is-key { box-shadow: inset 3px 0 0 var(--brand); }
+.sample-head .section-title { margin-bottom: 0; }
 
-.sample-row dt { font-size: 0.875rem; color: var(--ink-2); }
+.sample { margin: 0; }
+.sample dd { margin: 0; }
 
-.sample-row dd {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.sample-row dd span { font-size: 0.8125rem; color: var(--ink-3); font-weight: 400; }
-
+.sample-note { margin-top: 10px; }
 
 /* Ferramentas */
 .section-title {
@@ -237,7 +212,7 @@ const format = (value) =>
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; padding-bottom: 48px; }
   .cover-art img { max-width: 280px; }
-  .sample-section { grid-template-columns: 1fr; gap: 16px; padding-bottom: 56px; }
+  .sample-section { padding-bottom: 56px; }
   .source { grid-template-columns: 1fr; gap: 24px; }
   .book { max-width: 180px; }
   .tool { grid-template-columns: 36px minmax(0, 1fr) 20px; padding: 20px 0; }
