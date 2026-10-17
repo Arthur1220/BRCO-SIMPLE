@@ -8,7 +8,7 @@
     <ul class="team">
       <li v-for="member in teamMembers" :key="member.name">
         <a :href="member.pageUrl" target="_blank" rel="noopener noreferrer" class="member">
-          <img :src="member.image" :alt="$t('team.photoAlt', { name: member.name })" loading="lazy" width="56" height="56">
+          <img :src="member.image" :alt="$t('team.photoAlt', { name: member.name })" loading="lazy" width="64" height="80" :style="{ objectPosition: member.focus || '50% 20%' }">
           <span class="member-text">
             <span class="member-name">{{ member.name }}</span>
             <span class="member-role">{{ $t(`team.roles.${member.role}`) }}</span>
@@ -51,13 +51,15 @@ const teamMembers = [
   text-decoration: none;
 }
 
+/* Retrato 4:5 ancorado no topo: as fotos do Lattes têm proporções muito
+   diferentes (até 1:2,2) e o recorte circular centralizado cortava o rosto. */
 .member img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  width: 64px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: var(--r);
   object-fit: cover;
   background: var(--surface-2);
-  filter: grayscale(0.2);
 }
 
 .member-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }

@@ -11,19 +11,27 @@
         </div>
       </div>
 
+      <!-- Arte da capa do livro BR-Caprinos & Ovinos -->
+      <figure class="cover-art">
+        <img src="@/assets/images/ovino-caprino.png" :alt="$t('home.heroImageAlt')" width="460" height="390">
+      </figure>
+    </section>
+
+    <section class="container sample-section" aria-labelledby="sample-title">
+      <div class="sample-intro">
+        <h2 id="sample-title" class="section-title">{{ $t('home.exampleTitle') }}</h2>
+        <p>{{ $t('home.exampleNote') }}</p>
+      </div>
+
       <!-- Exemplo real de saída da calculadora (valores do domínio, não ilustrativos) -->
       <figure class="panel sample" :aria-label="$t('home.exampleTitle')">
-        <figcaption class="sample-head">
-          <span class="eyebrow">{{ $t('home.exampleTitle') }}</span>
-          <span class="small muted">{{ $t('home.exampleAnimal') }}</span>
-        </figcaption>
+        <figcaption class="sample-head small muted">{{ $t('home.exampleAnimal') }}</figcaption>
         <dl class="sample-rows">
           <div v-for="row in sampleRows" :key="row.key" class="sample-row" :class="{ 'is-key': row.key === 'intake' }">
             <dt>{{ $t(`home.example.${row.key}`) }}</dt>
             <dd class="num">{{ format(row.value) }} <span>{{ row.unit }}</span></dd>
           </div>
         </dl>
-        <p class="sample-foot small muted">{{ $t('home.exampleNote') }}</p>
       </figure>
     </section>
 
@@ -106,14 +114,38 @@ const format = (value) =>
   margin-bottom: 28px;
 }
 
+/* Arte da capa: mesmas cores do livro (laranja da marca clareado) */
+.cover-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 5 / 4;
+  padding: 40px;
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--brand) 26%, #fff);
+}
+
+.cover-art img {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
 /* Exemplo de resultado */
+.sample-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 64px;
+  align-items: start;
+  padding-bottom: 72px;
+}
+
+.sample-intro p { max-width: 40ch; }
+
 .sample { overflow: hidden; }
 
 .sample-head {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 16px 20px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -140,7 +172,6 @@ const format = (value) =>
 
 .sample-row dd span { font-size: 0.8125rem; color: var(--ink-3); font-weight: 400; }
 
-.sample-foot { padding: 12px 20px; background: var(--surface-2); }
 
 /* Ferramentas */
 .section-title {
@@ -208,7 +239,10 @@ const format = (value) =>
 }
 
 @media (max-width: 860px) {
-  .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; padding-bottom: 48px; }
+  .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; padding-bottom: 48px; }
+  .cover-art { aspect-ratio: auto; padding: 28px; }
+  .cover-art img { max-width: 280px; }
+  .sample-section { grid-template-columns: 1fr; gap: 16px; padding-bottom: 56px; }
   .source { grid-template-columns: 1fr; gap: 24px; }
   .book { max-width: 180px; }
   .tool { grid-template-columns: 36px minmax(0, 1fr) 20px; padding: 20px 0; }

@@ -96,6 +96,7 @@ export default {
     sourceBook: 'Exigências Nutricionais de Caprinos e Ovinos (BR-Caprinos & Ovinos)',
     bookLink: 'Ver a publicação',
     bookCoverAlt: 'Capa do livro BR-Caprinos & Ovinos',
+    heroImageAlt: 'Ilustração de um caprino e um ovino, arte da capa do livro BR-Caprinos & Ovinos',
   },
   team: {
     title: 'Equipe',

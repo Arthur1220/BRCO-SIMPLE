@@ -96,6 +96,7 @@ export default {
     sourceBook: 'Nutritional Requirements of Goats and Sheep (BR-Goats & Sheep)',
     bookLink: 'View the publication',
     bookCoverAlt: 'Cover of the BR-Goats & Sheep book',
+    heroImageAlt: 'Illustration of a goat and a sheep, cover art of the BR-Goats & Sheep book',
   },
   team: {
     title: 'Team',
