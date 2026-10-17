@@ -52,6 +52,8 @@
 
             <DietBalancer />
 
+            <div v-if="store.error" class="diet-error">{{ store.error }}</div>
+
             <div class="calculation-area">
                <div class="total-bar" :class="totalStatusClass">
                   <span>Soma Atual: <strong>{{ store.totalPercent.toFixed(1) }}%</strong></span>
@@ -96,8 +98,8 @@
 
     <ConflictModal
         :isVisible="store.showConflictModal"
-        :resultIdeal="store.conflictData.resultIdeal"
-        :resultRealistic="store.conflictData.resultRealistic"
+        :options="store.conflictData.options"
+        :statusLabel="store.conflictData.statusLabel"
         @select-option="store.finalizeCalculation"
     />
 
@@ -121,6 +123,7 @@ const store = useDietStore();
 
 const handleAnimalData = (data) => {
   store.animalData = data;
+  store.error = null;
   store.fetchFoods();
   store.nextStep();
 };
@@ -398,5 +401,14 @@ const totalStatusClass = computed(() => {
     gap: 1rem;
     align-items: flex-start;
   }
+}
+
+.diet-error {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  background: #fdeaea;
+  border: 1px solid #f9c5c5;
+  color: var(--red-error);
 }
 </style>

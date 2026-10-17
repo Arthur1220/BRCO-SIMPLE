@@ -1,50 +1,63 @@
 import apiClient from './axiosSetup.js';
 
+// Cliente da API v1: o backend devolve tudo pronto para exibir
+// (labels, unidades, grupos, destaques, status). Ver /api-docs/v1.
 
 /**
- * Envia os dados para o cálculo de exigências.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo.
+ * Catálogo: espécies, formulários (campos, limites, regras) e regras da dieta.
  */
-export const calculateRequirements = async (data) => {
-  // apiClient já sabe a URL base, então só precisamos do caminho do endpoint.
-  const response = await apiClient.post('/calculate/requirements', data);
-  return response.data; // Retornamos apenas os dados da resposta
-};
-
-/**
- * Envia os dados para o cálculo de NDT.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo.
- */
-export const calculateNdt = async (data) => {
-  const response = await apiClient.post('/calculate/ndt', data);
+export const getCatalog = async () => {
+  const response = await apiClient.get('/v1/catalog');
   return response.data;
 };
 
-/** * Envia os dados para gerar um arquivo CSV.
- * @param {object} data - O objeto com os dados para o CSV.
- * @returns {Promise<Blob>} - A promessa com o arquivo CSV em formato Blob.
- */
-export const generateCsv = async (data) => {
-  const csvConfig = { responseType: 'blob' };
-  const response = await apiClient.post('/generate-csv', data, csvConfig);
-  return response.data;
-};
-
-/** * Busca a lista de alimentos.
- * @returns {Promise<object[]>} - A promessa com a lista de alimentos.
+/**
+ * Alimentos cadastrados (nutrientes em g/kg MS).
  */
 export const getFoods = async () => {
-  const response = await apiClient.get('/foods');
+  const response = await apiClient.get('/v1/foods');
   return response.data;
 };
 
-/** * Envia os dados para o cálculo de dieta.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo de dieta.
+/**
+ * Cálculo de exigências. Entrada com codes do catálogo (especie, genotipo, sexo).
  */
-export const calculateDiet = async (data) => {
-  const response = await apiClient.post('/calculate/diet', data);
+export const calculateRequirements = async (input) => {
+  const response = await apiClient.post('/v1/calculations/requirements', input);
   return response.data;
+};
+
+/**
+ * Cálculo de NDT de um alimento.
+ */
+export const calculateNdt = async (input) => {
+  const response = await apiClient.post('/v1/calculations/ndt', input);
+  return response.data;
+};
+
+/**
+ * Formulação de dieta: { animal, ingredients: [{ foodId } | { custom }] }.
+ */
+export const calculateDiet = async (input) => {
+  const response = await apiClient.post('/v1/calculations/diet', input);
+  return response.data;
+};
+
+/**
+ * Cálculo salvo (válido por 6 meses).
+ */
+export const getCalculation = async (id) => {
+  const response = await apiClient.get(`/v1/calculations/${id}`);
+  return response.data;
+};
+
+/**
+ * CSV gerado pelo servidor a partir do cálculo salvo.
+ * @returns {Promise<{ blob: Blob, filename: string }>}
+ */
+export const downloadCalculationCsv = async (id) => {
+  const response = await apiClient.get(`/v1/calculations/${id}/export.csv`, { responseType: 'blob' });
+  const disposition = response.headers['content-disposition'] || '';
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `brco-${id}.csv`;
+  return { blob: response.data, filename };
 };

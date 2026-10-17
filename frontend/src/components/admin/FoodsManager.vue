@@ -11,9 +11,9 @@
           <tr>
             <th>Nome</th>
             <th>Categoria</th>
-            <th>MS (%)</th>
-            <th>PB (%)</th>
-            <th>NDT (%)</th>
+            <th>MS ({{ unitFor('MS') }})</th>
+            <th>PB ({{ unit }})</th>
+            <th>NDT ({{ unit }})</th>
             <th class="actions-col">Ações</th>
           </tr>
         </thead>
@@ -22,9 +22,9 @@
             <td class="font-medium">{{ food.name }}</td>
             <td>
               <span class="category-badge" :class="food.category?.toLowerCase()">
-                {{ food.category?.charAt(0) || '?' }}
+                {{ food.categoryLabel?.charAt(0) || '?' }}
               </span>
-              {{ food.category }}
+              {{ food.categoryLabel }}
             </td>
             <td>{{ food.MS }}</td>
             <td>{{ food.PB }}</td>
@@ -60,13 +60,11 @@
             <div class="field full-width">
               <label>Categoria</label>
               <select v-model="form.category" required>
-                <option value="VOLUMOSO">Volumoso</option>
-                <option value="CONCENTRADO">Concentrado</option>
-                <option value="SUPLEMENTO">Suplemento</option>
+                <option v-for="category in categories" :key="category.code" :value="category.code">{{ category.label }}</option>
               </select>
             </div>
             <div class="field" v-for="field in nutrientFields" :key="field">
-              <label>{{ field }}</label>
+              <label>{{ field }} ({{ unitFor(field) }})</label>
               <input v-model.number="form[field]" type="number" step="0.01">
             </div>
           </div>
@@ -87,6 +85,15 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { getFoods } from '@/services/apiService';
 import { createFood, updateFood, deleteFood } from '@/services/adminService';
+import { parseApiError } from '@/services/axiosSetup';
+import { useCatalogStore } from '@/stores/catalogStore';
+
+const catalog = useCatalogStore();
+// Categorias e unidade dos nutrientes vêm do catálogo da API.
+const categories = computed(() => catalog.diet?.categories ?? []);
+const unit = computed(() => catalog.diet?.foodNutrientUnit ?? '');
+// A matéria seca é expressa sobre a matéria natural (g/kg); os demais, sobre a MS.
+const unitFor = (field) => (field === 'MS' ? 'g/kg' : unit.value);
 
 const foods = ref([]);
 const showModal = ref(false);
@@ -147,7 +154,8 @@ const saveFood = async () => {
     await loadFoods();
     closeModal();
   } catch (error) {
-    alert("Erro ao salvar alimento.");
+    const parsed = parseApiError(error, "Erro ao salvar alimento.");
+    alert([parsed.message, ...Object.entries(parsed.fields).map(([field, msg]) => `${field}: ${msg}`)].join('\n'));
   } finally {
     isSaving.value = false;
   }
@@ -159,12 +167,15 @@ const confirmDelete = async (food) => {
       await deleteFood(food.id);
       await loadFoods();
     } catch (error) {
-      alert("Erro ao excluir.");
+      alert(parseApiError(error, "Erro ao excluir.").message);
     }
   }
 };
 
-onMounted(loadFoods);
+onMounted(() => {
+  catalog.load().catch(() => {});
+  loadFoods();
+});
 </script>
 
 <style scoped>

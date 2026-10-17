@@ -13,8 +13,8 @@
         <tbody>
           <tr v-for="log in paginatedLogs" :key="log.id">
             <td>
-                <span class="type-badge" :class="getTypeClass(log.calculationType)">
-                    {{ formatTypeName(log.calculationType) }}
+                <span class="type-badge" :class="getTypeClass(log.type)">
+                    {{ log.label }}
                 </span>
             </td>
             <td>{{ log.country || '-' }} <span class="region" v-if="log.region">({{ log.region }})</span></td>
@@ -50,12 +50,7 @@ const paginatedLogs = computed(() => {
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
 const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
 
-const formatTypeName = (t) => {
-    if (t.includes('ndt')) return 'NDT';
-    if (t.includes('requirement')) return 'Exigências';
-    return 'Dieta';
-};
-
+// Apenas aparência: cor por tipo (o texto vem pronto da API).
 const getTypeClass = (t) => {
     if (t.includes('ndt')) return 'badge-blue';
     if (t.includes('diet')) return 'badge-green';

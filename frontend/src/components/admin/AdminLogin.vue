@@ -20,6 +20,7 @@
 <script setup>
 import { ref } from 'vue';
 import { loginAdmin } from '@/services/adminService';
+import { parseApiError } from '@/services/axiosSetup';
 
 const password = ref('');
 const isLoading = ref(false);
@@ -31,14 +32,11 @@ const handleLogin = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const response = await loginAdmin(password.value);
-    if (response.success) {
-      emit('login-success');
-    }
+    await loginAdmin(password.value);
+    emit('login-success');
   } catch (err) {
-    error.value = err.response?.status === 429
-      ? 'Muitas tentativas. Aguarde alguns minutos.'
-      : 'Senha incorreta. Tente novamente.';
+    // Mensagem pronta da API (senha incorreta, muitas tentativas...)
+    error.value = parseApiError(err, 'Não foi possível entrar. Tente novamente.').message;
   } finally {
     isLoading.value = false;
   }

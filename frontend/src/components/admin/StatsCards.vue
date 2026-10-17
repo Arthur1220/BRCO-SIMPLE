@@ -26,7 +26,7 @@
 
       </div>
       <span class="stat-value">{{ typeStat.count }}</span>
-      <span class="stat-label">{{ formatTypeName(typeStat.type) }}</span>
+      <span class="stat-label">{{ typeStat.label }}</span>
     </div>
   </div>
 </template>
@@ -34,13 +34,7 @@
 <script setup>
 defineProps({ stats: { type: Object, required: true } });
 
-const formatTypeName = (typeName) => {
-  if (typeName.includes('ndt')) return 'Cálculo NDT';
-  if (typeName.includes('diet')) return 'Formulação Dieta';
-  if (typeName.includes('requirement')) return 'Exigências';
-  return 'Outros';
-};
-
+// Apenas aparência: ícone/cor por tipo (o texto vem pronto da API).
 const getIconClass = (typeName) => {
     if (typeName.includes('ndt')) return 'ndt';
     if (typeName.includes('diet')) return 'diet';

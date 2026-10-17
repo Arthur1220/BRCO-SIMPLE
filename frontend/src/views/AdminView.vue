@@ -33,7 +33,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getAdminStats, getAdminLogs, getAdminChartData, logoutAdmin } from '@/services/adminService';
-import { hasValidAdminToken } from '@/services/axiosSetup';
+import { hasValidAdminToken, parseApiError } from '@/services/axiosSetup';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
 import FoodsManager from '@/components/admin/FoodsManager.vue';
@@ -61,7 +61,7 @@ const fetchData = async (period) => {
     logs.value = logsRes;
     chartData.value = chartRes;
   } catch (err) {
-    error.value = err.response?.data?.error || err.message;
+    error.value = parseApiError(err).message;
     handleLogout();
   } finally {
     isLoading.value = false;

@@ -2,6 +2,9 @@ import axios from 'axios';
 
 const ADMIN_TOKEN_KEY = 'brcoAdminToken';
 
+// Idioma pedido à API (textos, labels e mensagens de erro vêm do backend).
+export const API_LOCALE = 'pt-BR';
+
 // A API é sempre servida em /api no mesmo domínio:
 // proxy do Vite (dev), nginx (Docker local) ou proxy do Netlify (produção).
 const apiClient = axios.create({
@@ -9,12 +12,15 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Accept-Language': API_LOCALE,
   }
 });
 
 export const getAdminToken = () => sessionStorage.getItem(ADMIN_TOKEN_KEY);
 export const setAdminToken = (token) => sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
 export const clearAdminToken = () => sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+
+const isAdminUrl = (url = '') => url.startsWith('/v1/admin') || url.startsWith('/admin');
 
 /**
  * Indica se existe um token de admin ainda dentro da validade.
@@ -34,7 +40,7 @@ export const hasValidAdminToken = () => {
 // Envia o token de sessão em todas as rotas administrativas
 apiClient.interceptors.request.use((config) => {
   const token = getAdminToken();
-  if (token && config.url?.startsWith('/admin')) {
+  if (token && isAdminUrl(config.url)) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -42,7 +48,7 @@ apiClient.interceptors.request.use((config) => {
 
 const errorInterceptor = (error) => {
     // Sessão de admin expirada ou inválida: descarta o token
-    if (error.response?.status === 401 && error.config?.url?.startsWith('/admin')) {
+    if (error.response?.status === 401 && isAdminUrl(error.config?.url)) {
       clearAdminToken();
     }
     console.error('Erro na resposta da API:', error.response?.data || error.message);
@@ -50,5 +56,21 @@ const errorInterceptor = (error) => {
 };
 
 apiClient.interceptors.response.use(response => response, errorInterceptor);
+
+/**
+ * Extrai o erro no formato da API v1: { message, fields: { caminho: mensagem } }.
+ * As mensagens já vêm prontas (e traduzidas) do backend.
+ */
+export const parseApiError = (error, fallback = 'Ocorreu um erro inesperado.') => {
+  const apiError = error?.response?.data?.error;
+  if (apiError && typeof apiError === 'object') {
+    const fields = {};
+    for (const field of apiError.fields || []) {
+      if (!fields[field.path]) fields[field.path] = field.message;
+    }
+    return { message: apiError.message || fallback, fields };
+  }
+  return { message: typeof apiError === 'string' ? apiError : (error?.message || fallback), fields: {} };
+};
 
 export default apiClient;

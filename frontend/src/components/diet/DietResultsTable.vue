@@ -1,5 +1,5 @@
 <template>
-  <div class="diet-results" v-if="store.dietResults">
+  <div class="diet-results" v-if="solution">
 
     <div class="recipe-section">
       <h4 class="section-title">Receita Sugerida (Base Matéria Seca)</h4>
@@ -9,16 +9,14 @@
             <tr>
               <th>Ingrediente</th>
               <th class="center">Proporção Final (%)</th>
-              <th class="center">Quantidade (kg/dia)</th>
+              <th class="center">Quantidade (kg MS/dia)</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(ing, index) in store.dietResults.optimizedIngredients" :key="index">
+            <tr v-for="(ing, index) in solution.ingredients" :key="index">
               <td><strong>{{ ing.name }}</strong></td>
               <td class="center highlight-cell">{{ formatNum(ing.percent) }}%</td>
-              <td class="center">
-                {{ calculateKg(ing.percent) }} kg
-              </td>
+              <td class="center">{{ formatNum(ing.kgPerDay, 3) }} kg</td>
             </tr>
           </tbody>
         </table>
@@ -30,11 +28,11 @@
     <div class="summary-cards">
       <div class="card">
         <span class="label">Consumo Total Estimado (MS)</span>
-        <span class="value">{{ formatNum(store.dietResults.dietSupply['Consumo Estimado (g)'] / 1000) }} kg</span>
+        <span class="value">{{ formatNum(solution.totals.intakeKgPerDay) }} kg</span>
       </div>
        <div class="card">
         <span class="label">Custo Total Estimado</span>
-        <span class="value">R$ {{ formatNum(store.dietResults.dietSupply['Custo Total']) }}</span>
+        <span class="value">R$ {{ formatNum(solution.totals.costPerDay) }}</span>
       </div>
     </div>
 
@@ -52,62 +50,58 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(data, nutrient) in store.dietResults.dietBalance" :key="nutrient">
-              <td>{{ nutrient }} ({{ data.unit }})</td>
-              <td class="center">{{ data.required }}</td>
-              <td class="center">{{ data.supplied }}</td>
-              <td class="center" :class="getBalanceClass(data.diff)">
-                {{ data.diff > 0 ? '+' : '' }}{{ data.diff }}
+            <tr v-for="item in solution.balance" :key="item.code">
+              <td>{{ item.label }} ({{ item.unit }})</td>
+              <td class="center">{{ formatNum(item.required) }}</td>
+              <td class="center">{{ formatNum(item.supplied) }}</td>
+              <td class="center" :class="item.status === 'deficit' ? 'text-red' : 'text-green'">
+                {{ item.diff > 0 ? '+' : '' }}{{ formatNum(item.diff) }}
               </td>
               <td class="center">
-                <span class="status-badge" :class="getStatusClass(data.diff, data.required)">
-                  {{ getStatusLabel(data.diff, data.required) }}
-                </span>
+                <span class="status-badge" :class="STATUS_CLASS[item.status]">{{ item.statusLabel }}</span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <div class="export-row">
+      <button @click="exportToCsv" class="btn-export" :disabled="isExporting">
+        {{ isExporting ? 'Gerando...' : 'Exportar CSV' }}
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
+import { downloadCalculationCsv } from '@/services/apiService';
+import { parseApiError, API_LOCALE } from '@/services/axiosSetup';
+import { saveAs } from 'file-saver';
 
+// kg/dia, custo, balanço e status vêm calculados da API v1.
 const store = useDietStore();
+const solution = computed(() => store.dietResults?.solution);
+const isExporting = ref(false);
 
-const formatNum = (num) => {
-  return num ? Number(num).toFixed(2) : '0.00';
-};
+// Apenas aparência: cor do selo por status.
+const STATUS_CLASS = { ideal: 'badge-success', deficit: 'badge-warning', excess: 'badge-info', info: 'badge-info' };
 
-const calculateKg = (percent) => {
-  const totalCMS_g = store.dietResults.dietSupply['Consumo Estimado (g)'];
-  const amount_g = totalCMS_g * (percent / 100);
-  return (amount_g / 1000).toFixed(3);
-};
+const formatNum = (num, decimals = 2) =>
+  Number(num || 0).toLocaleString(API_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
-const getBalanceClass = (diff) => {
-  if (diff < -0.1) return 'text-red';
-  return 'text-green';
-};
-
-const getStatusClass = (diff, required) => {
-  if (required === 0) return 'badge-info';
-  const percentDiff = (diff / required) * 100;
-
-  if (Math.abs(percentDiff) <= 5 || (diff >= 0 && diff < 0.1)) return 'badge-success';
-  if (diff < 0) return 'badge-warning';
-  return 'badge-info';
-};
-
-const getStatusLabel = (diff, required) => {
-  if (required === 0) return 'Informativo';
-  const percentDiff = (diff / required) * 100;
-
-  if (Math.abs(percentDiff) <= 5 || (diff >= 0 && diff < 0.1)) return 'Ideal';
-  if (diff < 0) return 'Déficit';
-  return 'Excesso';
+const exportToCsv = async () => {
+  isExporting.value = true;
+  try {
+    const { blob, filename } = await downloadCalculationCsv(store.dietResults.calculationId);
+    saveAs(blob, filename);
+  } catch (error) {
+    alert(parseApiError(error, 'Não foi possível gerar o CSV.').message);
+  } finally {
+    isExporting.value = false;
+  }
 };
 </script>
 
@@ -256,5 +250,29 @@ th {
   .summary-cards {
     flex-direction: column; /* Empilha os cards verticalmente */
   }
+}
+
+/* =========================================
+   Exportação (API v1)
+   ========================================= */
+.export-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.btn-export {
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  background: transparent;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-export:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 </style>

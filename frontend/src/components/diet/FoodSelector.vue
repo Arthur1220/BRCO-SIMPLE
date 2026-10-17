@@ -10,23 +10,23 @@
       />
     </div>
 
+    <p v-if="store.notice" class="notice">{{ store.notice }}</p>
+
     <div class="food-list">
       <div v-if="store.isLoading && store.availableFoods.length === 0" class="loading-text">
         Carregando alimentos...
       </div>
 
       <div v-else>
-        <template v-for="(foods, categoryKey) in groupedFoods" :key="categoryKey">
+        <template v-for="group in groupedFoods" :key="group.code">
 
-          <div class="category-header">
-            {{ categoryLabels[categoryKey] || categoryKey }}
-          </div>
+          <div class="category-header">{{ group.label }}</div>
 
           <div
-            v-for="food in foods"
-            :key="food.id"
+            v-for="food in group.foods"
+            :key="food.id ?? food.name"
             class="food-item"
-            :class="{ 'is-selected': isAdded(food) }"
+            :class="{ 'is-selected': store.isSelected(food) }"
           >
             <div class="food-info">
               <span class="food-name">{{ food.name }}</span>
@@ -41,7 +41,7 @@
               </button>
 
               <button
-                v-if="!isAdded(food)"
+                v-if="!store.isSelected(food)"
                 @click="store.addIngredient(food)"
                 class="btn-icon btn-add"
                 title="Adicionar"
@@ -66,7 +66,7 @@
           </div>
         </template>
 
-        <div v-if="!store.isLoading && Object.keys(groupedFoods).length === 0" class="no-results">
+        <div v-if="!store.isLoading && groupedFoods.length === 0" class="no-results">
           Nenhum alimento encontrado.
         </div>
       </div>
@@ -85,16 +85,13 @@
                 <h3>{{ previewFood.name }}</h3>
             </div>
             <div class="nutrient-grid">
-                <div class="nutrient-item"><strong>MS:</strong> {{ previewFood.MS }}%</div>
-                <div class="nutrient-item"><strong>PB:</strong> {{ previewFood.PB }}%</div>
-                <div class="nutrient-item"><strong>NDT:</strong> {{ previewFood.NDT }}%</div>
-                <div class="nutrient-item"><strong>Ca:</strong> {{ previewFood.Ca }}%</div>
-                <div class="nutrient-item"><strong>P:</strong> {{ previewFood.P }}%</div>
-                <div class="nutrient-item"><strong>FDN:</strong> {{ previewFood.FDNcp }}%</div>
+                <div class="nutrient-item" v-for="field in customFoodForm.fields" :key="field.name">
+                  <strong>{{ field.name }}:</strong> {{ previewFood[field.name] }} {{ field.unit }}
+                </div>
             </div>
             <div class="modal-actions">
                 <button @click="closePreview" class="btn-cancel">Fechar</button>
-                <button v-if="!isAdded(previewFood)" @click="store.addIngredient(previewFood); closePreview()" class="btn-confirm">Adicionar</button>
+                <button v-if="!store.isSelected(previewFood)" @click="store.addIngredient(previewFood); closePreview()" class="btn-confirm">Adicionar</button>
             </div>
         </div>
     </div>
@@ -111,17 +108,14 @@
             <div class="field full-width">
               <label>Categoria</label>
               <select v-model="customFood.category" required>
-                <option value="VOLUMOSO">Volumoso</option>
-                <option value="CONCENTRADO">Concentrado</option>
-                <option value="SUPLEMENTO">Suplemento</option>
+                <option v-for="category in catalog.diet.categories" :key="category.code" :value="category.code">{{ category.label }}</option>
               </select>
             </div>
-            <div class="field"><label>MS (%)</label><input v-model.number="customFood.MS" type="number" step="0.1"></div>
-            <div class="field"><label>PB (%)</label><input v-model.number="customFood.PB" type="number" step="0.1"></div>
-            <div class="field"><label>NDT (%)</label><input v-model.number="customFood.NDT" type="number" step="0.1"></div>
-            <div class="field"><label>Ca (%)</label><input v-model.number="customFood.Ca" type="number" step="0.01"></div>
-            <div class="field"><label>P (%)</label><input v-model.number="customFood.P" type="number" step="0.01"></div>
-             <div class="field"><label>FDN (%)</label><input v-model.number="customFood.FDNcp" type="number" step="0.1"></div>
+            <!-- Campos, unidades (g/kg MS) e limites vêm do catálogo da API -->
+            <div class="field" v-for="field in customFoodForm.fields" :key="field.name">
+              <label :title="field.label">{{ field.name }} ({{ field.unit }})</label>
+              <input v-model.number="customFood[field.name]" type="number" :step="field.step" :min="field.min" :max="field.max" :placeholder="field.placeholder" required>
+            </div>
           </div>
           <div class="modal-actions">
             <button type="button" @click="showCreateModal = false" class="btn-cancel">Cancelar</button>
@@ -137,65 +131,60 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
+import { useCatalogStore } from '@/stores/catalogStore';
 
 const store = useDietStore();
+const catalog = useCatalogStore();
 const searchQuery = ref('');
 const showCreateModal = ref(false);
 const showPreviewModal = ref(false);
 const previewFood = ref(null);
 
-const categoryLabels = {
-    'VOLUMOSO': 'Volumosos',
-    'CONCENTRADO': 'Concentrados',
-    'SUPLEMENTO': 'Suplementos',
-    'Outros': 'Outros'
-};
+const customFoodForm = computed(() => catalog.form('customFood'));
 
-const initialCustomState = { name: '', category: 'VOLUMOSO', MS: 0, PB: 0, NDT: 0, Ca: 0, P: 0, FDNcp: 0 };
-const customFood = reactive({ ...initialCustomState });
+const emptyCustomFood = () => ({
+  name: '',
+  category: catalog.diet.categories[0].code,
+  ...Object.fromEntries(customFoodForm.value.fields.map((field) => [field.name, null])),
+});
+const customFood = reactive({});
 
+// Agrupa na ordem e com os nomes de categoria do catálogo.
 const groupedFoods = computed(() => {
-    const groups = { 'VOLUMOSO': [], 'CONCENTRADO': [], 'SUPLEMENTO': [] };
-
-    const foods = searchQuery.value
-        ? store.availableFoods.filter(f => f.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+    const query = searchQuery.value.toLowerCase();
+    const foods = query
+        ? store.availableFoods.filter(f => f.name.toLowerCase().includes(query))
         : store.availableFoods;
 
-    foods.forEach(food => {
-        const cat = food.category || 'Outros';
-        if (!groups[cat]) groups[cat] = [];
-        groups[cat].push(food);
-    });
-
-    Object.keys(groups).forEach(k => { if (groups[k].length === 0) delete groups[k]; });
-    return groups;
+    return catalog.diet.categories
+        .map((category) => ({
+            code: category.code,
+            label: category.pluralLabel,
+            foods: foods.filter((food) => food.category === category.code),
+        }))
+        .filter((group) => group.foods.length > 0);
 });
 
-const isAdded = (food) => {
-    return store.selectedIngredients.some(i => i.name === food.name);
-};
-
 const removeFood = (food) => {
-    const index = store.selectedIngredients.findIndex(i => i.name === food.name);
+    const index = store.selectedIngredients.findIndex((item) => item.key === (food.id ? `food:${food.id}` : `custom:${food.name}`));
     if (index !== -1) store.removeIngredient(index);
 };
 
-const selectFood = (food) => {
-    if (!isAdded(food)) store.addIngredient(food);
-};
-
 const createCustomFood = () => {
-    const newFood = { ...customFood, id: 'custom_' + Date.now() }; // Adiciona um ID falso para o sistema
+    // Alimento personalizado não tem id: vai para a API com a composição informada.
+    const newFood = { ...customFood };
     store.availableFoods.push(newFood);
     store.addIngredient(newFood);
     showCreateModal.value = false;
-    Object.assign(customFood, initialCustomState);
+    Object.assign(customFood, emptyCustomFood());
 };
 
 const openPreview = (food) => { previewFood.value = food; showPreviewModal.value = true; };
 const closePreview = () => { showPreviewModal.value = false; previewFood.value = null; };
 
-onMounted(() => {
+onMounted(async () => {
+    await catalog.load();
+    Object.assign(customFood, emptyCustomFood());
     if (store.availableFoods.length === 0) store.fetchFoods();
 });
 </script>
@@ -471,5 +460,14 @@ onMounted(() => {
   .form-grid {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+.notice {
+  margin: 0.75rem 0;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background: #fff4e5;
+  color: var(--black-light);
+  font-size: 0.9rem;
 }
 </style>

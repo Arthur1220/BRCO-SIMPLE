@@ -3,14 +3,16 @@
     <div class="results-header">
       <h2>Resultados do Cálculo</h2>
       <div class="export-buttons">
-        <button @click="exportToCsv" class="btn-export csv">Exportar CSV</button>
+        <button @click="exportToCsv" class="btn-export csv" :disabled="isExporting">
+          {{ isExporting ? 'Gerando...' : 'Exportar CSV' }}
+        </button>
       </div>
     </div>
 
     <div class="highlight-grid">
-      <div class="highlight-card" v-for="item in highlightedResults" :key="item.label">
+      <div class="highlight-card" v-for="item in results.highlights" :key="item.code">
         <span class="highlight-label">{{ item.label }}</span>
-        <span class="highlight-value">{{ item.value }}<small>{{ item.unit }}</small></span>
+        <span class="highlight-value">{{ format(item) }}<small>{{ item.unit }}</small></span>
       </div>
     </div>
 
@@ -23,24 +25,24 @@
       </div>
 
       <div class="accordion-container">
-        <div v-for="group in groupedResults" :key="group.theme" class="accordion-item">
+        <div v-for="group in results.groups" :key="group.code" class="accordion-item">
 
-          <div class="accordion-header" @click="toggleGroup(group.theme)" :class="{ active: expandedGroups[group.theme] }">
+          <div class="accordion-header" @click="toggleGroup(group.code)" :class="{ active: expandedGroups[group.code] }">
             <div class="header-left">
                 <span class="toggle-icon">
-                    <svg v-if="expandedGroups[group.theme]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                    <svg v-if="expandedGroups[group.code]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
                     <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
                 </span>
-                <span class="group-title">{{ group.theme }}</span>
+                <span class="group-title">{{ group.label }}</span>
             </div>
 
-            <div class="header-summary" v-if="group.mainValue">
-                <span class="summary-label">Total:</span>
-                <span class="summary-value">{{ group.mainValue.valor }} <small>{{ group.mainValue.unit }}</small></span>
+            <div class="header-summary" v-if="group.summary">
+                <span class="summary-label">{{ group.summary.label }}:</span>
+                <span class="summary-value">{{ format(group.summary) }} <small>{{ group.summary.unit }}</small></span>
             </div>
           </div>
 
-          <div v-show="expandedGroups[group.theme]" class="accordion-content">
+          <div v-show="expandedGroups[group.code]" class="accordion-content">
             <table>
               <thead>
                 <tr>
@@ -51,13 +53,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in group.items" :key="item.key">
-                  <template v-if="(item.value.valor ?? item.value.valor_requerido) > 0">
-                      <td>{{ item.key }}</td>
-                      <td class="center data-value">{{ item.value.valor ?? item.value.valor_requerido ?? 'N/A' }}</td>
-                      <td v-if="hasMaxValue" class="center data-value">{{ item.value.valor_maximo ?? 'N/A' }}</td>
-                      <td class="center">{{ item.value.tipo }}</td>
-                  </template>
+                <tr v-for="item in group.items.filter((i) => i.value > 0)" :key="item.code">
+                  <td>{{ item.label }}</td>
+                  <td class="center data-value">{{ format(item) }}</td>
+                  <td v-if="hasMaxValue" class="center data-value">{{ item.max !== undefined ? format(item, item.max) : 'N/A' }}</td>
+                  <td class="center">{{ item.unit }}</td>
                 </tr>
               </tbody>
             </table>
@@ -70,122 +70,51 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
-import { generateCsv } from '@/services/apiService';
+import { downloadCalculationCsv } from '@/services/apiService';
+import { parseApiError, API_LOCALE } from '@/services/axiosSetup';
 import { saveAs } from 'file-saver';
 
+// Highlights, grupos, labels, unidades e resumos vêm prontos da API v1.
 const store = useCalculationStore();
+const results = computed(() => store.results);
 
 const expandedGroups = reactive({});
 const allExpanded = ref(false);
+const isExporting = ref(false);
 
-const toggleGroup = (theme) => {
-    expandedGroups[theme] = !expandedGroups[theme];
+const format = (item, value = item.value) =>
+  Number(value).toLocaleString(API_LOCALE, { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals });
+
+const hasMaxValue = computed(() =>
+  results.value.groups.some((group) => group.items.some((item) => item.max !== undefined))
+);
+
+const toggleGroup = (code) => {
+  expandedGroups[code] = !expandedGroups[code];
 };
 
 const toggleAll = () => {
-    allExpanded.value = !allExpanded.value;
-    groupedResults.value.forEach(g => {
-        expandedGroups[g.theme] = allExpanded.value;
-    });
+  allExpanded.value = !allExpanded.value;
+  results.value.groups.forEach((group) => { expandedGroups[group.code] = allExpanded.value; });
 };
 
-const getThemeGroup = (key) => {
-  const lowerKey = key.toLowerCase();
-  if (lowerKey.includes('consumo')) return 'Consumo';
-  if (lowerKey.includes('energia')) return 'Energia';
-  if (lowerKey.includes('proteína')) return 'Proteína';
-  if (lowerKey.includes('ndt') || lowerKey.includes('nutrientes digestíveis')) return 'Energia';
-  if (lowerKey.includes('cálcio') || lowerKey.includes('fósforo') || lowerKey.includes('relação ca:p') || lowerKey.includes('magnésio') || lowerKey.includes('sódio') || lowerKey.includes('potássio')) return 'Macrominerais';
-  if (lowerKey.includes('cobre') || lowerKey.includes('ferro') || lowerKey.includes('manganês') || lowerKey.includes('zinco') || lowerKey.includes('cobalto') || lowerKey.includes('cromo')) return 'Microminerais';
-  return 'Outros Parâmetros';
-};
-
-const getMainValueForGroup = (theme, items) => {
-    let mainKey = null;
-    if (theme === 'Energia') mainKey = 'Nutrientes digestíveis totais1';
-    else if (theme === 'Proteína') mainKey = 'Proteína metabolizável total';
-    else if (theme === 'Consumo') mainKey = 'Consumo de matéria seca 1';
-
-    if (mainKey) {
-        const found = items.find(i => i.key === mainKey);
-        if (found) {
-            return {
-                valor: found.value.valor ?? found.value.valor_requerido,
-                unit: found.value.tipo
-            };
-        }
-    }
-    return null;
-};
-
-const groupedResults = computed(() => {
-  if (!store.results) return [];
-
-  const groups = {};
-  for (const key in store.results) {
-    const theme = getThemeGroup(key);
-    if (!groups[theme]) groups[theme] = [];
-    groups[theme].push({ key, value: store.results[key] });
-  }
-
-  const groupOrder = ['Consumo', 'Energia', 'Proteína', 'Macrominerais', 'Microminerais', 'Outros Parâmetros'];
-
-  return groupOrder
-    .map(theme => {
-        const items = groups[theme] || [];
-        return {
-            theme: theme,
-            items: items,
-            mainValue: getMainValueForGroup(theme, items)
-        };
-    })
-    .filter(group => group.items.length > 0);
-});
-
-const hasMaxValue = computed(() => {
-  if (!store.results) return false;
-  return Object.values(store.results).some(item => typeof item.valor_maximo !== 'undefined');
-});
-
-import { watch } from 'vue';
-watch(() => store.results, () => {
-    groupedResults.value.forEach(g => expandedGroups[g.theme] = false); // Começa fechado
-});
-
-const highlightedResults = computed(() => {
-  if (!store.results) return [];
-  const highlights = [];
-  const results = store.results;
-  if (store.calculationType === 'ndt') {
-    if (results['Nutrientes digestíveis totais']) highlights.push({ label: 'Nutrientes Digestíveis Totais', value: results['Nutrientes digestíveis totais'].valor, unit: results['Nutrientes digestíveis totais'].tipo });
-    if (results['Energia digestivel']) highlights.push({ label: 'Energia Digestível', value: results['Energia digestivel'].valor, unit: results['Energia digestivel'].tipo });
-  } else if (store.calculationType === 'requirements') {
-    if (results['Consumo de matéria seca']) highlights.push({ label: 'Consumo de Matéria Seca', value: results['Consumo de matéria seca'].valor_requerido, unit: results['Consumo de matéria seca'].tipo });
-    if (results['Energia metabolizável total']) highlights.push({ label: 'Energia Metabolizável Total', value: results['Energia metabolizável total'].valor_requerido, unit: results['Energia metabolizável total'].tipo });
-    if (results['Proteína bruta (g/dia)']) highlights.push({ label: 'Proteína Bruta', value: results['Proteína bruta (g/dia)'].valor_requerido, unit: results['Proteína bruta (g/dia)'].tipo });
-  }
-  return highlights;
-});
+// Começa com todos os grupos fechados
+watch(results, (value) => {
+  value?.groups.forEach((group) => { expandedGroups[group.code] = false; });
+}, { immediate: true });
 
 const exportToCsv = async () => {
-  if (!store.results || !store.lastFormData) {
-    alert("Dados insuficientes para gerar o relatório.");
-    return;
-  }
+  isExporting.value = true;
   try {
-    const payload = {
-      type: store.calculationType,
-      inputs: store.lastFormData,
-      results: store.results
-    };
-
-    const blob = await generateCsv(payload);
-    saveAs(blob, `relatorio_${store.calculationType}.csv`);
+    // O CSV é gerado pelo servidor a partir do cálculo salvo.
+    const { blob, filename } = await downloadCalculationCsv(results.value.calculationId);
+    saveAs(blob, filename);
   } catch (error) {
-    console.error('Erro ao gerar CSV:', error);
-    alert('Não foi possível gerar o CSV.');
+    alert(parseApiError(error, 'Não foi possível gerar o CSV.').message);
+  } finally {
+    isExporting.value = false;
   }
 };
 </script>

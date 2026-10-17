@@ -9,17 +9,16 @@
       <p>Nenhum alimento selecionado.</p>
     </div>
 
-    <div v-else class="ingredients-list">
+    <div v-else-if="fields" class="ingredients-list">
       <div class="list-header">
         <span class="col-name">Alimento</span>
-        <span class="col-input">Preço (R$)</span> <span class="col-input">Mín (%)</span>
-        <span class="col-input">Máx (%)</span>
+        <span class="col-input" v-for="field in fields" :key="field.name">{{ field.label }} ({{ field.unit }})</span>
         <span class="col-action"></span>
       </div>
 
       <div
         v-for="(item, index) in store.selectedIngredients"
-        :key="index"
+        :key="item.key"
         class="ingredient-row"
       >
         <div class="ing-name-wrapper">
@@ -27,36 +26,19 @@
           <div class="result-badge" v-if="item.percent > 0">{{ item.percent }}%</div>
         </div>
 
+        <!-- Labels, unidades e limites de preço/inclusão vêm do catálogo da API -->
         <div class="ing-controls">
-          <div class="input-wrapper">
+          <div class="input-wrapper" v-for="field in fields" :key="field.name">
             <input
               type="number"
-              v-model.number="item.price"
-              class="input-price"
-              placeholder="0.00"
-              step="0.01"
+              v-model.number="item[field.name]"
+              :class="field.name === 'price' ? 'input-price' : 'input-limit'"
+              :placeholder="field.placeholder"
+              :step="field.step"
+              :min="field.min"
+              :max="field.max"
             >
-            <span class="unit-label">R$/kg</span>
-          </div>
-
-          <div class="input-wrapper">
-            <input
-              type="number"
-              v-model.number="item.min"
-              class="input-limit"
-              placeholder="0"
-            >
-            <span class="unit-label">Mín</span>
-          </div>
-
-          <div class="input-wrapper">
-            <input
-              type="number"
-              v-model.number="item.max"
-              class="input-limit"
-              placeholder="100"
-            >
-             <span class="unit-label">Máx</span>
+            <span class="unit-label">{{ field.unit }}</span>
           </div>
         </div>
 
@@ -69,9 +51,19 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
+import { useCatalogStore } from '@/stores/catalogStore';
 
 const store = useDietStore();
+const catalog = useCatalogStore();
+
+// Ordem de exibição: preço, mínimo, máximo.
+const ORDER = ['price', 'min', 'max'];
+const fields = computed(() => {
+  const form = catalog.form('dietIngredient');
+  return form ? ORDER.map((name) => form.fields.find((f) => f.name === name)) : null;
+});
 </script>
 
 <style scoped>

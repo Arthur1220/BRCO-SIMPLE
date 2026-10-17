@@ -1,55 +1,31 @@
 <template>
   <div class="form-container">
-    <form @submit.prevent="handleSubmit">
+    <div v-if="!form" class="catalog-state">{{ catalog.error || 'Carregando opções...' }}</div>
 
+    <form v-else @submit.prevent="handleSubmit">
       <div class="grid-2-cols">
-        <div class="form-section">
-          <label for="PB">Proteína Bruta (PB, %MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.PB" required placeholder="Ex: 12.5">
-        </div>
-
-        <div class="form-section">
-          <label for="EE">Extrato Etéreo (EE, %MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.EE" required placeholder="Ex: 3.5">
-        </div>
-
-        <div class="form-section">
-          <label for="FDN">Fibra em Detergente Neutro (FDN, %MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.FDN" required placeholder="Ex: 60.0">
-        </div>
-
-        <div class="form-section">
-          <label for="Ligrina">Lignina (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.Ligrina" required placeholder="Ex: 5.0">
-        </div>
+        <NumberField v-for="field in mainFields" :key="field.name" :field="field" v-model="formData[field.name]" :error="store.fieldErrors[field.name]" />
       </div>
 
-      <div class="form-section">
-          <label for="MO">Matéria Orgânica (MO, %MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.MO" required placeholder="Ex: 90">
-      </div>
-
-      <div class="form-section">
-        <label>Possui valor de PIDN e PIDA?</label>
+      <div class="form-section" v-for="group in form.optionalGroups" :key="group.code">
+        <label>{{ group.label }}</label>
         <div class="radio-group">
           <label>
-            <input type="radio" value="sim" v-model="option" required> Sim
+            <input type="radio" :value="true" v-model="enabledGroups[group.code]"> Sim
           </label>
           <label>
-            <input type="radio" value="nao" v-model="option" required> Não
+            <input type="radio" :value="false" v-model="enabledGroups[group.code]"> Não
           </label>
         </div>
-      </div>
 
-      <div v-if="option === 'sim'" class="grid-2-cols">
-        <div class="form-section">
-          <label for="PIDN">PIDN (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.PIDN" placeholder="Ex: 2.5">
-        </div>
-
-        <div class="form-section">
-          <label for="PIDA">PIDA (%MS):</label>
-          <input type="number" step="0.01" v-model.number="formData.PIDA" placeholder="Ex: 1.0">
+        <div v-if="enabledGroups[group.code]" class="grid-2-cols optional-fields">
+          <NumberField
+            v-for="field in groupFields(group)"
+            :key="field.name"
+            :field="{ ...field, required: true }"
+            v-model="formData[field.name]"
+            :error="store.fieldErrors[field.name]"
+          />
         </div>
       </div>
 
@@ -61,44 +37,40 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, computed, onMounted } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
+import { useCatalogStore } from '@/stores/catalogStore';
+import NumberField from '@/components/ui/NumberField.vue';
 
 const store = useCalculationStore();
-const option = ref('nao');
+const catalog = useCatalogStore();
 
-const formData = reactive({
-  PB: null,
-  EE: null,
-  FDN: null,
-  Ligrina: null,
-  MO: null,
-  PIDN: 0,
-  PIDA: 0,
-});
+// Campos, labels, limites e grupos opcionais (PIDN/PIDA) vêm do catálogo da API.
+const form = computed(() => catalog.form('ndt'));
+const optionalNames = computed(() => new Set(form.value.optionalGroups.flatMap((g) => g.fields)));
+const mainFields = computed(() => form.value.fields.filter((f) => !optionalNames.value.has(f.name)));
+const groupFields = (group) => form.value.fields.filter((f) => group.fields.includes(f.name));
 
-onMounted(() => {
-  if (store.lastFormData && store.calculationType === 'ndt') {
+const formData = reactive({});
+const enabledGroups = reactive({});
+
+onMounted(async () => {
+  await catalog.load().catch(() => {});
+  if (store.lastFormData && store.lastFormType === 'ndt') {
     Object.assign(formData, store.lastFormData);
-
-    if (formData.PIDN > 0 || formData.PIDA > 0) {
-      option.value = 'sim';
-    } else {
-      option.value = 'nao';
-    }
+  }
+  for (const group of form.value?.optionalGroups ?? []) {
+    enabledGroups[group.code] = group.fields.some((name) => formData[name] !== undefined && formData[name] !== null);
   }
 });
 
 const handleSubmit = async () => {
-  const payload = {
-    PB: Number(formData.PB) || 0,
-    EE: Number(formData.EE) || 0,
-    FDN: Number(formData.FDN) || 0,
-    Ligrina: Number(formData.Ligrina) || 0,
-    MO: Number(formData.MO) || 0,
-    PIDN: option.value === 'sim' ? (Number(formData.PIDN) || 0) : 0,
-    PIDA: option.value === 'sim' ? (Number(formData.PIDA) || 0) : 0,
-  };
+  const payload = {};
+  for (const field of mainFields.value) payload[field.name] = formData[field.name];
+  for (const group of form.value.optionalGroups) {
+    if (!enabledGroups[group.code]) continue;
+    for (const name of group.fields) payload[name] = formData[name];
+  }
 
   await store.performCalculation('ndt', payload);
 };
@@ -197,5 +169,25 @@ button:not(:disabled):hover {
   .form-section {
     margin-bottom: 1rem;
   }
+}
+
+/* =========================================
+   Estados do catálogo e erros de campo (API v1)
+   ========================================= */
+.catalog-state {
+  text-align: center;
+  color: var(--black-light);
+  padding: 2rem 0;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--red-error);
+  font-size: 0.85rem;
+}
+
+.optional-fields {
+  margin-top: 1.5rem;
 }
 </style>

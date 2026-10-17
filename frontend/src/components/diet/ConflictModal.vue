@@ -6,46 +6,31 @@
       </div>
 
       <div class="modal-body">
-        <p>O sistema encontrou um impasse:</p>
-        <ul>
-          <li>Não foi possível atingir as <strong>exigências nutricionais</strong> (NDT/Proteína).</li>
-          <li>E ao mesmo tempo respeitar os <strong>seus limites</strong> (Mín/Máx) de ingredientes.</li>
-        </ul>
+        <p>{{ statusLabel }}</p>
 
         <p class="question">Qual cenário você prefere ver?</p>
 
+        <!-- Opções, textos e custos vêm prontos da API v1 -->
         <div class="options-grid">
-          <div class="option-card option-ideal">
+          <div
+            v-for="option in options"
+            :key="option.code"
+            class="option-card"
+            :class="option.code === 'ideal' ? 'option-ideal' : 'option-realistic'"
+          >
             <div class="card-header">
-              <h3>Priorizar Nutrição</h3>
-              <span class="tag-warning">Ignora seus limites</span>
+              <h3>{{ option.label }}</h3>
             </div>
-            <ul class="pros-cons">
-              <li class="pro">✔ Atinge 100% das metas nutricionais.</li>
-              <li class="con">✖ Pode usar ingredientes acima do que você permitiu.</li>
-            </ul>
+            <p class="option-description">{{ option.description }}</p>
             <div class="cost-info">
-              Custo Estimado: <strong>R$ {{ formatMoney(resultIdeal.cost) }}</strong>
+              Custo Estimado: <strong>R$ {{ formatMoney(option.solution.totals.costPerDay) }}</strong>
             </div>
-            <button @click="selectOption('ideal')" class="btn-option primary">
-              Ver Resultado Nutricional
-            </button>
-          </div>
-
-          <div class="option-card option-realistic">
-            <div class="card-header">
-              <h3>Priorizar Meus Limites</h3>
-              <span class="tag-warning">Ignora metas nutricionais</span>
-            </div>
-            <ul class="pros-cons">
-              <li class="pro">✔ Respeita rigorosamente seus limites (Min/Max).</li>
-              <li class="con">✖ O animal ficará com déficit de nutrientes.</li>
-            </ul>
-            <div class="cost-info">
-              Custo Estimado: <strong>R$ {{ formatMoney(resultRealistic.cost) }}</strong>
-            </div>
-            <button @click="selectOption('realistic')" class="btn-option secondary">
-              Ver Resultado com Limites
+            <button
+              @click="emit('select-option', option.code)"
+              class="btn-option"
+              :class="option.code === 'ideal' ? 'primary' : 'secondary'"
+            >
+              Ver este resultado
             </button>
           </div>
         </div>
@@ -56,23 +41,18 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { API_LOCALE } from '@/services/axiosSetup';
 
-const props = defineProps({
+defineProps({
   isVisible: Boolean,
-  resultIdeal: Object,
-  resultRealistic: Object,
+  options: { type: Array, default: () => [] },
+  statusLabel: { type: String, default: '' },
 });
 
 const emit = defineEmits(['select-option']);
 
-const selectOption = (option) => {
-  emit('select-option', option);
-};
-
-const formatMoney = (val) => {
-  return Number(val || 0).toFixed(2);
-};
+const formatMoney = (val) =>
+  Number(val || 0).toLocaleString(API_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 </script>
 
 <style scoped>
@@ -274,5 +254,11 @@ const formatMoney = (val) => {
   .modal-header h2 {
     font-size: 1.2rem;
   }
+}
+
+.option-description {
+  color: var(--black-light);
+  line-height: 1.5;
+  margin: 0.75rem 0 1rem;
 }
 </style>
