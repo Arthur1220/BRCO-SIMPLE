@@ -2,7 +2,7 @@ const { z } = require('zod');
 const prisma = require('../lib/prisma');
 const logger = require('../lib/logger');
 const { logCalculation } = require('../lib/usageLog');
-const { calculateDiet } = require('../services/dietService');
+const { calculateDiet } = require('../domain/dietService');
 const { createFoodSchema, updateFoodSchema, foodIdSchema } = require('../validation/foodSchema');
 
 // --- SCHEMAS DE VALIDAÇÃO (ZOD) ---

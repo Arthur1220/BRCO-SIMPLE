@@ -1,7 +1,7 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { generateCsv, toCsv, escapeCsvValue } = require('../services/csvService');
+const { generateCsv, toCsv, escapeCsvValue } = require('../domain/csvService');
 
 test('escapeCsvValue: escapa vírgulas, aspas e quebras de linha', () => {
   assert.equal(escapeCsvValue('simples'), 'simples');

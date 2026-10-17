@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { calculateNdt } = require('../services/ndtService');
+const { calculateNdt } = require('../domain/ndtService');
 const logger = require('../lib/logger');
 const { logCalculation } = require('../lib/usageLog');
 

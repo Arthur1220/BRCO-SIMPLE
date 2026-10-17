@@ -1,4 +1,4 @@
-const { generateCsv } = require('../services/csvService');
+const { generateCsv } = require('../domain/csvService');
 const logger = require('../lib/logger');
 
 /**

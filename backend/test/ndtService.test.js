@@ -1,8 +1,8 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateNdt } = require('../services/ndtService');
-const { NDT } = require('../services/calculationConstants');
+const { calculateNdt } = require('../domain/ndtService');
+const { NDT } = require('../domain/calculationConstants');
 const { ndtCases } = require('./fixtures/goldenCases');
 const golden = require('./fixtures/golden.json');
 

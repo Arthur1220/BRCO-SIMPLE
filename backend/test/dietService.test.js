@@ -1,7 +1,7 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateDiet } = require('../services/dietService');
+const { calculateDiet } = require('../domain/dietService');
 
 const animal = { especieId: 2, categoriaAnimalId: null, sexoId: 1, pesoInicial: 25, pesoFinal: 35, GMD: 200 };
 

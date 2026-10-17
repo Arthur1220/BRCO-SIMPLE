@@ -1,7 +1,7 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { calculateAllRequirements } = require('../services/requirementService');
+const { calculateAllRequirements } = require('../domain/requirementService');
 const { requirementCases } = require('./fixtures/goldenCases');
 const golden = require('./fixtures/golden.json');
 

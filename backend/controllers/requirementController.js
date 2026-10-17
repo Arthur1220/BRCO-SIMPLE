@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { calculateAllRequirements } = require('../services/requirementService');
+const { calculateAllRequirements } = require('../domain/requirementService');
 const logger = require('../lib/logger');
 const { logCalculation } = require('../lib/usageLog');
 

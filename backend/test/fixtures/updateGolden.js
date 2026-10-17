@@ -1,8 +1,8 @@
 // Regenera golden.json a partir do código atual. Uso: npm run test:update-golden
 const fs = require('fs');
 const path = require('path');
-const { calculateAllRequirements } = require('../../services/requirementService');
-const { calculateNdt } = require('../../services/ndtService');
+const { calculateAllRequirements } = require('../../domain/requirementService');
+const { calculateNdt } = require('../../domain/ndtService');
 const { requirementCases, ndtCases } = require('./goldenCases');
 
 const golden = {
