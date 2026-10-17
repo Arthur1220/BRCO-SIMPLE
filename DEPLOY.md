@@ -89,6 +89,20 @@ docker compose restart backend
 3. Confirme o bloqueio do acesso direto: `curl https://98-94-173-47.sslip.io/api/foods` deve responder **403**.
 4. Troque a `PANEL_PASSWORD` se ela já foi compartilhada. As antigas `ADMIN_API_KEY` e `PUBLIC_API_KEY` ficaram públicas no bundle e não têm mais uso: apague-as do `.env`.
 
+## Remoção da API v0
+
+O frontend novo usa apenas a `/api/v1`. A v0 continua no ar, marcada como depreciada, para não quebrar abas abertas com a versão antiga durante o deploy. Cada chamada à v0 gera a linha `Uso da API v0` no log:
+
+```bash
+docker compose logs --since 336h backend | grep -c "Uso da API v0"
+```
+
+Quando o resultado ficar em **0 por cerca de 14 dias** depois do deploy, a v0 pode ser removida: `routes/apiRoutes.js`, `routes/adminRoutes.js`, os controllers antigos, `middleware/deprecateV0.js` e `config/openapi.json`.
+
+## Retenção dos cálculos
+
+Os cálculos da v1 ficam no banco por **6 meses** (`expiresAt`) e uma rotina diária no próprio backend apaga os vencidos. As estatísticas do admin (`calculation_logs`) não guardam entrada nem resultado e não expiram.
+
 ## Backups
 
 ```bash

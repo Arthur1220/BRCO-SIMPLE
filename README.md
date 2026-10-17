@@ -83,18 +83,31 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
 
 ## 🧭 API v1 (contrato de apresentação)
 
-O backend concentra todas as regras; o frontend apenas exibe e coleta dados. A v1 convive com a v0 (`/api/...`) até a migração do frontend.
+O backend concentra todas as regras; o frontend apenas exibe e coleta dados. Documentação completa e sempre atualizada em `/api-docs/v1` (gerada do código).
 
 | Pasta (backend) | Papel |
 |---|---|
-| `domain/` | Fórmulas científicas puras (exigências, NDT, dieta, CSV) |
-| `catalog/` | Espécies, genótipos, sexos e regras da dieta |
-| `contracts/` | Schemas Zod: validação de entrada, schema de resposta e geração do OpenAPI |
+| `domain/` | Fórmulas científicas puras (exigências, NDT, dieta). `domain/version.js` versiona as fórmulas |
+| `catalog/` | Espécies, genótipos, sexos, regras da dieta e metadados dos resultados (codes, grupos, labels pt/en) |
+| `contracts/` | Schemas Zod: validação de entrada, respostas e geração do OpenAPI |
+| `presenters/` | Transformam o resultado bruto do domínio na resposta da v1 e no CSV |
+| `services/` | Execução, persistência dos cálculos e estatísticas |
 | `controllers/v1`, `routes/v1` | Endpoints da v1 |
 
-* `GET /api/v1/catalog`: opções, campos (label, unidade, limites) e regras para montar as telas, com `ETag` e cache de 1 hora.
-* Erros da v1 sempre no formato `{ "error": { "code", "message", "fields": [{ "path", "code", "message" }] } }`.
-* Limites e regras dos campos ficam em `contracts/fields.js` e `contracts/*.js`, e uma única definição gera a validação e o catálogo.
+| Endpoint | Descrição |
+|---|---|
+| `GET /api/v1/catalog` | Opções, campos (label, unidade, limites) e regras para montar as telas (ETag, cache 1h) |
+| `GET /api/v1/foods` | Alimentos cadastrados (nutrientes em g/kg MS) |
+| `POST /api/v1/calculations/{requirements,ndt,diet}` | Calcula, salva e devolve o resultado pronto para exibir |
+| `GET /api/v1/calculations/:id` | Cálculo salvo (link compartilhável) |
+| `GET /api/v1/calculations/:id/export.csv` | CSV gerado pelo servidor |
+| `/api/v1/admin/*` | Login, estatísticas, histórico e cadastro de alimentos |
+
+* **Idiomas:** `pt-BR` (padrão) e `en`, por `?lang=en` ou `Accept-Language`.
+* **Erros:** sempre `{ "error": { "code", "message", "fields": [{ "path", "code", "message" }] } }`, com mensagens prontas para exibir.
+* **Retenção:** cálculos ficam guardados por 6 meses e são apagados automaticamente (rotina diária).
+* **Fonte única:** limites e regras dos campos ficam em `contracts/`; a mesma definição valida a entrada e alimenta o catálogo.
+* **v0 (`/api/...`):** depreciada (header `Deprecation`) e mantida só até o frontend novo estar no ar. Ver [DEPLOY.md](DEPLOY.md).
 
 ## 🧪 Testes
 
@@ -103,7 +116,7 @@ cd backend
 npm test
 ```
 
-Os testes cobrem as fórmulas (valores de referência em `test/fixtures/golden.json`), o solver de dieta, o CSV, a validação dos alimentos e a autenticação. Ao corrigir uma fórmula de propósito, regenere as referências com `npm run test:update-golden` e revise o diff.
+Os testes cobrem as fórmulas (valores de referência em `test/fixtures/golden.json`), o solver de dieta, o CSV, a validação, a autenticação e o contrato da v1: toda chave do domínio precisa de metadado de apresentação, e toda rota precisa estar no OpenAPI. Ao corrigir uma fórmula de propósito, regenere as referências com `npm run test:update-golden` e revise o diff.
 
 ## ☁️ Estratégia de Deploy
 
