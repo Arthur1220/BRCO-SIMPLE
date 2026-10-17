@@ -9,10 +9,12 @@ const rateLimit = require('express-rate-limit');
 
 // Imports Internos
 const apiRoutes = require('./routes/apiRoutes');
+const v1Routes = require('./routes/v1');
 const adminRoutes = require('./routes/adminRoutes');
 const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 const { verifyNetlifyProxy, getClientIp } = require('./middleware/authMiddleware');
+const { sendError } = require('./lib/apiErrors');
 
 /**
  * Cria a aplicação Express (sem iniciar o servidor, para permitir testes).
@@ -65,7 +67,11 @@ function createApp() {
         standardHeaders: true,
         legacyHeaders: false,
         keyGenerator: getClientIp,
+        handler: (req, res) => sendError(req, res, 429, 'RATE_LIMITED', 'Muitas requisições. Tente novamente em alguns minutos.'),
     }));
+
+    // API v1 (contrato de apresentação). Montada antes da v0, que também atende /api/*
+    app.use('/api/v1', v1Routes);
 
     // Rotas de Admin (Mais específicas primeiro)
     // A segurança é aplicada dentro do adminRoutes.js

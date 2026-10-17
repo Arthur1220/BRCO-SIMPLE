@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const logger = require('../lib/logger');
+const { sendError } = require('../lib/apiErrors');
 
 const ADMIN_TOKEN_TTL = '2h';
 
@@ -62,7 +63,7 @@ function verifyNetlifyProxy(req, res, next) {
   try {
     jwt.verify(req.headers['x-nf-sign'], secret, { algorithms: ['HS256'], issuer: 'netlify' });
   } catch {
-    return res.status(403).json({ error: 'Acesso não autorizado.' });
+    return sendError(req, res, 403, 'FORBIDDEN', 'Acesso não autorizado.');
   }
 
   // Requisição confiável: o Netlify informa o IP real do usuário neste header.

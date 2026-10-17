@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const http = require('http');
 const path = require('path');
 
 /**
@@ -37,7 +38,21 @@ async function startServer() {
     return { status: res.status, body: json, text, headers: res.headers };
   }
 
-  return { request, close: () => new Promise((resolve) => server.close(resolve)) };
+  /**
+   * GET com node:http (o fetch do Node envia Cache-Control: no-cache junto com
+   * If-None-Match, o que impede testar o 304 como um navegador faria).
+   */
+  function rawGet(url, headers = {}) {
+    return new Promise((resolve, reject) => {
+      http.get(baseUrl + url, { headers }, (res) => {
+        let text = '';
+        res.on('data', (chunk) => { text += chunk; });
+        res.on('end', () => resolve({ status: res.statusCode, text, headers: res.headers }));
+      }).on('error', reject);
+    });
+  }
+
+  return { request, rawGet, close: () => new Promise((resolve) => server.close(resolve)) };
 }
 
 module.exports = { migrateTestDb, startServer };

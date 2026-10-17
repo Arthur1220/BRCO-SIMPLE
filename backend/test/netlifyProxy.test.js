@@ -53,6 +53,17 @@ test('API: a antiga x-api-key pública não substitui a assinatura', async () =>
   assert.equal(res.status, 403);
 });
 
+test('v1: requisição sem assinatura recebe 403 no formato de erro padrão', async () => {
+  const res = await server.request('GET', '/api/v1/catalog');
+  assert.equal(res.status, 403);
+  assert.deepEqual(res.body, { error: { code: 'FORBIDDEN', message: 'Acesso não autorizado.' } });
+});
+
+test('v1: requisição assinada acessa o catálogo', async () => {
+  const res = await server.request('GET', '/api/v1/catalog', { headers: { 'x-nf-sign': netlifySign() } });
+  assert.equal(res.status, 200);
+});
+
 test('Health check continua público', async () => {
   const res = await server.request('GET', '/');
   assert.equal(res.status, 200);
