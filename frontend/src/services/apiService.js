@@ -24,7 +24,7 @@ export const getFoods = async () => {
  * Cálculo de exigências. Entrada com codes do catálogo (especie, genotipo, sexo).
  */
 export const calculateRequirements = async (input) => {
-  const response = await apiClient.post('/v1/calculations/requirements', input);
+  const response = await apiClient.post('/v1/calculations/requirements', withoutEmpty(input));
   return response.data;
 };
 
@@ -32,7 +32,7 @@ export const calculateRequirements = async (input) => {
  * Cálculo de NDT de um alimento.
  */
 export const calculateNdt = async (input) => {
-  const response = await apiClient.post('/v1/calculations/ndt', input);
+  const response = await apiClient.post('/v1/calculations/ndt', withoutEmpty(input));
   return response.data;
 };
 
@@ -62,3 +62,9 @@ export const downloadCalculationCsv = async (id) => {
   const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `brco-${id}.csv`;
   return { blob: response.data, filename };
 };
+
+/**
+ * Remove campos vazios ('' ou null) do payload: a API responde "é obrigatório" para eles.
+ */
+export const withoutEmpty = (payload) =>
+  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== '' && value !== null && value !== undefined));

@@ -1,41 +1,28 @@
 <template>
-  <div class="modal-overlay" v-if="isVisible">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ $t('conflict.title') }}</h2>
-      </div>
-
-      <div class="modal-body">
+  <div v-if="isVisible" class="dialog-backdrop">
+    <div class="dialog conflict" role="dialog" aria-modal="true" aria-labelledby="conflict-title">
+      <header class="dialog-head">
+        <h2 id="conflict-title">{{ $t('conflict.title') }}</h2>
         <p>{{ statusLabel }}</p>
+      </header>
 
-        <p class="question">{{ $t('conflict.question') }}</p>
-
-        <!-- Opções, textos e custos vêm prontos da API v1 -->
-        <div class="options-grid">
-          <div
-            v-for="option in options"
-            :key="option.code"
-            class="option-card"
-            :class="option.code === 'ideal' ? 'option-ideal' : 'option-realistic'"
-          >
-            <div class="card-header">
-              <h3>{{ option.label }}</h3>
-            </div>
-            <p class="option-description">{{ option.description }}</p>
-            <div class="cost-info">
-              {{ $t('conflict.estimatedCost') }} <strong>{{ $t('common.currency', { value: formatMoney(option.solution.totals.costPerDay) }) }}</strong>
-            </div>
-            <button
-              @click="emit('select-option', option.code)"
-              class="btn-option"
-              :class="option.code === 'ideal' ? 'primary' : 'secondary'"
-            >
-              {{ $t('conflict.viewResult') }}
-            </button>
-          </div>
-        </div>
+      <!-- Opções, textos e custos vêm prontos da API v1 -->
+      <div class="dialog-body options">
+        <button
+          v-for="option in options"
+          :key="option.code"
+          type="button"
+          class="option"
+          @click="emit('select-option', option.code)"
+        >
+          <span class="option-title">{{ option.label }}</span>
+          <span class="option-text">{{ option.description }}</span>
+          <span class="option-cost">
+            <span class="muted">{{ $t('conflict.estimatedCost') }}</span>
+            <span class="num">{{ $t('common.currency', { value: formatMoney(option.solution.totals.costPerDay) }) }}/d</span>
+          </span>
+        </button>
       </div>
-
     </div>
   </div>
 </template>
@@ -57,209 +44,42 @@ const formatMoney = (val) =>
 </script>
 
 <style scoped>
-/* =========================================
-   1. Estrutura do Modal (Overlay & Container)
-   ========================================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
-  padding: 1rem; /* Margem de segurança para telas muito pequenas */
-}
+.dialog-head h2 { font-size: 1.125rem; }
 
-.modal-content {
-  background: white;
-  width: 95%;
-  max-width: 750px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  border: 1px solid #e0e0e0;
-
-  /* Layout Flex para gerenciar header/body fixos vs roláveis */
-  display: flex;
-  flex-direction: column;
-  max-height: 90vh; /* Limita altura para caber na tela */
-  overflow: hidden;
-}
-
-/* =========================================
-   2. Cabeçalho do Modal
-   ========================================= */
-.modal-header {
-  background-color: #fff3cd; /* Amarelo claro (alerta/atenção) */
-  color: #856404;
-  padding: 1.5rem;
-  border-bottom: 1px solid #ffeeba;
-  flex-shrink: 0; /* Impede que o header encolha quando o conteúdo é grande */
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* =========================================
-   3. Corpo e Tipografia Geral
-   ========================================= */
-.modal-body {
-  padding: 2rem;
-  overflow-y: auto; /* Scroll apenas aqui dentro, header fica fixo */
-}
-
-.modal-body p {
-  color: #555;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-}
-
-.question {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #333;
-  margin-top: 1.5rem;
-}
-
-/* =========================================
-   4. Grid de Opções (Cards de Comparação)
-   ========================================= */
-.options-grid {
+.options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.option-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
+.option {
   display: flex;
   flex-direction: column;
-  transition: all 0.2s;
+  gap: 8px;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r);
+  transition: border-color var(--ease), background-color var(--ease);
 }
 
-.option-card:hover {
-  border-color: var(--orange);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.option:hover { border-color: var(--brand); background: #fffaf5; }
+
+.option-title { font-weight: 600; color: var(--ink); }
+.option-text { font-size: 0.875rem; color: var(--ink-2); flex: 1; }
+
+.option-cost {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
 }
 
-.card-header h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  color: var(--black);
-}
+.option-cost .num { color: var(--ink); }
 
-/* =========================================
-   5. Elementos Internos do Card
-   ========================================= */
-.tag-warning {
-  font-size: 0.75rem;
-  background: #fff3cd;
-  color: #856404;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.pros-cons {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-  flex-grow: 1; /* Empurra o conteúdo abaixo para o fundo do card */
-}
-
-.pros-cons li {
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-}
-
-.pro { color: #27ae60; }
-.con { color: #e74c3c; }
-
-.cost-info {
-  margin: 1rem 0;
-  font-size: 0.9rem;
-  color: #555;
-  text-align: center;
-  background: #f9f9f9;
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-
-/* =========================================
-   6. Botões
-   ========================================= */
-.btn-option {
-  width: 100%;
-  padding: 0.8rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-}
-
-/* Variação Primária (Laranja) */
-.btn-option.primary {
-  background-color: var(--orange);
-  color: white;
-}
-
-.btn-option.primary:hover {
-  background-color: var(--light-orange);
-}
-
-/* Variação Secundária (Cinza) */
-.btn-option.secondary {
-  background-color: var(--grey);
-  color: white;
-}
-
-.btn-option.secondary:hover {
-  background-color: #7f8c8d;
-}
-
-/* =========================================
-   7. Responsividade (Mobile)
-   ========================================= */
-@media (max-width: 700px) {
-  .options-grid {
-    grid-template-columns: 1fr; /* Empilha os cards */
-  }
-
-  .modal-content {
-    max-height: 85vh; /* Ajuste para navegadores móveis (barra de endereço) */
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-  }
-
-  .modal-header {
-    padding: 1rem 1.5rem;
-  }
-
-  .modal-header h2 {
-    font-size: 1.2rem;
-  }
-}
-
-.option-description {
-  color: var(--black-light);
-  line-height: 1.5;
-  margin: 0.75rem 0 1rem;
+@media (max-width: 600px) {
+  .options { grid-template-columns: 1fr; }
 }
 </style>

@@ -18,9 +18,6 @@ export const useCalculationStore = defineStore('calculation', () => {
   // Tipo do último formulário enviado (para restaurar os dados após erro ou ao voltar)
   const lastFormType = ref(null)
 
-  // Função auxiliar para criar um delay (pausa)
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
   const calculators = {
     requirements: calculateRequirements,
     ndt: calculateNdt,
@@ -34,22 +31,13 @@ export const useCalculationStore = defineStore('calculation', () => {
     lastFormData.value = formData;
     lastFormType.value = type;
 
-    const minLoadingTime = 2000;
-    const startTime = Date.now();
-    const waitMinimum = async () => {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) await sleep(minLoadingTime - elapsedTime);
-    };
-
     try {
       const response = await calculators[type](formData);
-      await waitMinimum();
       results.value = response;
       calculationType.value = type;
     } catch (err) {
-      await waitMinimum();
       const parsed = parseApiError(err);
-      // Erros de campo voltam para o formulário; outros erros vão para a tela de erro.
+      // Erros de campo voltam para o formulário; outros erros aparecem na área de resultado.
       if (Object.keys(parsed.fields).length > 0) {
         fieldErrors.value = parsed.fields;
       } else {

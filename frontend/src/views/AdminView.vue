@@ -1,32 +1,38 @@
 <template>
-  <div class="admin-view container">
-    <header class="admin-header">
-      <div class="header-content">
-        <h1 v-if="isAuthenticated">{{ $t('admin.title') }}</h1>
-        <p v-if="isAuthenticated">{{ $t('admin.subtitle') }}</p>
-      </div>
-      <button v-if="isAuthenticated" @click="handleLogout" class="logout-button">{{ $t('admin.logout') }}</button>
-    </header>
-
+  <div class="container page">
     <AdminLogin v-if="!isAuthenticated" @login-success="handleLoginSuccess" />
 
-    <div v-else>
-      <div class="filter-controls">
-        <button @click="changeFilter('7d')" :class="{ active: activeFilter === '7d' }">{{ $t('admin.last7Days') }}</button>
-        <button @click="changeFilter('30d')" :class="{ active: activeFilter === '30d' }">{{ $t('admin.last30Days') }}</button>
-        <button @click="changeFilter('all')" :class="{ active: activeFilter === 'all' }">{{ $t('admin.allTime') }}</button>
-      </div>
-
-      <div v-if="isLoading" class="state-container"><LoadingSpinner /></div>
-      <div v-else-if="error" class="state-container">
-        <div class="error-box">
-          <h3>{{ $t('admin.fetchError') }}</h3>
-          <p>{{ error }}</p>
+    <template v-else>
+      <header class="admin-head">
+        <div>
+          <h1>{{ $t('admin.title') }}</h1>
+          <p>{{ $t('admin.subtitle') }}</p>
         </div>
+        <div class="cluster">
+          <div class="segmented" role="group" :aria-label="$t('admin.period')">
+            <button
+              v-for="period in PERIODS"
+              :key="period.code"
+              type="button"
+              :class="{ 'is-active': activeFilter === period.code }"
+              :aria-pressed="activeFilter === period.code"
+              @click="changeFilter(period.code)"
+            >
+              {{ $t(period.label) }}
+            </button>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" @click="handleLogout">{{ $t('admin.logout') }}</button>
+        </div>
+      </header>
+
+      <div v-if="error" class="alert alert-error" role="alert">
+        <strong>{{ $t('admin.fetchError') }}</strong> · {{ error }}
       </div>
-      <AdminDashboard v-else-if="stats && logs" :stats="stats" :logs="logs" :chartData="chartData"/>
+      <p v-else-if="isLoading && !stats" class="cluster muted"><span class="spinner"></span>{{ $t('common.loadingOptions') }}</p>
+      <AdminDashboard v-else-if="stats && logs" :class="{ 'is-stale': isLoading }" :stats="stats" :logs="logs" :chartData="chartData" />
+
       <FoodsManager />
-    </div>
+    </template>
   </div>
 </template>
 
@@ -38,7 +44,12 @@ import { hasValidAdminToken, parseApiError } from '@/services/axiosSetup';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
 import FoodsManager from '@/components/admin/FoodsManager.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+
+const PERIODS = [
+  { code: '7d', label: 'admin.last7Days' },
+  { code: '30d', label: 'admin.last30Days' },
+  { code: 'all', label: 'admin.allTime' },
+];
 
 const isAuthenticated = ref(false);
 const stats = ref(null);
@@ -85,7 +96,6 @@ const handleLogout = () => {
   isAuthenticated.value = false;
   stats.value = null;
   logs.value = [];
-  error.value = null;
 };
 
 // Os labels por tipo vêm traduzidos da API: busca de novo ao trocar o idioma.
@@ -104,111 +114,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* =========================================
-   1. Layout Principal
-   ========================================= */
-.admin-view {
-  /* Aumenta o padding lateral para dar respiro em telas grandes */
-  padding: 2rem 5%;
-  max-width: 1400px; /* Painel mais largo para tabelas/dados */
-  margin: 0 auto;
-}
-
-/* =========================================
-   2. Cabeçalho Administrativo
-   ========================================= */
-.admin-header {
+.admin-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--grey-light);
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
-.admin-header h1 {
-  color: var(--orange);
-  font-size: 2.5rem;
-  margin: 0;
-}
+.admin-head h1 { margin-bottom: 4px; }
 
-.admin-header p {
-  font-size: 1.2rem;
-  color: var(--black-light);
-  margin: 0;
-}
-
-/* =========================================
-   3. Ações: Botão de Logout
-   ========================================= */
-.logout-button {
-  padding: 0.7rem 1.5rem;
-  border: 1px solid var(--grey);
-  color: var(--black-light);
-  background-color: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.logout-button:hover {
-  border-color: var(--red-error);
-  background-color: var(--red-error);
-  color: white;
-}
-
-/* =========================================
-   4. Ações: Filtros e Abas
-   ========================================= */
-.filter-controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
-}
-
-.filter-controls button {
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--grey);
-  background-color: var(--white);
-  color: var(--black-light);
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* Estado Ativo (Filtro selecionado) */
-.filter-controls button.active {
-  background-color: var(--orange);
-  color: var(--white);
-  border-color: var(--orange);
-  font-weight: bold;
-}
-
-/* Hover (Apenas em botões não ativos) */
-.filter-controls button:hover:not(.active) {
-  border-color: var(--black);
-  color: var(--black);
-}
-
-/* =========================================
-   5. Estados de Interface (Loading/Erro)
-   ========================================= */
-.state-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px; /* Garante altura mínima para centralizar o spinner/erro */
-  flex-direction: column;
-}
-
-.error-box {
-  color: var(--red-error);
-  background-color: #fdeaea; /* Fundo vermelho bem claro */
-  border: 1px solid #f9c5c5;
-  padding: 2rem;
-  border-radius: 8px;
-  text-align: center;
-}
+.is-stale { opacity: 0.5; transition: opacity var(--ease); }
 </style>

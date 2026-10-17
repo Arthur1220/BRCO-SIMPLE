@@ -11,7 +11,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "aos": "^2.3.4",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
     "axios": "^1.11.0",
     "chart.js": "^4.5.1",
     "file-saver": "^2.0.5",

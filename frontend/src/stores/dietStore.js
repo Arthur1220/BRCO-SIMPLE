@@ -12,9 +12,6 @@ import { locale, t } from '@/i18n';
  */
 export const useDietStore = defineStore('diet', () => {
 
-  // Função auxiliar para criar um delay (pausa)
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
   // --- STATE (Estado) ---
   const currentStep = ref(1);
   const totalSteps = 5;
@@ -130,7 +127,10 @@ export const useDietStore = defineStore('diet', () => {
     return {
       animal: animalData.value,
       ingredients: selectedIngredients.value.map(({ foodId, custom, min, max, price }) => {
-        const limits = { min: Number(min) || 0, max: Number(max), price: Number(price) || 0 };
+        // Campos vazios não são enviados: a API usa o padrão do alimento (ou do catálogo).
+        const limits = Object.fromEntries(
+          Object.entries({ min, max, price }).filter(([, value]) => value !== '' && value !== null && value !== undefined)
+        );
         if (foodId) return { foodId, ...limits };
         const { name, category, MS, PB, NDT, FDNcp, Ca, P } = custom;
         return { custom: { name, category, MS, PB, NDT, FDNcp, Ca, P }, ...limits };
@@ -147,17 +147,8 @@ export const useDietStore = defineStore('diet', () => {
     dietResults.value = null;
     showConflictModal.value = false;
 
-    // Tempo mínimo de loading para melhor UX
-    const minLoadingTime = 2000;
-    const startTime = Date.now();
-    const waitMinimum = async () => {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) await sleep(minLoadingTime - elapsedTime);
-    };
-
     try {
       const response = await calculateDiet(buildPayload());
-      await waitMinimum();
 
       if (response.status === 'conflict') {
         // Salva as opções e abre o modal para o usuário decidir
@@ -170,7 +161,6 @@ export const useDietStore = defineStore('diet', () => {
         applyResult(response.calculationId, response.solution, response.requirements);
       }
     } catch (err) {
-      await waitMinimum();
       const parsed = parseApiError(err, t('errors.diet'));
       const details = Object.values(parsed.fields);
       error.value = details.length ? `${parsed.message} ${details.join(' ')}` : parsed.message;

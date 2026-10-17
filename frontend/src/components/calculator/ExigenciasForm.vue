@@ -1,50 +1,51 @@
 <template>
-  <div class="form-container">
-    <div v-if="!form" class="catalog-state">{{ catalog.error || $t('common.loadingOptions') }}</div>
+  <p v-if="!form" class="muted small">{{ catalog.error || $t('common.loadingOptions') }}</p>
 
-    <form v-else @submit.prevent="handleSubmit">
-      <div class="form-section">
-        <label>{{ $t('requirementsForm.species') }}</label>
-        <div class="radio-group">
-          <label v-for="species in catalog.species" :key="species.code">
-            <input type="radio" :value="species.code" v-model="formData.especie" required> {{ species.label }}
-          </label>
-        </div>
+  <form v-else class="form" novalidate @submit.prevent="handleSubmit">
+    <fieldset class="field">
+      <legend class="label">{{ $t('requirementsForm.species') }}</legend>
+      <div class="segmented">
+        <label v-for="species in catalog.species" :key="species.code">
+          <input type="radio" name="especie" :value="species.code" v-model="formData.especie"> {{ species.label }}
+        </label>
       </div>
+    </fieldset>
 
-      <div class="form-section" v-if="currentSpecies?.genotypes.length">
-        <label for="genotipo">{{ $t('requirementsForm.genotype') }}</label>
-        <select id="genotipo" v-model="formData.genotipo">
+    <div class="grid-2">
+      <div class="field" v-if="currentSpecies?.genotypes.length">
+        <label class="label" :for="`${idPrefix}genotipo`">{{ $t('requirementsForm.genotype') }}</label>
+        <select :id="`${idPrefix}genotipo`" v-model="formData.genotipo" class="select">
           <option
             v-for="genotype in currentSpecies.genotypes"
             :key="genotype.code"
             :value="genotype.code"
             :disabled="!genotype.available"
           >
-            {{ genotype.label }}{{ genotype.available ? '' : ` (${genotype.unavailableReason})` }}
+            {{ genotype.label }}{{ genotype.available ? '' : ` · ${genotype.unavailableReason}` }}
           </option>
         </select>
         <small v-if="errors.genotipo" class="field-error">{{ errors.genotipo }}</small>
       </div>
 
-      <div class="form-section">
-        <label for="sexo">{{ $t('requirementsForm.sex') }}</label>
-        <select id="sexo" v-model="formData.sexo">
+      <div class="field">
+        <label class="label" :for="`${idPrefix}sexo`">{{ $t('requirementsForm.sex') }}</label>
+        <select :id="`${idPrefix}sexo`" v-model="formData.sexo" class="select">
           <option v-for="sex in currentSpecies?.sexes" :key="sex.code" :value="sex.code">{{ sex.label }}</option>
         </select>
         <small v-if="errors.sexo" class="field-error">{{ errors.sexo }}</small>
       </div>
+    </div>
 
-      <div class="grid-2-cols">
-        <NumberField v-for="name in ['pesoInicial', 'pesoFinal']" :key="name" :field="fieldDef(name)" v-model="formData[name]" :error="errors[name]" />
-      </div>
-      <NumberField :field="fieldDef('GMD')" v-model="formData.GMD" :error="errors.GMD" />
+    <div class="grid-2">
+      <NumberField v-for="name in ['pesoInicial', 'pesoFinal']" :key="name" :field="fieldDef(name)" :id-prefix="idPrefix" v-model="formData[name]" :error="errors[name]" />
+    </div>
+    <NumberField :field="fieldDef('GMD')" :id-prefix="idPrefix" v-model="formData.GMD" :error="errors.GMD" />
 
-      <button type="submit" :disabled="store.isLoading">
-         {{ isDietMode ? $t('requirementsForm.confirmAnimal') : (store.isLoading ? $t('common.calculating') : $t('requirementsForm.submit')) }}
-      </button>
-    </form>
-  </div>
+    <button type="submit" class="btn btn-primary btn-block" :disabled="store.isLoading">
+      <span v-if="store.isLoading && !isDietMode" class="spinner" aria-hidden="true"></span>
+      {{ isDietMode ? $t('requirementsForm.confirmAnimal') : (store.isLoading ? $t('common.calculating') : $t('requirementsForm.submit')) }}
+    </button>
+  </form>
 </template>
 
 <script setup>
@@ -66,6 +67,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['submit-data']);
+
+const idPrefix = props.isDietMode ? 'diet-' : 'req-';
 
 // Espécies, genótipos, sexos, labels e limites vêm do catálogo da API.
 const form = computed(() => catalog.form(props.isDietMode ? 'dietAnimal' : 'requirements'));
@@ -126,118 +129,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* =========================================
-   1. Containers & Layout do Formulário
-   ========================================= */
-.form-container {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--grey-light);
-}
-
-.form-section {
-  margin-bottom: 1.5rem;
-}
-
-.grid-2-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-/* =========================================
-   2. Elementos de Entrada (Inputs & Labels)
-   ========================================= */
-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--black-light);
-}
-
-input[type="number"],
-select {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid var(--grey);
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-/* Grupo de Radio Buttons */
-.radio-group {
-  display: flex;
-  gap: 2rem;
-}
-
-.radio-group label {
-  /* Sobrescreve o display block padrão para alinhar com o radio */
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: normal;
-}
-
-/* =========================================
-   3. Botões & Ações
-   ========================================= */
-button {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-top: 1rem;
-  background-color: var(--orange);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:disabled {
-  background-color: var(--grey);
-  cursor: not-allowed;
-}
-
-button:not(:disabled):hover {
-  background-color: var(--light-orange);
-}
-
-/* =========================================
-   4. Responsividade (Mobile)
-   ========================================= */
-@media (max-width: 600px) {
-  .grid-2-cols {
-    grid-template-columns: 1fr; /* Empilha as colunas */
-    gap: 0;
-  }
-
-  .form-section {
-    margin-bottom: 1rem;
-  }
-}
-
-/* =========================================
-   Estados do catálogo e erros de campo (API v1)
-   ========================================= */
-.catalog-state {
-  text-align: center;
-  color: var(--black-light);
-  padding: 2rem 0;
-}
-
-.field-error {
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--red-error);
-  font-size: 0.85rem;
-}
-
-.optional-fields {
-  margin-top: 1.5rem;
-}
+.form { display: flex; flex-direction: column; gap: 18px; }
+.form .btn { margin-top: 6px; }
 </style>

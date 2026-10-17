@@ -1,130 +1,93 @@
 <template>
-  <div class="food-selector-container">
-
-    <div class="search-wrapper">
-      <input
-        type="text"
-        v-model="searchQuery"
-        :placeholder="$t('foodSelector.searchPlaceholder')"
-        class="search-input"
-      />
+  <div class="selector">
+    <div class="toolbar">
+      <label class="visually-hidden" for="food-search">{{ $t('foodSelector.searchPlaceholder') }}</label>
+      <input id="food-search" v-model="searchQuery" class="input" type="search" :placeholder="$t('foodSelector.searchPlaceholder')">
+      <button type="button" class="btn btn-secondary" @click="showCreateModal = true">{{ $t('foodSelector.createCustom') }}</button>
     </div>
 
-    <p v-if="store.notice" class="notice">{{ store.notice }}</p>
+    <p v-if="store.notice" class="alert alert-info notice" role="status">{{ store.notice }}</p>
 
-    <div class="food-list">
-      <div v-if="store.isLoading && store.availableFoods.length === 0" class="loading-text">
-        {{ $t('foodSelector.loading') }}
-      </div>
+    <p v-if="store.isLoading && store.availableFoods.length === 0" class="empty">{{ $t('foodSelector.loading') }}</p>
+    <p v-else-if="groupedFoods.length === 0" class="empty">{{ $t('foodSelector.noResults') }}</p>
 
-      <div v-else>
-        <template v-for="group in groupedFoods" :key="group.code">
-
-          <div class="category-header">{{ group.label }}</div>
-
-          <div
-            v-for="food in group.foods"
-            :key="food.id ?? food.name"
-            class="food-item"
-            :class="{ 'is-selected': store.isSelected(food) }"
-          >
-            <div class="food-info">
+    <div v-else class="groups">
+      <section v-for="group in groupedFoods" :key="group.code" class="group">
+        <h3 class="group-title">{{ group.label }}</h3>
+        <ul class="food-list">
+          <li v-for="food in group.foods" :key="food.id ?? food.name" class="food" :class="{ 'is-selected': store.isSelected(food) }">
+            <button
+              type="button"
+              class="food-toggle"
+              :aria-pressed="store.isSelected(food)"
+              @click="store.isSelected(food) ? removeFood(food) : store.addIngredient(food)"
+            >
+              <span class="check" aria-hidden="true">
+                <svg v-if="store.isSelected(food)" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.5 8.5l3 3 6-7" /></svg>
+              </span>
               <span class="food-name">{{ food.name }}</span>
+              <span v-if="!food.id" class="pill pill-info">{{ $t('foodSelector.customTag') }}</span>
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" @click="openPreview(food)">{{ $t('foodSelector.viewNutrients') }}</button>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Prévia de nutrientes -->
+    <div v-if="previewFood" class="dialog-backdrop" @click.self="previewFood = null">
+      <div class="dialog small-dialog" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+        <header class="dialog-head">
+          <h2 id="preview-title">{{ previewFood.name }}</h2>
+        </header>
+        <div class="dialog-body">
+          <dl class="nutrients">
+            <div v-for="field in customFoodForm.fields" :key="field.name">
+              <dt>{{ field.label }}</dt>
+              <dd class="num">{{ previewFood[field.name] ?? '—' }} <span class="muted">{{ field.unit }}</span></dd>
             </div>
-
-            <div class="food-actions">
-              <button @click.stop="openPreview(food)" class="btn-icon btn-preview" :title="$t('foodSelector.viewNutrients')">
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                  <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd" />
-                </svg>
-              </button>
-
-              <button
-                v-if="!store.isSelected(food)"
-                @click="store.addIngredient(food)"
-                class="btn-icon btn-add"
-                :title="$t('common.add')"
-              >
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-                  <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
-                </svg>
-              </button>
-
-              <button
-                v-else
-                @click="removeFood(food)"
-                class="btn-icon btn-remove"
-                :title="$t('foodSelector.removeFromList')"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-                  <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.477a8.666 8.666 0 013.751 0zm-2.546 10.716a.75.75 0 00-1.5 0v-5.43a.75.75 0 00-1.5 0v5.43a.75.75 0 001.5 0zm3 0a.75.75 0 00-1.5 0v-5.43a.75.75 0 00-1.5 0v5.43zM9 15.194a.75.75 0 01-1.5 0v-5.43a.75.75 0 011.5 0v5.43z" clip-rule="evenodd" />
-                  <path d="M15.75 3a.75.75 0 100 1.5H8.25a.75.75 0 000-1.5h7.5z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <div v-if="!store.isLoading && groupedFoods.length === 0" class="no-results">
-          {{ $t('foodSelector.noResults') }}
+          </dl>
         </div>
+        <footer class="dialog-foot">
+          <button type="button" class="btn btn-ghost" @click="previewFood = null">{{ $t('common.close') }}</button>
+          <button v-if="!store.isSelected(previewFood)" type="button" class="btn btn-primary" @click="store.addIngredient(previewFood); previewFood = null">{{ $t('common.add') }}</button>
+        </footer>
       </div>
     </div>
 
-    <div class="custom-food-footer">
-      <p>{{ $t('foodSelector.notFound') }}</p>
-      <button @click="showCreateModal = true" class="btn-custom">
-        {{ $t('foodSelector.createCustom') }}
-      </button>
-    </div>
-
-    <div v-if="showPreviewModal && previewFood" class="modal-overlay" @click.self="closePreview">
-        <div class="modal-content preview-card">
-            <div class="preview-header">
-                <h3>{{ previewFood.name }}</h3>
-            </div>
-            <div class="nutrient-grid">
-                <div class="nutrient-item" v-for="field in customFoodForm.fields" :key="field.name">
-                  <strong>{{ field.name }}:</strong> {{ previewFood[field.name] }} {{ field.unit }}
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button @click="closePreview" class="btn-cancel">{{ $t('common.close') }}</button>
-                <button v-if="!store.isSelected(previewFood)" @click="store.addIngredient(previewFood); closePreview()" class="btn-confirm">{{ $t('common.add') }}</button>
-            </div>
+    <!-- Alimento personalizado -->
+    <div v-if="showCreateModal" class="dialog-backdrop" @click.self="showCreateModal = false">
+      <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="custom-title" @submit.prevent="createCustomFood">
+        <header class="dialog-head">
+          <h2 id="custom-title">{{ $t('foodSelector.newFood') }}</h2>
+          <p>{{ $t('foodSelector.customHint', { unit: catalog.diet.foodNutrientUnit }) }}</p>
+        </header>
+        <div class="dialog-body custom-grid">
+          <div class="field span-2">
+            <label class="label" for="custom-name">{{ $t('common.name') }}</label>
+            <input id="custom-name" v-model="customFood.name" class="input" type="text" required>
+          </div>
+          <div class="field span-2">
+            <label class="label" for="custom-category">{{ $t('common.category') }}</label>
+            <select id="custom-category" v-model="customFood.category" class="select" required>
+              <option v-for="category in catalog.diet.categories" :key="category.code" :value="category.code">{{ category.label }}</option>
+            </select>
+          </div>
+          <!-- Campos, unidades (g/kg MS) e limites vêm do catálogo da API -->
+          <NumberField
+            v-for="field in customFoodForm.fields"
+            :key="field.name"
+            :field="field"
+            id-prefix="custom-"
+            v-model="customFood[field.name]"
+          />
         </div>
+        <footer class="dialog-foot">
+          <button type="button" class="btn btn-ghost" @click="showCreateModal = false">{{ $t('common.cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ $t('foodSelector.createAndAdd') }}</button>
+        </footer>
+      </form>
     </div>
-
-    <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
-      <div class="modal-content">
-        <h3>{{ $t('foodSelector.newFood') }}</h3>
-        <form @submit.prevent="createCustomFood">
-          <div class="form-grid">
-            <div class="field full-width">
-              <label>{{ $t('common.name') }}</label>
-              <input v-model="customFood.name" type="text" required>
-            </div>
-            <div class="field full-width">
-              <label>{{ $t('common.category') }}</label>
-              <select v-model="customFood.category" required>
-                <option v-for="category in catalog.diet.categories" :key="category.code" :value="category.code">{{ category.label }}</option>
-              </select>
-            </div>
-            <!-- Campos, unidades (g/kg MS) e limites vêm do catálogo da API -->
-            <div class="field" v-for="field in customFoodForm.fields" :key="field.name">
-              <label :title="field.label">{{ field.name }} ({{ field.unit }})</label>
-              <input v-model.number="customFood[field.name]" type="number" :step="field.step" :min="field.min" :max="field.max" :placeholder="field.placeholder" required>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="showCreateModal = false" class="btn-cancel">{{ $t('common.cancel') }}</button>
-            <button type="submit" class="btn-confirm">{{ $t('foodSelector.createAndAdd') }}</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
   </div>
 </template>
 
@@ -132,12 +95,12 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
 import { useCatalogStore } from '@/stores/catalogStore';
+import NumberField from '@/components/ui/NumberField.vue';
 
 const store = useDietStore();
 const catalog = useCatalogStore();
 const searchQuery = ref('');
 const showCreateModal = ref(false);
-const showPreviewModal = ref(false);
 const previewFood = ref(null);
 
 const customFoodForm = computed(() => catalog.form('customFood'));
@@ -151,323 +114,149 @@ const customFood = reactive({});
 
 // Agrupa na ordem e com os nomes de categoria do catálogo.
 const groupedFoods = computed(() => {
-    const query = searchQuery.value.toLowerCase();
-    const foods = query
-        ? store.availableFoods.filter(f => f.name.toLowerCase().includes(query))
-        : store.availableFoods;
+  if (!catalog.diet) return [];
+  const query = searchQuery.value.trim().toLowerCase();
+  const foods = query
+    ? store.availableFoods.filter((f) => f.name.toLowerCase().includes(query))
+    : store.availableFoods;
 
-    return catalog.diet.categories
-        .map((category) => ({
-            code: category.code,
-            label: category.pluralLabel,
-            foods: foods.filter((food) => food.category === category.code),
-        }))
-        .filter((group) => group.foods.length > 0);
+  return catalog.diet.categories
+    .map((category) => ({
+      code: category.code,
+      label: category.pluralLabel,
+      foods: foods.filter((food) => food.category === category.code),
+    }))
+    .filter((group) => group.foods.length > 0);
 });
 
 const removeFood = (food) => {
-    const index = store.selectedIngredients.findIndex((item) => item.key === (food.id ? `food:${food.id}` : `custom:${food.name}`));
-    if (index !== -1) store.removeIngredient(index);
+  const index = store.selectedIngredients.findIndex((item) => item.key === (food.id ? `food:${food.id}` : `custom:${food.name}`));
+  if (index !== -1) store.removeIngredient(index);
 };
 
 const createCustomFood = () => {
-    // Alimento personalizado não tem id: vai para a API com a composição informada.
-    const newFood = { ...customFood };
-    store.availableFoods.push(newFood);
-    store.addIngredient(newFood);
-    showCreateModal.value = false;
-    Object.assign(customFood, emptyCustomFood());
+  // Alimento personalizado não tem id: vai para a API com a composição informada.
+  const newFood = { ...customFood };
+  store.availableFoods.push(newFood);
+  store.addIngredient(newFood);
+  showCreateModal.value = false;
+  Object.assign(customFood, emptyCustomFood());
 };
 
-const openPreview = (food) => { previewFood.value = food; showPreviewModal.value = true; };
-const closePreview = () => { showPreviewModal.value = false; previewFood.value = null; };
+const openPreview = (food) => { previewFood.value = food; };
 
 onMounted(async () => {
-    await catalog.load();
-    Object.assign(customFood, emptyCustomFood());
-    if (store.availableFoods.length === 0) store.fetchFoods();
+  await catalog.load();
+  Object.assign(customFood, emptyCustomFood());
+  if (store.availableFoods.length === 0) store.fetchFoods();
 });
 </script>
 
 <style scoped>
-/* =========================================
-   1. Container Principal (Seletor)
-   ========================================= */
-.food-selector-container {
+.toolbar {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: 600px;
-  border: 1px solid var(--grey-light);
-  border-radius: 8px;
-  background: var(--white);
-  overflow: hidden; /* Mantém tudo dentro das bordas arredondadas */
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
 }
 
-/* =========================================
-   2. Área de Busca
-   ========================================= */
-.search-wrapper {
-  padding: 1rem;
-  border-bottom: 1px solid var(--grey-light);
-  background: #f9f9f9;
+.toolbar .input { max-width: 360px; }
+
+.notice { margin: 16px 24px 0; }
+
+.groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.search-input {
-  width: 100%;
-  padding: 0.7rem;
-  border: 1px solid var(--grey);
-  border-radius: 6px;
-  font-size: 0.95rem;
+.group { padding: 16px 24px 20px; }
+.group + .group { border-left: 1px solid var(--line); }
+
+.group-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  margin-bottom: 8px;
 }
 
-/* =========================================
-   3. Lista de Alimentos (Scroll)
-   ========================================= */
-.food-list {
-  flex-grow: 1; /* Ocupa o espaço restante */
-  overflow-y: auto;
-  padding-bottom: 1rem;
+.food-list { list-style: none; }
+
+.food {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--r);
 }
 
-/* Cabeçalho da Categoria (Sticky) */
-.category-header {
-  background: #f0f2f5;
-  color: var(--black-light);
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--grey-light);
+.food:hover { background: #fcfbf9; }
 
-  /* Faz o cabeçalho "grudar" no topo ao rolar */
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.food .btn-ghost { opacity: 0; font-size: 0.75rem; }
+.food:hover .btn-ghost,
+.food .btn-ghost:focus-visible { opacity: 1; }
+
+.food-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 6px;
+  text-align: left;
+  font-size: 0.9375rem;
 }
 
-/* =========================================
-   4. Item de Alimento (Linha)
-   ========================================= */
-.food-item {
-  padding: 0.8rem 1rem;
+.check {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.check svg { width: 12px; height: 12px; }
+
+.is-selected .check { background: var(--brand); border-color: var(--brand); color: var(--ink); }
+.is-selected .food-name { font-weight: 500; }
+
+.food-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Diálogos */
+.small-dialog { max-width: 440px; }
+
+.nutrients div {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background 0.2s;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
 }
 
-.food-item.is-selected {
-  background-color: #e8f5e9; /* Verde claro indicando seleção */
-}
+.nutrients div:last-child { border-bottom: 0; }
+.nutrients dt { color: var(--ink-2); }
 
-.food-item:hover:not(.is-selected) {
-  background-color: #f8f9fa;
-}
-
-.food-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.food-name {
-  font-size: 0.95rem;
-  color: var(--black);
-}
-
-/* =========================================
-   5. Ações e Botões do Item
-   ========================================= */
-.food-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* Botão Base (Ícone) */
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  padding: 0;
-}
-
-/* Variações de Hover dos Botões */
-.btn-preview:hover {
-  background-color: #f0f0f0;
-  border-color: #ccc;
-}
-
-.btn-add:hover {
-  background-color: #e8f5e9;
-  border-color: #27ae60;
-}
-
-.btn-remove:hover {
-  background-color: #ffebee;
-  border-color: #e74c3c;
-}
-
-/* =========================================
-   6. Badges de Categoria
-   ========================================= */
-.category-badge {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  text-transform: uppercase;
-}
-
-/* Cores das Categorias */
-.volumoso   { background-color: #27ae60; }
-.concentrado { background-color: #f39c12; }
-.suplemento { background-color: #8e44ad; }
-
-/* =========================================
-   7. Rodapé do Seletor (Custom Food)
-   ========================================= */
-.custom-food-footer {
-  padding: 1rem;
-  text-align: center;
-  border-top: 1px solid var(--grey-light);
-}
-
-.btn-custom {
-  width: 100%;
-  padding: 0.7rem;
-  border: 1px dashed var(--orange);
-  color: var(--orange);
-  background: white;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-custom:hover {
-  background: var(--orange);
-  color: white;
-  border-style: solid;
-}
-
-/* =========================================
-   8. Modal de Cadastro (Overlay & Content)
-   ========================================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(2px);
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
-  overflow-y: auto;
-
-  /* Largura Responsiva */
-  width: 95%;
-  max-width: 600px;
-}
-
-/* =========================================
-   9. Formulário do Modal (Grid)
-   ========================================= */
-.form-grid {
+.custom-grid {
   display: grid;
-  /* Mobile First: 1 coluna por padrão */
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
-.field label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-  color: var(--black);
+.span-2 { grid-column: span 2; }
+
+@media (max-width: 860px) {
+  .groups { grid-template-columns: 1fr; }
+  .group + .group { border-left: 0; border-top: 1px solid var(--line); }
+  .food .btn-ghost { opacity: 1; }
 }
 
-.field input,
-.field select {
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid var(--grey);
-  border-radius: 5px;
-}
-
-.field.full-width {
-  grid-column: 1 / -1; /* Ocupa toda a linha */
-}
-
-/* Ações do Modal */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-.btn-cancel {
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--grey);
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-confirm {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  background: var(--blue);
-  color: white;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* =========================================
-   10. Media Queries (Desktop)
-   ========================================= */
-@media (min-width: 600px) {
-  /* Em telas maiores, o formulário usa 2 colunas */
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.notice {
-  margin: 0.75rem 0;
-  padding: 0.6rem 1rem;
-  border-radius: 6px;
-  background: #fff4e5;
-  color: var(--black-light);
-  font-size: 0.9rem;
+@media (max-width: 600px) {
+  .toolbar { flex-direction: column; padding: 12px 16px; }
+  .toolbar .input { max-width: none; }
+  .group { padding: 12px 16px 16px; }
+  .custom-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: auto; }
 }
 </style>

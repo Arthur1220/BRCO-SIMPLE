@@ -1,18 +1,24 @@
 <template>
-  <div class="form-section">
-    <label :for="inputId">{{ field.label }} ({{ field.unit }}):</label>
+  <div class="field">
+    <label class="label" :for="inputId">
+      {{ field.label }} <span class="unit">({{ field.unit }})</span>
+    </label>
     <input
       :id="inputId"
       v-model.number="model"
+      class="input"
       type="number"
+      inputmode="decimal"
       :step="field.step"
       :min="field.min"
       :max="field.max"
       :required="field.required"
-      :placeholder="$t('common.examplePlaceholder', { value: field.placeholder })"
+      :placeholder="field.placeholder"
       :class="{ 'has-error': error }"
+      :aria-invalid="Boolean(error)"
+      :aria-describedby="error ? `${inputId}-error` : undefined"
     />
-    <small v-if="error" class="field-error">{{ error }}</small>
+    <small v-if="error" :id="`${inputId}-error`" class="field-error">{{ error }}</small>
   </div>
 </template>
 
@@ -30,36 +36,3 @@ const props = defineProps({
 const model = defineModel({ type: [Number, String, null] });
 const inputId = computed(() => `${props.idPrefix}${props.field.name}`);
 </script>
-
-<style scoped>
-.form-section {
-  margin-bottom: 1.5rem;
-}
-
-label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--black-light);
-}
-
-input[type="number"] {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid var(--grey);
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-input.has-error {
-  border-color: var(--red-error);
-}
-
-.field-error {
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--red-error);
-  font-size: 0.85rem;
-}
-</style>

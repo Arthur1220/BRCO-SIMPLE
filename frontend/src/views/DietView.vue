@@ -1,114 +1,90 @@
 <template>
-  <div class="container diet-page">
-    <header class="page-header">
+  <div class="container page">
+    <header class="page-head">
       <h1>{{ $t('diet.title') }}</h1>
       <p>{{ $t('diet.subtitle') }}</p>
     </header>
 
     <DietStepper />
 
-    <div class="step-content">
+    <DietIntro v-if="store.currentStep === 1" />
 
-      <router-view v-slot="{ Component }">
-        <KeepAlive>
+    <section v-else-if="store.currentStep === 2" class="panel step narrow" aria-labelledby="step-animal">
+      <header class="panel-head">
+        <div>
+          <h2 id="step-animal">{{ $t('diet.animalStepTitle') }}</h2>
+          <p class="small">{{ $t('diet.animalStepText') }}</p>
+        </div>
+      </header>
+      <div class="panel-body">
+        <ExigenciasForm :isDietMode="true" @submit-data="handleAnimalData" />
+      </div>
+    </section>
 
-          <DietIntro v-if="store.currentStep === 1" key="intro" />
+    <section v-else-if="store.currentStep === 3" class="panel step" aria-labelledby="step-foods">
+      <header class="panel-head">
+        <div>
+          <h2 id="step-foods">{{ $t('diet.foodsStepTitle') }}</h2>
+          <p class="small">{{ $t('diet.foodsStepText') }}</p>
+        </div>
+        <span class="pill pill-info num">{{ store.selectedIngredients.length }} / {{ catalog.diet?.maxIngredients }}</span>
+      </header>
+      <FoodSelector />
+      <footer class="step-foot">
+        <button type="button" class="btn btn-ghost" @click="store.prevStep()">{{ $t('common.back') }}</button>
+        <button type="button" class="btn btn-primary" :disabled="store.selectedIngredients.length === 0" @click="store.nextStep()">
+          {{ $t('diet.nextBalance') }}
+        </button>
+      </footer>
+    </section>
 
-          <div v-else-if="store.currentStep === 2" class="step-wrapper form-step" key="animal">
-            <div class="step-header">
-              <h3>{{ $t('diet.animalStepTitle') }}</h3>
-              <p>{{ $t('diet.animalStepText') }}</p>
-            </div>
-            <ExigenciasForm :isDietMode="true" @submit-data="handleAnimalData" />
-          </div>
+    <section v-else-if="store.currentStep === 4" class="panel step" aria-labelledby="step-balance">
+      <header class="panel-head">
+        <div>
+          <h2 id="step-balance">{{ $t('diet.balanceStepTitle') }}</h2>
+          <p class="small">{{ $t('diet.balanceStepText') }}</p>
+        </div>
+      </header>
+      <DietBalancer />
+      <div v-if="store.error" class="panel-body error-area">
+        <div class="alert alert-error" role="alert">{{ store.error }}</div>
+      </div>
+      <footer class="step-foot">
+        <span class="small muted">{{ $t('diet.autoAdjust') }}</span>
+        <div class="cluster">
+          <button type="button" class="btn btn-ghost" @click="store.prevStep()">{{ $t('common.back') }}</button>
+          <button type="button" class="btn btn-primary" :disabled="store.isLoading" @click="store.performDietCalculation">
+            <span v-if="store.isLoading" class="spinner" aria-hidden="true"></span>
+            {{ store.isLoading ? $t('common.calculating') : $t('diet.calculate') }}
+          </button>
+        </div>
+      </footer>
+    </section>
 
-          <div v-else-if="store.currentStep === 3" class="step-wrapper food-step" key="foods">
-            <div class="step-header">
-              <h3>{{ $t('diet.foodsStepTitle') }}</h3>
-              <p>{{ $t('diet.foodsStepText') }}</p>
-            </div>
-
-            <div class="selector-container">
-               <FoodSelector />
-            </div>
-
-            <div class="nav-buttons">
-              <button @click="store.prevStep()" class="btn-secondary">{{ $t('common.back') }}</button>
-              <button
-                @click="store.nextStep()"
-                class="btn-primary"
-                :disabled="store.selectedIngredients.length === 0"
-              >
-                {{ $t('diet.nextBalance') }}
-              </button>
-            </div>
-          </div>
-
-          <div v-else-if="store.currentStep === 4" class="step-wrapper balance-step" key="balance">
-            <div class="step-header">
-              <h3>{{ $t('diet.balanceStepTitle') }}</h3>
-              <p>{{ $t('diet.balanceStepText') }}</p>
-            </div>
-
-            <DietBalancer />
-
-            <div v-if="store.error" class="diet-error">{{ store.error }}</div>
-
-            <div class="calculation-area">
-               <div class="total-bar" :class="totalStatusClass">
-                  <span>{{ $t('diet.currentTotal') }} <strong>{{ store.totalPercent.toFixed(1) }}%</strong></span>
-                  <span v-if="Math.abs(store.totalPercent - 100) > 0.1" class="info-text">
-                     {{ $t('diet.autoAdjust') }}
-                  </span>
-                  <span v-else class="success-text">{{ $t('diet.closedAt100') }}</span>
-               </div>
-
-               <div class="nav-buttons">
-                  <button @click="store.prevStep()" class="btn-secondary">{{ $t('common.back') }}</button>
-                  <button @click="store.performDietCalculation" class="btn-calc" :disabled="store.isLoading">
-                      {{ $t('diet.calculate') }}
-                  </button>
-               </div>
-            </div>
-          </div>
-
-          <div v-else-if="store.currentStep === 5" class="step-wrapper results-step" key="results">
-            <div class="results-top-bar">
-                <h3>{{ $t('diet.resultTitle') }}</h3>
-                <button @click="store.goToStep(4)" class="btn-edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                  {{ $t('diet.editParameters') }}
-                </button>
-            </div>
-
-            <DietResultsTable />
-
-            <div class="nav-buttons final-actions">
-                 <button @click="store.resetDiet()" class="btn-outline">{{ $t('diet.restart') }}</button>
-            </div>
-          </div>
-
-        </KeepAlive>
-      </router-view>
-    </div>
-
-    <Transition name="fade">
-        <LoadingSpinner v-if="store.isLoading" />
-    </Transition>
+    <section v-else-if="store.currentStep === 5" class="step" aria-labelledby="step-result">
+      <div class="result-head">
+        <h2 id="step-result">{{ $t('diet.resultTitle') }}</h2>
+        <div class="cluster">
+          <button type="button" class="btn btn-ghost btn-sm" @click="store.goToStep(4)">{{ $t('diet.editParameters') }}</button>
+          <button type="button" class="btn btn-secondary btn-sm" @click="store.resetDiet()">{{ $t('diet.restart') }}</button>
+        </div>
+      </div>
+      <DietResultsTable />
+    </section>
 
     <ConflictModal
-        :isVisible="store.showConflictModal"
-        :options="store.conflictData.options"
-        :statusLabel="store.conflictData.statusLabel"
-        @select-option="store.finalizeCalculation"
+      :isVisible="store.showConflictModal"
+      :options="store.conflictData.options"
+      :statusLabel="store.conflictData.statusLabel"
+      @select-option="store.finalizeCalculation"
     />
-
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { watch, onMounted } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
+import { useCatalogStore } from '@/stores/catalogStore';
 
 import DietStepper from '@/components/diet/DietStepper.vue';
 import DietIntro from '@/components/diet/DietIntro.vue';
@@ -116,10 +92,10 @@ import ExigenciasForm from '@/components/calculator/ExigenciasForm.vue';
 import FoodSelector from '@/components/diet/FoodSelector.vue';
 import DietBalancer from '@/components/diet/DietBalancer.vue';
 import DietResultsTable from '@/components/diet/DietResultsTable.vue';
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
 import ConflictModal from '@/components/diet/ConflictModal.vue';
 
 const store = useDietStore();
+const catalog = useCatalogStore();
 
 const handleAnimalData = (data) => {
   store.animalData = data;
@@ -128,287 +104,48 @@ const handleAnimalData = (data) => {
   store.nextStep();
 };
 
-const totalStatusClass = computed(() => {
-    if (Math.abs(store.totalPercent - 100) < 0.1) return 'status-ok';
-    return 'status-info';
+onMounted(() => catalog.load().catch(() => {}));
+
+// Cada etapa começa no topo da página.
+watch(() => store.currentStep, () => {
+  window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
 </script>
 
 <style scoped>
-/* =========================================
-   1. Layout da Página & Cabeçalho
-   ========================================= */
-.diet-page {
-  padding: 2rem 0 4rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
+.step { margin-top: 24px; }
+.step.narrow { max-width: 640px; }
 
-.page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
+.panel-head h2,
+.result-head h2 { font-size: 1.0625rem; }
+.panel-head p { margin-top: 2px; }
 
-.page-header h1 {
-  color: var(--orange);
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: var(--black-light);
-}
-
-/* =========================================
-   2. Container do Passo (Step Wizard)
-   ========================================= */
-.step-content {
-  min-height: 400px; /* Evita pulos de altura durante a transição */
-  position: relative;
-}
-
-.step-wrapper {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid var(--grey-light);
-
-  /* Animação suave ao carregar o passo */
-  animation: fadeIn 0.4s ease;
-}
-
-.step-header {
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.step-header h3 {
-  color: var(--black);
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.step-header p {
-  color: var(--black-light);
-}
-
-/* =========================================
-   3. Botões e Navegação
-   ========================================= */
-.nav-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--grey-light);
-}
-
-.final-actions {
-  justify-content: center;
-}
-
-/* --- Botões Primários e de Cálculo --- */
-.btn-primary,
-.btn-calc {
-  background-color: var(--orange);
-  color: white;
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-/* Estilo específico do botão Calcular */
-.btn-calc {
-  background-color: var(--blue);
-  width: auto;
-  min-width: 200px; /* Garante destaque visual */
-}
-
-/* Hover States */
-.btn-primary:hover {
-  background-color: var(--light-orange);
-  transform: translateY(-2px);
-}
-
-.btn-calc:hover {
-  background-color: var(--blue-dark);
-  transform: translateY(-2px);
-}
-
-/* Disabled States */
-.btn-primary:disabled,
-.btn-calc:disabled {
-  background-color: var(--grey);
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* --- Botão Secundário (Voltar) --- */
-.btn-secondary {
-  background-color: transparent;
-  color: var(--black-light);
-  border: 1px solid var(--grey);
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-secondary:hover {
-  background-color: var(--grey-light);
-  color: var(--black);
-}
-
-/* --- Botões Utilitários (Editar / Outline) --- */
-.btn-edit {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #fff3e0;
-  color: var(--orange);
-  border: 1px solid #ffe0b2;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-edit svg {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-outline {
-  border: 1px dashed var(--orange);
-  color: var(--orange);
-  background: transparent;
-  padding: 0.8rem 2rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-/* =========================================
-   4. Área de Resultados (Cálculo Final)
-   ========================================= */
-.calculation-area {
-  margin-top: 2rem;
-}
-
-.results-top-bar {
+.step-foot {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--grey-light);
-  padding-bottom: 1rem;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  background: #fcfbf9;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
 }
 
-.results-top-bar h3 {
-  margin: 0;
-  color: var(--black);
-}
+.step-foot > .btn-ghost:first-child { margin-right: auto; }
 
-/* Barra de Status/Total */
-.total-bar {
-  background: #f9fafb;
-  padding: 1rem;
-  border-radius: 8px;
+.error-area { padding-top: 0; }
+
+.result-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-/* Modificadores de Status */
-.status-ok {
-  border: 1px solid #c8e6c9;
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.status-info {
-  border: 1px solid #e3f2fd;
-  background: #f1f8e9;
-  color: #546e7a;
-}
-
-/* =========================================
-   5. Animações e Transições
-   ========================================= */
-/* Keyframes Globais */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Transição Vue: Slide + Fade */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-/* Transição Vue: Fade Simples */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* =========================================
-   6. Responsividade (Mobile)
-   ========================================= */
-@media (max-width: 768px) {
-  .nav-buttons {
-    /* Inverte a ordem: Botão principal vai para o topo, voltar vai para baixo */
-    flex-direction: column-reverse;
-    gap: 1rem;
-  }
-
-  .btn-primary,
-  .btn-secondary,
-  .btn-calc {
-    width: 100%; /* Botões ocupam largura total no mobile */
-  }
-
-  .results-top-bar {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-}
-
-.diet-error {
-  margin-top: 1rem;
-  padding: 0.8rem 1rem;
-  border-radius: 8px;
-  background: #fdeaea;
-  border: 1px solid #f9c5c5;
-  color: var(--red-error);
+@media (max-width: 720px) {
+  .step-foot { padding: 12px 16px; }
 }
 </style>
