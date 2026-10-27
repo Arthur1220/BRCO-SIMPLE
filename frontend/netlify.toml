@@ -1,3 +1,16 @@
+# O site é publicado pelo deploy contínuo do Netlify (Git, branch main), com
+# "Base directory" = frontend nas configurações do site; por isso este arquivo fica
+# aqui e não na raiz. Ver DEPLOY.md, seção CI/CD.
+[build]
+  command = "npm run build"
+  publish = "dist"
+  # Só gera um deploy novo quando algo em frontend/ mudou (o comando roda na pasta base).
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+
+[build.environment]
+  # Mesma versão do .nvmrc da raiz (o Netlify procura o .nvmrc só na pasta base).
+  NODE_VERSION = "24"
+
 # Proxy da API: o navegador chama /api no próprio domínio do Netlify e o Netlify
 # repassa para a API na AWS Lambda (Function URL). Depois do `sam deploy`, troque o
 # destino abaixo pela ApiUrl dos Outputs da stack (ver DEPLOY.md).
