@@ -1,0 +1,2 @@
+# Scripts de shell rodam em Linux (Docker): sempre LF
+*.sh text eol=lf

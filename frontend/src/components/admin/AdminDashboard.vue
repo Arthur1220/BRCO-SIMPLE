@@ -1,16 +1,14 @@
 <template>
-  <div class="dashboard-container">
-    <section class="section">
-      <StatsCards :stats="stats" />
+  <div class="dashboard">
+    <StatsCards :stats="stats" />
+
+    <section class="panel">
+      <header class="panel-head"><h2>{{ $t('admin.usageTitle') }}</h2></header>
+      <div class="panel-body"><UsageChart :data="chartData" /></div>
     </section>
 
-    <section class="section">
-      <h3 class="section-title">Uso nos Últimos Dias</h3>
-      <UsageChart :data="chartData" />
-    </section>
-
-    <section class="section">
-      <h3 class="section-title">Histórico de Atividades</h3>
+    <section class="panel">
+      <header class="panel-head"><h2>{{ $t('admin.activityTitle') }}</h2></header>
       <LogsTable :logs="logs" />
     </section>
   </div>
@@ -29,14 +27,6 @@ defineProps({
 </script>
 
 <style scoped>
-.section {
-  margin-bottom: 2.5rem;
-}
-
-.section-title {
-  font-size: 1.2rem;
-  color: var(--black);
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
+.dashboard { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+.panel-head h2 { font-size: 0.9375rem; }
 </style>

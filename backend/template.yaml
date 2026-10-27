@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: BRCO - API v1 (Lambda + Function URL + DynamoDB)
+
+Parameters:
+  PanelPassword:
+    Type: String
+    NoEcho: true
+    Description: Senha do painel /admin
+  AdminJwtSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Segredo do token de sessão do admin (mínimo 32 caracteres)
+  NetlifyProxySecret:
+    Type: String
+    NoEcho: true
+    MinLength: 16
+    Description: Mesmo valor de API_SIGNATURE_TOKEN no Netlify
+  FrontendUrl:
+    Type: String
+    Default: https://brco.netlify.app
+
+Resources:
+  # ------------------------------------------------------------------
+  # API (Express via serverless-http)
+  # ------------------------------------------------------------------
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: lambda.handler
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      MemorySize: 512
+      Timeout: 15
+      LoggingConfig:
+        LogGroup: !Ref ApiLogGroup
+      # Pública: a autenticação é a assinatura do proxy do Netlify (X-Nf-Sign),
+      # verificada pela aplicação. Requisições sem assinatura recebem 403.
+      FunctionUrlConfig:
+        AuthType: NONE
+      Environment:
+        Variables:
+          NODE_ENV: production
+          PANEL_PASSWORD: !Ref PanelPassword
+          ADMIN_JWT_SECRET: !Ref AdminJwtSecret
+          NETLIFY_PROXY_SECRET: !Ref NetlifyProxySecret
+          FRONTEND_URL: !Ref FrontendUrl
+          FOODS_TABLE: !Ref FoodsTable
+          CALCULATIONS_TABLE: !Ref CalculationsTable
+          USAGE_LOGS_TABLE: !Ref UsageLogsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FoodsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CalculationsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsageLogsTable
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/brco-api
+      RetentionInDays: 30
+
+  # ------------------------------------------------------------------
+  # Dados (sob demanda: paga só o que usar; PITR = backup contínuo de 35 dias)
+  # Retain: apagar a stack não apaga os dados.
+  # ------------------------------------------------------------------
+  FoodsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: id, AttributeType: N }
+      KeySchema:
+        - { AttributeName: id, KeyType: HASH }
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  # Cálculos salvos: o TTL apaga cada item 6 meses depois de criado.
+  CalculationsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: id, AttributeType: S }
+      KeySchema:
+        - { AttributeName: id, KeyType: HASH }
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  # Uso dos cálculos (estatísticas do admin): partição por dia, ordenado por data.
+  UsageLogsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: day, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: day, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+Outputs:
+  ApiUrl:
+    Description: URL da Function URL (destino do proxy /api no netlify.toml)
+    Value: !GetAtt ApiFunctionUrl.FunctionUrl
+  FoodsTableName:
+    Value: !Ref FoodsTable
+  CalculationsTableName:
+    Value: !Ref CalculationsTable
+  UsageLogsTableName:
+    Value: !Ref UsageLogsTable

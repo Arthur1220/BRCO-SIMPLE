@@ -1,55 +1,70 @@
 import apiClient from './axiosSetup.js';
 
-const publicKey = import.meta.env.VITE_PUBLIC_API_KEY;
-
-// Criamos um objeto de configuração com o header que será usado em todas as chamadas públicas
-const config = {
-    headers: { 'x-api-key': publicKey }
-};
-/**
- * Envia os dados para o cálculo de exigências.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo.
- */
-export const calculateRequirements = async (data) => {
-  // apiClient já sabe a URL base, então só precisamos do caminho do endpoint.
-  const response = await apiClient.post('/calculate/requirements', data, config);
-  return response.data; // Retornamos apenas os dados da resposta
-};
+// Cliente da API v1: o backend devolve tudo pronto para exibir
+// (labels, unidades, grupos, destaques, status). Ver /api-docs/v1.
 
 /**
- * Envia os dados para o cálculo de NDT.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo.
+ * Catálogo: espécies, formulários (campos, limites, regras) e regras da dieta.
+ * @param {string} locale - Idioma do catálogo ('pt-BR' ou 'en').
  */
-export const calculateNdt = async (data) => {
-  const response = await apiClient.post('/calculate/ndt', data, config);
+export const getCatalog = async (locale) => {
+  const response = await apiClient.get('/v1/catalog', { headers: { 'Accept-Language': locale } });
   return response.data;
 };
 
-/** * Envia os dados para gerar um arquivo CSV.
- * @param {object} data - O objeto com os dados para o CSV.
- * @returns {Promise<Blob>} - A promessa com o arquivo CSV em formato Blob.
- */
-export const generateCsv = async (data) => {
-  const csvConfig = { ...config, responseType: 'blob' };
-  const response = await apiClient.post('/generate-csv', data, csvConfig);
-  return response.data;
-};
-
-/** * Busca a lista de alimentos.
- * @returns {Promise<object[]>} - A promessa com a lista de alimentos.
+/**
+ * Alimentos cadastrados (nutrientes em g/kg MS).
  */
 export const getFoods = async () => {
-  const response = await apiClient.get('/foods', config);
+  const response = await apiClient.get('/v1/foods');
   return response.data;
 };
 
-/** * Envia os dados para o cálculo de dieta.
- * @param {object} data - O objeto com os dados do formulário.
- * @returns {Promise<object>} - A promessa com os resultados do cálculo de dieta.
+/**
+ * Cálculo de exigências. Entrada com codes do catálogo (especie, genotipo, sexo).
  */
-export const calculateDiet = async (data) => {
-  const response = await apiClient.post('/calculate/diet', data, config);
+export const calculateRequirements = async (input) => {
+  const response = await apiClient.post('/v1/calculations/requirements', withoutEmpty(input));
   return response.data;
 };
+
+/**
+ * Cálculo de NDT de um alimento.
+ */
+export const calculateNdt = async (input) => {
+  const response = await apiClient.post('/v1/calculations/ndt', withoutEmpty(input));
+  return response.data;
+};
+
+/**
+ * Formulação de dieta: { animal, ingredients: [{ foodId } | { custom }] }.
+ */
+export const calculateDiet = async (input) => {
+  const response = await apiClient.post('/v1/calculations/diet', input);
+  return response.data;
+};
+
+/**
+ * Cálculo salvo (válido por 6 meses).
+ */
+export const getCalculation = async (id) => {
+  const response = await apiClient.get(`/v1/calculations/${id}`);
+  return response.data;
+};
+
+/**
+ * CSV gerado pelo servidor a partir do cálculo salvo.
+ * @returns {Promise<{ blob: Blob, filename: string }>}
+ */
+export const downloadCalculationCsv = async (id) => {
+  const response = await apiClient.get(`/v1/calculations/${id}/export.csv`, { responseType: 'blob' });
+  const disposition = response.headers['content-disposition'] || '';
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `brco-${id}.csv`;
+  return { blob: response.data, filename };
+};
+
+/**
+ * Remove campos vazios ('' ou null) do payload: a API responde "é obrigatório" para eles.
+ */
+export const withoutEmpty = (payload) =>
+  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== '' && value !== null && value !== undefined));

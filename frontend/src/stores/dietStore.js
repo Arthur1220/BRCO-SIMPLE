@@ -1,15 +1,16 @@
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import { defineStore } from 'pinia';
-import { getFoods, calculateDiet } from '@/services/apiService';
+import { getFoods, calculateDiet, getCalculation } from '@/services/apiService';
+import { parseApiError } from '@/services/axiosSetup';
+import { useCatalogStore } from '@/stores/catalogStore';
+import { locale, t } from '@/i18n';
 
 /*
- * Store para gerenciar o estado da criação e cálculo de dietas.
- * Inclui etapas do formulário, dados dos alimentos, dados do animal, resultados, estado de carregamento, erros e controle de conflitos.
+ * Store da formulação de dieta (API v1).
+ * As regras (máximo de alimentos, duplicados, limites padrão) vêm do catálogo;
+ * o resultado (kg, custo, status do balanço) vem pronto do backend.
  */
 export const useDietStore = defineStore('diet', () => {
-
-  // Função auxiliar para criar um delay (pausa)
-  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   // --- STATE (Estado) ---
   const currentStep = ref(1);
@@ -20,16 +21,19 @@ export const useDietStore = defineStore('diet', () => {
   const selectedIngredients = ref([]);
   const animalData = ref(null);
 
-  // Resultados
+  // Resultados: { calculationId, option, solution, requirements } (option: escolha no conflito)
   const dietResults = ref(null);
   const isLoading = ref(false);
   const error = ref(null);
+  const notice = ref(null);
 
   // Controle de Conflitos (Para o Modal de Decisão)
   const showConflictModal = ref(false);
   const conflictData = reactive({
-    resultIdeal: null,
-    resultRealistic: null
+    calculationId: null,
+    statusLabel: '',
+    options: [],
+    requirements: null,
   });
 
   // --- GETTERS ---
@@ -63,33 +67,43 @@ export const useDietStore = defineStore('diet', () => {
     try {
       availableFoods.value = await getFoods();
     } catch (err) {
-      console.error("Erro ao buscar alimentos:", err);
-      error.value = "Falha ao carregar a lista de alimentos.";
+      error.value = parseApiError(err, t('errors.foods')).message;
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Adiciona ingrediente à dieta
+  const ingredientKey = (food) => (food.id ? `food:${food.id}` : `custom:${food.name}`);
+
+  function isSelected(food) {
+    return selectedIngredients.value.some((item) => item.key === ingredientKey(food));
+  }
+
+  // Adiciona ingrediente à dieta (limites conforme o catálogo da API)
   function addIngredient(food) {
-    if (selectedIngredients.value.length >= 10) {
-      alert("Máximo de 10 alimentos permitidos.");
+    const rules = useCatalogStore().diet;
+    notice.value = null;
+
+    if (selectedIngredients.value.length >= rules.maxIngredients) {
+      notice.value = t('diet.maxIngredients', { max: rules.maxIngredients });
+      return;
+    }
+    if (!rules.allowDuplicates && isSelected(food)) {
+      notice.value = t('diet.duplicateIngredient');
       return;
     }
 
-    // Evita duplicatas de alimentos do banco (opcional, remova se quiser permitir repetidos)
-    if (food.id && selectedIngredients.value.some(i => i.id === food.id)) {
-        alert("Este alimento já foi adicionado à lista.");
-        return;
-    }
-
+    const defaults = rules.ingredientDefaults;
     selectedIngredients.value.push({
-      ...food,
+      key: ingredientKey(food),
+      foodId: food.id ?? null,
+      custom: food.id ? null : food,
+      name: food.name,
+      category: food.category,
       percent: 0,
-      min: 0,
-      max: 100,
-      isCustom: !food.id,
-      price: 0
+      min: food.defaultMin ?? defaults.min,
+      max: food.defaultMax ?? defaults.max,
+      price: defaults.price,
     });
   }
 
@@ -97,17 +111,31 @@ export const useDietStore = defineStore('diet', () => {
     selectedIngredients.value.splice(index, 1);
   }
 
-  // Função interna para aplicar o resultado e avançar
-  function applyResult(resultData) {
-    dietResults.value = resultData;
+  // Aplica a solução escolhida e avança para o resultado
+  function applyResult(calculationId, solution, requirements, option = null) {
+    dietResults.value = { calculationId, option, solution, requirements };
 
     // Atualiza a lista visual com as porcentagens calculadas pelo solver
-    if (resultData.optimizedIngredients) {
-        selectedIngredients.value = resultData.optimizedIngredients;
-    }
+    solution.ingredients.forEach((ing, index) => {
+      if (selectedIngredients.value[index]) selectedIngredients.value[index].percent = ing.percent;
+    });
 
-    // Sucesso! Vai para a tela de resultados
     currentStep.value = 5;
+  }
+
+  function buildPayload() {
+    return {
+      animal: animalData.value,
+      ingredients: selectedIngredients.value.map(({ foodId, custom, min, max, price }) => {
+        // Campos vazios não são enviados: a API usa o padrão do alimento (ou do catálogo).
+        const limits = Object.fromEntries(
+          Object.entries({ min, max, price }).filter(([, value]) => value !== '' && value !== null && value !== undefined)
+        );
+        if (foodId) return { foodId, ...limits };
+        const { name, category, MS, PB, NDT, FDNcp, Ca, P } = custom;
+        return { custom: { name, category, MS, PB, NDT, FDNcp, Ca, P }, ...limits };
+      }),
+    };
   }
 
   // CÁLCULO PRINCIPAL
@@ -119,42 +147,23 @@ export const useDietStore = defineStore('diet', () => {
     dietResults.value = null;
     showConflictModal.value = false;
 
-    // Tempo mínimo de loading para melhor UX
-    const minLoadingTime = 2000;
-    const startTime = Date.now();
-
     try {
-      const payload = {
-        animalData: animalData.value,
-        ingredients: selectedIngredients.value
-      };
+      const response = await calculateDiet(buildPayload());
 
-      const response = await calculateDiet(payload);
-
-      // Verifica se o backend retornou um conflito (duas opções de resultado)
-      if (response.hasConflict) {
+      if (response.status === 'conflict') {
         // Salva as opções e abre o modal para o usuário decidir
-        conflictData.resultIdeal = response.resultIdeal;
-        conflictData.resultRealistic = response.resultRealistic;
+        conflictData.calculationId = response.calculationId;
+        conflictData.statusLabel = response.statusLabel;
+        conflictData.options = response.options;
+        conflictData.requirements = response.requirements;
         showConflictModal.value = true;
-        // NÃO avança o passo aqui, espera a escolha
       } else {
-        applyResult(response.result || response);
+        applyResult(response.calculationId, response.solution, response.requirements);
       }
-
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) {
-        await sleep(minLoadingTime - elapsedTime);
-      }
-
     } catch (err) {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minLoadingTime) {
-        await sleep(minLoadingTime - elapsedTime);
-      }
-
-      console.error("Erro no cálculo:", err);
-      error.value = err.response?.data?.error || "Erro ao calcular a dieta.";
+      const parsed = parseApiError(err, t('errors.diet'));
+      const details = Object.values(parsed.fields);
+      error.value = details.length ? `${parsed.message} ${details.join(' ')}` : parsed.message;
     } finally {
       isLoading.value = false;
     }
@@ -162,13 +171,31 @@ export const useDietStore = defineStore('diet', () => {
 
   // Ação chamada pelo Modal quando o usuário escolhe uma opção ('ideal' ou 'realistic')
   function finalizeCalculation(choice) {
-    const finalResult = choice === 'ideal'
-      ? conflictData.resultIdeal
-      : conflictData.resultRealistic;
-
-    applyResult(finalResult);
-    showConflictModal.value = false; // Fecha o modal
+    const option = conflictData.options.find((o) => o.code === choice);
+    applyResult(conflictData.calculationId, option.solution, conflictData.requirements, choice);
+    showConflictModal.value = false;
   }
+
+  // Ao trocar o idioma, busca o cálculo salvo de novo para receber os textos traduzidos
+  // (labels do balanço, status e opções do conflito). Os números não mudam.
+  watch(locale, async () => {
+    const id = showConflictModal.value ? conflictData.calculationId : dietResults.value?.calculationId;
+    if (!id) return;
+    try {
+      const response = await getCalculation(id);
+      if (showConflictModal.value && conflictData.calculationId === id) {
+        conflictData.statusLabel = response.statusLabel;
+        conflictData.options = response.options;
+        conflictData.requirements = response.requirements;
+      } else if (dietResults.value?.calculationId === id) {
+        const { option } = dietResults.value;
+        const solution = option ? response.options.find((o) => o.code === option).solution : response.solution;
+        dietResults.value = { calculationId: id, option, solution, requirements: response.requirements };
+      }
+    } catch {
+      // Mantém o resultado no idioma anterior.
+    }
+  });
 
   function resetDiet() {
     currentStep.value = 1;
@@ -176,6 +203,7 @@ export const useDietStore = defineStore('diet', () => {
     animalData.value = null;
     dietResults.value = null;
     error.value = null;
+    notice.value = null;
     showConflictModal.value = false;
   }
 
@@ -189,6 +217,7 @@ export const useDietStore = defineStore('diet', () => {
     dietResults,
     isLoading,
     error,
+    notice,
     showConflictModal,
     conflictData,
 
@@ -200,6 +229,7 @@ export const useDietStore = defineStore('diet', () => {
     prevStep,
     goToStep,
     fetchFoods,
+    isSelected,
     addIngredient,
     removeIngredient,
     performDietCalculation,

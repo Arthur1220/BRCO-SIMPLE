@@ -1,31 +1,10 @@
-version: '3.8'
-
+# Desenvolvimento local: DynamoDB Local (o backend roda com `npm run dev` e o
+# frontend com `npm run dev`; em produção a API é uma Lambda e o frontend fica no Netlify).
+#   docker compose up -d
 services:
-  # Serviço do Backend
-  backend:
-    build:
-      context: ./backend
-    container_name: backend
-    restart: always
+  dynamodb:
+    image: amazon/dynamodb-local:2.6.1
+    container_name: brco-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
     ports:
-      - "3000:3000"
-    env_file:
-      - ./backend/.env
-    volumes:
-      #- ./backend:/app 
-      - backend_node_modules:/app/node_modules
-
-  # Serviço do Frontend
-  frontend:
-    build:
-      context: ./frontend
-    container_name: frontend
-    restart: always
-    ports:
-      - "8080:80" 
-    depends_on:
-      - backend
-
-# Define o volume nomeado que usamos acima
-volumes:
-  backend_node_modules:
+      - "${DYNAMODB_PORT:-8000}:8000"

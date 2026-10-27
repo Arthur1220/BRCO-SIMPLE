@@ -1,11 +1,11 @@
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./openapi.json');
-const logger = require('../lib/logger');
+const { buildOpenApiDocument } = require('../contracts/openapi');
 
 function setupSwagger(app) {
-  // A rota agora usa o objeto JSON importado diretamente, sem parsers
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-  logger.info('Swagger docs available at /api-docs');
+  // v1: documento gerado a partir dos schemas Zod (sempre igual ao código)
+  const v1Document = buildOpenApiDocument();
+  app.get('/api-docs/v1.json', (req, res) => res.json(v1Document));
+  app.use('/api-docs/v1', swaggerUi.serveFiles(v1Document), swaggerUi.setup(v1Document));
 }
 
 module.exports = setupSwagger;

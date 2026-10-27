@@ -10,9 +10,10 @@ yarn-error.log
 .env.test.local
 .env.production.local
 
-# Banco de Dados SQLite (Local)
-prisma/dev.db
-prisma/dev.db-journal
+# Banco SQLite antigo (só para a migração) e build do SAM
+*.db
+*.db-journal
+.aws-sam
 
 # Arquivos de Log da Aplicação
 *.log

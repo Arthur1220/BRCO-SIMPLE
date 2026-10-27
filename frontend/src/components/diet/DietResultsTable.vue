@@ -1,260 +1,166 @@
 <template>
-  <div class="diet-results" v-if="store.dietResults">
-
-    <div class="recipe-section">
-      <h4 class="section-title">Receita Sugerida (Base Matéria Seca)</h4>
-      <div class="table-container">
-        <table class="recipe-table">
-          <thead>
-            <tr>
-              <th>Ingrediente</th>
-              <th class="center">Proporção Final (%)</th>
-              <th class="center">Quantidade (kg/dia)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(ing, index) in store.dietResults.optimizedIngredients" :key="index">
-              <td><strong>{{ ing.name }}</strong></td>
-              <td class="center highlight-cell">{{ formatNum(ing.percent) }}%</td>
-              <td class="center">
-                {{ calculateKg(ing.percent) }} kg
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <div v-if="solution" class="diet-results">
+    <div class="stats">
+      <div class="stat is-key">
+        <span class="stat-label">{{ $t('dietResults.totalIntake') }}</span>
+        <span class="stat-value">{{ formatNum(solution.totals.intakeKgPerDay, 3) }}<small>kg MS/d</small></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">{{ $t('dietResults.totalCost') }}</span>
+        <span class="stat-value">{{ $t('common.currency', { value: formatNum(solution.totals.costPerDay) }) }}<small>/d</small></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">{{ $t('dietResults.status') }}</span>
+        <span class="status-line">
+          <span class="pill" :class="balanceOk ? 'pill-ok' : 'pill-warn'">{{ balanceOk ? $t('dietResults.allMet') : $t('dietResults.someMissing') }}</span>
+          <span v-if="optionLabel" class="small muted">{{ optionLabel }}</span>
+        </span>
       </div>
     </div>
 
-    <hr class="divider">
-
-    <div class="summary-cards">
-      <div class="card">
-        <span class="label">Consumo Total Estimado (MS)</span>
-        <span class="value">{{ formatNum(store.dietResults.dietSupply['Consumo Estimado (g)'] / 1000) }} kg</span>
-      </div>
-       <div class="card">
-        <span class="label">Custo Total Estimado</span>
-        <span class="value">R$ {{ formatNum(store.dietResults.dietSupply['Custo Total']) }}</span>
-      </div>
-    </div>
-
-    <div class="balance-section">
-      <h4 class="section-title">Análise Nutricional (Balanço)</h4>
-      <div class="table-container">
-        <table>
+    <section class="panel">
+      <header class="panel-head">
+        <h3>{{ $t('dietResults.recipeTitle') }}</h3>
+        <button type="button" class="btn btn-secondary btn-sm" :disabled="isExporting" @click="exportToCsv">
+          <span v-if="isExporting" class="spinner" aria-hidden="true"></span>
+          {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
+        </button>
+      </header>
+      <div class="table-wrap">
+        <table class="table">
           <thead>
             <tr>
-              <th>Nutriente</th>
-              <th class="center">Requerido (Meta)</th>
-              <th class="center">Fornecido (Dieta)</th>
-              <th class="center">Balanço</th>
-              <th class="center">Status</th>
+              <th>{{ $t('dietResults.ingredient') }}</th>
+              <th class="share-col">{{ $t('dietResults.finalProportion') }}</th>
+              <th class="right">{{ $t('dietResults.quantity') }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(data, nutrient) in store.dietResults.dietBalance" :key="nutrient">
-              <td>{{ nutrient }} ({{ data.unit }})</td>
-              <td class="center">{{ data.required }}</td>
-              <td class="center">{{ data.supplied }}</td>
-              <td class="center" :class="getBalanceClass(data.diff)">
-                {{ data.diff > 0 ? '+' : '' }}{{ data.diff }}
+            <tr v-for="ing in solution.ingredients" :key="ing.foodId ?? ing.name" :class="{ 'is-zero': ing.percent === 0 }">
+              <td>
+                {{ ing.name }}
+                <span class="small muted">· {{ ing.categoryLabel }}</span>
               </td>
-              <td class="center">
-                <span class="status-badge" :class="getStatusClass(data.diff, data.required)">
-                  {{ getStatusLabel(data.diff, data.required) }}
+              <td class="share-col">
+                <span class="share">
+                  <span class="share-bar" aria-hidden="true"><span :style="{ width: `${Math.min(ing.percent, 100)}%` }"></span></span>
+                  <span class="num">{{ formatNum(ing.percent) }}%</span>
                 </span>
               </td>
+              <td class="num">{{ formatNum(ing.kgPerDay, 3) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-head">
+        <h3>{{ $t('dietResults.balanceTitle') }}</h3>
+      </header>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ $t('dietResults.nutrient') }}</th>
+              <th class="right">{{ $t('dietResults.required') }}</th>
+              <th class="right">{{ $t('dietResults.supplied') }}</th>
+              <th class="right">{{ $t('dietResults.balance') }}</th>
+              <th>{{ $t('dietResults.status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in solution.balance" :key="item.code">
+              <td>{{ item.label }} <span class="small muted">({{ item.unit }})</span></td>
+              <td class="num">{{ formatNum(item.required) }}</td>
+              <td class="num">{{ formatNum(item.supplied) }}</td>
+              <td class="num" :class="{ 'is-deficit': item.status === 'deficit' }">{{ item.diff > 0 ? '+' : '' }}{{ formatNum(item.diff) }}</td>
+              <td><span class="pill" :class="STATUS_CLASS[item.status]">{{ item.statusLabel }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
+import { downloadCalculationCsv } from '@/services/apiService';
+import { useI18n } from 'vue-i18n';
+import { parseApiError } from '@/services/axiosSetup';
+import { saveAs } from 'file-saver';
 
+// kg/dia, custo, balanço e status vêm calculados da API v1.
 const store = useDietStore();
+const { t, locale } = useI18n();
+const solution = computed(() => store.dietResults?.solution);
+const isExporting = ref(false);
 
-const formatNum = (num) => {
-  return num ? Number(num).toFixed(2) : '0.00';
-};
+// Apenas aparência: cor do selo por status.
+const STATUS_CLASS = { ideal: 'pill-ok', deficit: 'pill-warn', excess: 'pill-info', info: 'pill-info' };
 
-const calculateKg = (percent) => {
-  const totalCMS_g = store.dietResults.dietSupply['Consumo Estimado (g)'];
-  const amount_g = totalCMS_g * (percent / 100);
-  return (amount_g / 1000).toFixed(3);
-};
+const balanceOk = computed(() => solution.value.balance.every((item) => item.status !== 'deficit'));
 
-const getBalanceClass = (diff) => {
-  if (diff < -0.1) return 'text-red';
-  return 'text-green';
-};
+// Quando houve conflito, mostra qual cenário o usuário escolheu.
+const optionLabel = computed(() => {
+  const code = store.dietResults?.option;
+  return code ? store.conflictData.options.find((o) => o.code === code)?.label : null;
+});
 
-const getStatusClass = (diff, required) => {
-  if (required === 0) return 'badge-info';
-  const percentDiff = (diff / required) * 100;
+const formatNum = (num, decimals = 2) =>
+  Number(num || 0).toLocaleString(locale.value, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
-  if (Math.abs(percentDiff) <= 5 || (diff >= 0 && diff < 0.1)) return 'badge-success';
-  if (diff < 0) return 'badge-warning';
-  return 'badge-info';
-};
-
-const getStatusLabel = (diff, required) => {
-  if (required === 0) return 'Informativo';
-  const percentDiff = (diff / required) * 100;
-
-  if (Math.abs(percentDiff) <= 5 || (diff >= 0 && diff < 0.1)) return 'Ideal';
-  if (diff < 0) return 'Déficit';
-  return 'Excesso';
+const exportToCsv = async () => {
+  isExporting.value = true;
+  try {
+    const { blob, filename } = await downloadCalculationCsv(store.dietResults.calculationId);
+    saveAs(blob, filename);
+  } catch (error) {
+    alert(parseApiError(error, t('errors.csv')).message);
+  } finally {
+    isExporting.value = false;
+  }
 };
 </script>
 
 <style scoped>
-/* =========================================
-   1. Container Principal & Estrutura
-   ========================================= */
-.diet-results {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-top: 2rem;
-  border: 1px solid var(--grey-light);
+.diet-results { display: flex; flex-direction: column; gap: 16px; }
+
+.panel-head h3 { font-size: 0.9375rem; }
+
+.status-line { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 6px; }
+
+.table th:first-child,
+.table td:first-child { padding-left: 24px; }
+.table th:last-child,
+.table td:last-child { padding-right: 24px; }
+
+.share-col { width: 40%; }
+
+.share { display: flex; align-items: center; gap: 12px; }
+
+.share-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  overflow: hidden;
 }
 
-.recipe-section {
-  margin-bottom: 2rem;
-}
+.share-bar span { display: block; height: 100%; background: var(--brand); }
 
-.divider {
-  border: 0;
-  height: 1px;
-  background: var(--grey-light);
-  margin: 2rem 0;
-}
+.share .num { min-width: 64px; text-align: right; }
 
-/* =========================================
-   2. Tipografia e Títulos
-   ========================================= */
-.section-title {
-  color: var(--black);
-  font-size: 1.2rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  border-left: 4px solid var(--orange); /* Detalhe visual na esquerda */
-  padding-left: 10px;
-}
+.is-zero td { color: var(--ink-3); }
 
-/* =========================================
-   3. Cards de Resumo (KPIs)
-   ========================================= */
-.summary-cards {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
+.is-deficit { color: var(--warn); }
 
-.card {
-  background: #f8f9fa;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--grey-light);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1; /* Faz os cards ocuparem a mesma largura */
-}
-
-.card .label {
-  font-size: 0.9rem;
-  color: var(--black-light);
-  margin-bottom: 0.3rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.card .value {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--orange);
-}
-
-/* =========================================
-   4. Tabelas de Dados
-   ========================================= */
-.table-container {
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid var(--grey-light);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 0.9rem 1.2rem;
-  text-align: left;
-  border-bottom: 1px solid var(--grey-light);
-}
-
-th {
-  background-color: #f1f3f5;
-  font-weight: 700;
-  color: var(--black);
-  font-size: 0.95rem;
-}
-
-.center {
-  text-align: center;
-}
-
-/* Destaque para células específicas (ex: Total) */
-.highlight-cell {
-  font-weight: bold;
-  color: var(--blue-dark);
-  background-color: #f0f7ff;
-}
-
-/* =========================================
-   5. Indicadores, Cores e Badges
-   ========================================= */
-/* Cores de Texto Utilitárias */
-.text-red {
-  color: #e74c3c;
-  font-weight: bold;
-}
-
-.text-green {
-  color: #27ae60;
-  font-weight: bold;
-}
-
-/* Badges de Status */
-.status-badge {
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: white;
-  display: inline-block;
-  min-width: 80px;
-  text-align: center; /* Adicionado para centralizar texto dentro do badge */
-}
-
-.badge-success { background-color: #27ae60; }
-.badge-warning { background-color: #e74c3c; }
-.badge-info    { background-color: #3498db; }
-
-/* =========================================
-   6. Responsividade (Mobile)
-   ========================================= */
-@media (max-width: 600px) {
-  .summary-cards {
-    flex-direction: column; /* Empilha os cards verticalmente */
-  }
+@media (max-width: 720px) {
+  .table th:first-child,
+  .table td:first-child { padding-left: 16px; }
+  .share-col { width: auto; }
+  .share-bar { display: none; }
 }
 </style>

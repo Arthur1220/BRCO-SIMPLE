@@ -1,33 +1,41 @@
 <template>
-  <header class="site-header">
-    <div class="container header-container">
-      <router-link to="/" class="logo">
-        <h3><strong>BRCO</strong></h3>
+  <header class="header">
+    <div class="container header-bar">
+      <router-link to="/" class="brand" :aria-label="$t('nav.home')">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">BRCO</span>
+        <span class="brand-tagline">{{ $t('header.tagline') }}</span>
       </router-link>
 
-      <div :class="['nav-overlay', { 'is-open': isMenuOpen }]" @click="closeMenu"></div>
-
-      <nav class="main-nav" :class="{ 'is-open': isMenuOpen }">
-        <ul class="nav-links" @click.stop>
-          <li class="nav-item-dropdown">
-            <span class="dropdown-toggle">Calculadoras</span>
-            <ul class="dropdown-menu">
-              <li><router-link to="/calcular/exigencias" @click="closeMenu">Exigências Nutricionais</router-link></li>
-              <li><router-link to="/calcular/ndt" @click="closeMenu">Cálculo de NDT</router-link></li>
-            </ul>
-          </li>
-          <li><router-link to="/formulacao-dieta" @click="closeMenu">Gerador de Dieta</router-link></li>
-          <li><router-link to="/equipe" @click="closeMenu">Equipe</router-link></li>
-        </ul>
+      <nav class="nav" :class="{ 'is-open': isMenuOpen }" :aria-label="$t('nav.main')">
+        <router-link v-for="link in links" :key="link.to" :to="link.to" class="nav-link" :class="{ 'is-active': isActive(link) }">
+          {{ $t(link.label) }}
+        </router-link>
       </nav>
 
-      <button class="menu-toggle" @click="toggleMenu" aria-label="Toggle menu">
-        <div class="icon-wrapper">
-          <div class="bar bar-top" :class="{ 'is-open': isMenuOpen }"></div>
-          <div class="bar bar-middle" :class="{ 'is-open': isMenuOpen }"></div>
-          <div class="bar bar-bottom" :class="{ 'is-open': isMenuOpen }"></div>
+      <div class="header-actions">
+        <div class="segmented lang" role="group" :aria-label="$t('language.label')">
+          <button
+            v-for="lang in SUPPORTED_LOCALES"
+            :key="lang"
+            type="button"
+            :class="{ 'is-active': locale === lang }"
+            :aria-pressed="locale === lang"
+            :title="$t(`language.${lang}`)"
+            :lang="lang"
+            @click="setLocale(lang)"
+          >
+            {{ LANG_SHORT[lang] }}
+          </button>
         </div>
-      </button>
+
+        <button class="btn btn-ghost btn-icon menu-toggle" :aria-expanded="isMenuOpen" :aria-label="$t('nav.toggleMenu')" @click="isMenuOpen = !isMenuOpen">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path v-if="!isMenuOpen" d="M2 4.5h12M2 8h12M2 11.5h12" />
+            <path v-else d="M3.5 3.5l9 9M12.5 3.5l-9 9" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 </template>
@@ -35,339 +43,134 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { SUPPORTED_LOCALES, setLocale } from '@/i18n';
 
-const isMenuOpen = ref(false);
+const { locale } = useI18n();
 const route = useRoute();
+const LANG_SHORT = { 'pt-BR': 'PT', en: 'EN' };
 
-function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value;
-}
+const links = [
+  { to: '/calcular/exigencias', label: 'nav.requirementsShort' },
+  { to: '/calcular/ndt', label: 'nav.ndtShort' },
+  { to: '/formulacao-dieta', label: 'nav.dietShort' },
+  { to: '/equipe', label: 'nav.team' },
+];
 
-function closeMenu() {
-  isMenuOpen.value = false;
-}
+const isActive = (link) => route.path.startsWith(link.to);
+const isMenuOpen = ref(false);
 
-watch(() => route.path, () => {
-  isMenuOpen.value = false;
-});
+watch(() => route.path, () => { isMenuOpen.value = false; });
 </script>
 
 <style scoped>
-/* =========================================
-   1. Estrutura Base do Header (Sticky)
-   ========================================= */
-.site-header {
+.header {
   position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  padding: 1rem 2rem;
-  z-index: 1000;
-  border-bottom: 1px solid var(--grey-light);
-
-  /* Efeito de vidro (Glassmorphism) */
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); /* Suporte Safari */
+  z-index: 40;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--line);
 }
 
-.header-container {
+.header-bar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100%;
+  gap: 32px;
+  height: var(--header-h);
 }
 
-/* Logo */
-.logo {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
   text-decoration: none;
-  color: var(--black);
-  z-index: 1001; /* Garante que o logo fique acima do menu mobile se necessário */
 }
 
-.logo h3 {
-  margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: -1px;
+.brand-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--brand);
 }
 
-.logo h3 strong {
-  color: var(--orange);
+.brand-name {
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
 }
 
-/* Botão Toggle (Hambúrguer) - Invisível por padrão no Desktop */
-.menu-toggle {
-  display: none; /* Só aparece no media query mobile */
-  background: none;
-  border: none;
-  color: var(--black);
-  cursor: pointer;
-  z-index: 1001;
-  padding: 0.5rem;
+.brand-tagline {
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+  padding-left: 10px;
+  border-left: 1px solid var(--line-strong);
 }
 
-/* =========================================
-   2. Navegação Desktop (Min-width: 992px)
-   ========================================= */
-@media (min-width: 992px) {
-  .main-nav {
+.nav {
+  display: flex;
+  align-self: stretch;
+  gap: 4px;
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color var(--ease);
+}
+
+.nav-link:hover { color: var(--ink); }
+
+.nav-link.is-active { color: var(--ink); font-weight: 500; }
+
+.nav-link.is-active::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.lang button { height: 26px; padding: 0 10px; font-size: 0.75rem; font-family: var(--font-mono); }
+
+.menu-toggle { display: none; }
+
+@media (max-width: 860px) {
+  .brand-tagline { display: none; }
+  .menu-toggle { display: inline-flex; }
+
+  .nav {
+    display: none;
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%); /* Centraliza o menu na tela */
-  }
-
-  .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 2.5rem;
-    margin: 0;
-    padding: 0;
-    align-items: center;
-  }
-
-  /* Links Principais */
-  .nav-links li a,
-  .dropdown-toggle {
-    position: relative;
-    text-decoration: none;
-    color: var(--black-light);
-    font-size: 1rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-    padding: 0.5rem 0;
-    cursor: default;
-  }
-
-  /* Efeito de Sublinhado (Underline) Animado */
-  .nav-links li a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--orange);
-    transition: width 0.3s ease-in-out;
-  }
-
-  /* Hover States Desktop */
-  .nav-links li a:hover,
-  .nav-links li a.router-link-exact-active {
-    color: var(--black);
-  }
-
-  .nav-links li a:hover::after,
-  .nav-links li a.router-link-exact-active::after {
-    width: 100%;
-  }
-
-  /* --- Dropdown Desktop --- */
-  .nav-item-dropdown {
-    position: relative;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px); /* Começa um pouco abaixo */
-    background-color: var(--white);
-    border-radius: var(--border-radius);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    list-style: none;
-    padding: 0.5rem;
-    margin-top: 1rem;
-    min-width: 220px;
-
-    /* Estado inicial: Invisível */
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1100;
-  }
-
-  /* Mostrar Dropdown ao passar o mouse */
-  .nav-item-dropdown:hover .dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0); /* Sobe suavemente */
-  }
-
-  .dropdown-menu li {
-    width: 100%;
-  }
-
-  .dropdown-menu li a {
-    display: block;
-    padding: 0.8rem 1rem;
-    border-radius: 6px;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .dropdown-menu li a:hover {
-    background-color: var(--grey-light);
-  }
-
-  .nav-overlay {
-    display: none; /* Não usada no desktop */
-  }
-}
-
-/* =========================================
-   3. Navegação Mobile (Max-width: 991px)
-   ========================================= */
-@media (max-width: 991px) {
-  /* Exibe o botão hambúrguer */
-  .menu-toggle {
-    display: block;
-  }
-
-  /* --- Animação do Ícone Hambúrguer para X --- */
-  .icon-wrapper {
-    width: 28px;
-    height: 24px;
-    position: relative;
-  }
-
-  .bar {
-    position: absolute;
+    top: var(--header-h);
     left: 0;
-    width: 100%;
-    height: 3px;
-    border-radius: 2px;
-    background-color: var(--black);
-    transition: all 0.3s ease-in-out;
-  }
-
-  .bar-top    { top: 0; }
-  .bar-middle { top: 50%; transform: translateY(-50%); }
-  .bar-bottom { bottom: 0; }
-
-  /* Estado Aberto (Transforma em X) */
-  .bar-top.is-open {
-    top: 50%;
-    transform: translate(0, -50%) rotate(45deg);
-  }
-
-  .bar-middle.is-open {
-    opacity: 0; /* Desaparece a barra do meio */
-  }
-
-  .bar-bottom.is-open {
-    bottom: 50%;
-    transform: translate(0, 50%) rotate(-45deg);
-  }
-
-  /* --- Overlay (Fundo Escuro) --- */
-  .nav-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.4s ease;
-    z-index: 998;
-  }
-
-  .main-nav.is-open + .nav-overlay {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  /* --- Menu Lateral (Drawer) --- */
-  .main-nav {
-    position: fixed;
-    top: 0;
-    right: -100%; /* Começa escondido à direita */
-    width: 80%;
-    max-width: 320px;
-    height: 100vh;
-    background-color: var(--white);
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-    z-index: 1100;
-    padding-top: 80px;
-
-    /* Transition Trick:
-       Quando fecha: Atrasa a visibilidade para depois da animação 'right'
-    */
-    visibility: hidden;
-    transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0.4s;
-  }
-
-  .main-nav.is-open {
-    right: 0; /* Desliza para dentro */
-
-    /* Quando abre: Visibilidade imediata */
-    visibility: visible;
-    transition: right 0.4s cubic-bezier(0.23, 1, 0.32, 1), visibility 0s linear 0s;
-  }
-
-  /* --- Links no Mobile --- */
-  .nav-links {
-    list-style: none;
-    padding: 100px 2rem 2rem; /* Espaço para não ficar em cima do X */
-    margin: 0;
-    display: flex;
+    right: 0;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    text-align: left;
+    gap: 0;
+    padding: 8px var(--gutter) 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
   }
 
-  .nav-links li,
-  .nav-item-dropdown {
-    width: 100%;
-  }
+  .nav.is-open { display: flex; }
 
-  .nav-links li a,
-  .dropdown-toggle {
-    display: block;
-    padding: 1rem;
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--black-light);
-    text-decoration: none;
-    border-radius: var(--border-radius);
-    transition: all 0.3s ease;
-  }
-
-  .nav-links li a:hover,
-  .nav-links li a.router-link-exact-active {
-    background-color: var(--grey-light);
-    color: var(--orange);
-  }
-
-  /* Ajustes do Submenu no Mobile */
-  .nav-item-dropdown .dropdown-toggle {
-    font-size: 1.4rem;
-    color: var(--black);
-    padding-left: 0;
-    font-weight: bold;
-    cursor: default;
-    margin-bottom: 0.5rem;
-  }
-
-  .dropdown-menu {
-    list-style: none;
-    padding-left: 1rem; /* Indentação visual */
-    margin: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .dropdown-menu li a {
-    font-size: 1.1rem;
-  }
+  .nav-link { height: 44px; padding: 0; border-bottom: 1px solid var(--line); }
+  .nav-link:last-child { border-bottom: 0; }
+  .nav-link.is-active::after { left: -12px; right: auto; top: 12px; bottom: 12px; width: 2px; height: auto; }
 }
 </style>

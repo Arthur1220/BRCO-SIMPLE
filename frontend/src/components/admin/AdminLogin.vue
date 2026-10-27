@@ -1,26 +1,40 @@
 <template>
-  <div class="login-box">
-    <h2>Acesso Restrito</h2>
-    <p>Por favor, insira a senha para acessar o painel administrativo.</p>
-    <form @submit.prevent="handleLogin">
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Senha do painel"
-        required
-      />
-      <button type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Verificando...' : 'Entrar' }}
-      </button>
-      <p v-if="error" class="error-message">{{ error }}</p>
-    </form>
-  </div>
+  <section class="panel login" aria-labelledby="login-title">
+    <div class="panel-body">
+      <h1 id="login-title">{{ $t('admin.login.title') }}</h1>
+      <p>{{ $t('admin.login.text') }}</p>
+
+      <form class="form" @submit.prevent="handleLogin">
+        <div class="field">
+          <label class="label" for="admin-password">{{ $t('admin.login.placeholder') }}</label>
+          <input
+            id="admin-password"
+            v-model="password"
+            class="input"
+            :class="{ 'has-error': error }"
+            type="password"
+            autocomplete="current-password"
+            required
+            :aria-describedby="error ? 'login-error' : undefined"
+          />
+          <small v-if="error" id="login-error" class="field-error">{{ error }}</small>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner" aria-hidden="true"></span>
+          {{ isLoading ? $t('admin.login.verifying') : $t('admin.login.submit') }}
+        </button>
+      </form>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { loginAdmin } from '@/services/adminService';
+import { parseApiError } from '@/services/axiosSetup';
 
+const { t } = useI18n();
 const password = ref('');
 const isLoading = ref(false);
 const error = ref(null);
@@ -31,13 +45,11 @@ const handleLogin = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    const response = await loginAdmin(password.value);
-    if (response.success) {
-      sessionStorage.setItem('isAdminAuthenticated', 'true');
-      emit('login-success');
-    }
+    await loginAdmin(password.value);
+    emit('login-success');
   } catch (err) {
-    error.value = 'Senha incorreta. Tente novamente.';
+    // Mensagem pronta da API (senha incorreta, muitas tentativas...)
+    error.value = parseApiError(err, t('errors.login')).message;
   } finally {
     isLoading.value = false;
   }
@@ -45,51 +57,8 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-box {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem 2.5rem;
-  background-color: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-  text-align: center;
-  margin: 4rem auto;
-}
-
-h2 {
-  color: var(--orange);
-  margin-bottom: 0.5rem;
-}
-
-p {
-  color: var(--black-light);
-  margin-bottom: 2rem;
-}
-
-input[type="password"] {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid var(--grey);
-  border-radius: 5px;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-button {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  background-color: var(--orange);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.error-message {
-  color: var(--red-error);
-  margin-top: 1rem;
-  font-weight: bold;
-}
+.login { max-width: 400px; margin: 48px auto 0; }
+.login h1 { font-size: 1.375rem; margin-bottom: 6px; }
+.login p { font-size: 0.875rem; margin-bottom: 20px; }
+.form { display: flex; flex-direction: column; gap: 16px; }
 </style>

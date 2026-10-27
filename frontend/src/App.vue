@@ -5,31 +5,29 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 </script>
 
 <template>
-  <div class="app-container">
+  <a href="#conteudo" class="skip-link">{{ $t('a11y.skipToContent') }}</a>
+  <div class="app">
     <AppHeader />
-    <main class="content">
-
+    <main id="conteudo" class="app-main" tabindex="-1">
       <RouterView v-slot="{ Component, route }">
         <Transition name="page-fade" mode="out-in">
           <component :is="Component" :key="route.path" />
         </Transition>
       </RouterView>
-
     </main>
     <AppFooter />
   </div>
 </template>
 
 <style scoped>
-.app-container {
+.app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-.content {
+.app-main {
   flex: 1;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+  outline: none;
 }
 </style>

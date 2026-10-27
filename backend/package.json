@@ -2,35 +2,40 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lambda.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "test:update-golden": "node test/fixtures/updateGolden.js",
+    "db:create-tables": "node scripts/create-tables.js",
+    "seed": "node scripts/seed-foods.js",
+    "migrate:sqlite": "node scripts/migrate-sqlite-to-dynamo.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.10.1",
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@aws-sdk/client-dynamodb": "^3.1157.0",
+    "@aws-sdk/lib-dynamodb": "^3.1157.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
     "express-rate-limit": "^7.5.1",
-    "geoip-lite": "^1.4.10",
     "helmet": "^8.1.0",
     "javascript-lp-solver": "^0.4.24",
-    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "serverless-http": "^3.2.0",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "prisma": "^6.10.1"
+    "nodemon": "^3.1.10"
   },
-  "prisma": {
-    "seed": "node prisma/seed.js"
+  "engines": {
+    "node": ">=24"
   }
 }

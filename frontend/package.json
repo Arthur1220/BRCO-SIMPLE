@@ -11,13 +11,15 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "aos": "^2.3.4",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
     "axios": "^1.11.0",
     "chart.js": "^4.5.1",
     "file-saver": "^2.0.5",
     "pinia": "^3.0.1",
     "vue": "^3.5.18",
     "vue-chartjs": "^5.3.3",
+    "vue-i18n": "^11.4.14",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
@@ -30,5 +32,8 @@
     "prettier": "3.6.2",
     "vite": "^7.0.6",
     "vite-plugin-vue-devtools": "8.0.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
