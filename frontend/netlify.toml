@@ -5,7 +5,8 @@
   command = "npm run build"
   publish = "dist"
   # Só gera um deploy novo quando algo em frontend/ mudou (o comando roda na pasta base).
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+  # Sem cache de build, o Netlify faz CACHED_COMMIT_REF = COMMIT_REF; nesse caso sempre constrói.
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- .'
 
 [build.environment]
   # Mesma versão do .nvmrc da raiz (o Netlify procura o .nvmrc só na pasta base).
