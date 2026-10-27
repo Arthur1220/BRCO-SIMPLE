@@ -8,14 +8,11 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 // Imports Internos
-const apiRoutes = require('./routes/apiRoutes');
 const v1Routes = require('./routes/v1');
-const adminRoutes = require('./routes/adminRoutes');
 const setupSwagger = require('./config/swagger');
 const logger = require('./lib/logger');
 const { verifyNetlifyProxy, getClientIp } = require('./middleware/authMiddleware');
-const { sendError, v1ErrorHandler } = require('./lib/apiErrors');
-const { deprecateV0 } = require('./middleware/deprecateV0');
+const { sendError, v1ErrorHandler, v1NotFound } = require('./lib/apiErrors');
 
 /**
  * Cria a aplicação Express (sem iniciar o servidor, para permitir testes).
@@ -23,7 +20,7 @@ const { deprecateV0 } = require('./middleware/deprecateV0');
 function createApp() {
     const app = express();
 
-    // Quantidade de proxies reversos à frente da aplicação (Caddy = 1).
+    // Quantidade de proxies reversos à frente da aplicação (Lambda Function URL = 1).
     app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
 
     // =========================================================
@@ -61,7 +58,8 @@ function createApp() {
     // Toda a API só aceita requisições assinadas pelo proxy do Netlify (em produção).
     app.use('/api', verifyNetlifyProxy);
 
-    // Limitador de Taxa por IP real do usuário (Previne DDoS básico)
+    // Limitador de Taxa por IP real do usuário (Previne DDoS básico).
+    // Na Lambda o contador é por instância (em memória): é uma proteção de melhor esforço.
     app.use('/api', rateLimit({
         windowMs: 15 * 60 * 1000,
         max: 200,
@@ -71,18 +69,11 @@ function createApp() {
         handler: (req, res) => sendError(req, res, 429, 'RATE_LIMITED', 'Muitas requisições. Tente novamente em alguns minutos.'),
     }));
 
-    // API v1 (contrato de apresentação). Montada antes da v0, que também atende /api/*
+    // API v1 (contrato de apresentação). A v0 foi removida junto com a migração para a Lambda.
     app.use('/api/v1', v1Routes);
 
-    // API v0 (legado): depreciada, mantida até o frontend novo estar no ar
-    app.use('/api', deprecateV0);
-
-    // Rotas de Admin (Mais específicas primeiro)
-    // A segurança é aplicada dentro do adminRoutes.js
-    app.use('/api/admin', adminRoutes);
-
-    // Rotas Públicas da API
-    app.use('/api', apiRoutes);
+    // Qualquer outra rota em /api responde 404 no formato da v1
+    app.use('/api', v1NotFound);
 
     // Documentação Swagger
     setupSwagger(app);
@@ -93,16 +84,8 @@ function createApp() {
 
     // Middleware Global de Erros (Deve ser o último app.use)
     app.use((err, req, res, next) => {
-        // Erros em rotas da v1 (ex.: JSON malformado, antes do router) seguem o formato da v1
-        if (req.originalUrl.startsWith('/api/v1')) return v1ErrorHandler(err, req, res, next);
-
-        // Erros de validação do Zod
-        if (err.name === 'ZodError' || (err.issues && Array.isArray(err.issues))) {
-            return res.status(400).json({
-                error: "Dados de entrada inválidos",
-                details: err.issues || err.errors
-            });
-        }
+        // Erros na API (ex.: JSON malformado, antes do router) seguem o formato da v1
+        if (req.originalUrl.startsWith('/api')) return v1ErrorHandler(err, req, res, next);
 
         // JSON malformado ou corpo grande demais
         if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {

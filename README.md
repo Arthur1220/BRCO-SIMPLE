@@ -29,13 +29,13 @@ O projeto foi construído com uma stack de JavaScript moderna, separando clarame
     * **Deploy:** [Netlify](https://www.netlify.com/)
 * **Backend:**
     * [Node.js](https://nodejs.org/) com [Express](https://expressjs.com/pt-br/)
-    * [Prisma](https://www.prisma.io/) como ORM para interação com o banco de dados
-    * **Banco de Dados:** [SQLite](https://www.sqlite.org/index.html) (volume Docker persistente)
+    * **Banco de Dados:** [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) (sob demanda)
     * **Autenticação do admin:** token JWT de sessão
     * **Testes:** `node:test` (runner nativo do Node)
-* **Orquestração e Deploy:**
-    * [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) para containerização
-    * **Servidor:** [AWS EC2](https://aws.amazon.com/ec2/) com [Caddy](https://caddyserver.com/) (HTTPS automático)
+* **Infraestrutura e Deploy:**
+    * [AWS Lambda](https://aws.amazon.com/lambda/) com Function URL (região `sa-east-1`)
+    * [AWS SAM](https://aws.amazon.com/serverless/sam/) (`backend/template.yaml`)
+    * [Docker](https://www.docker.com/) só no desenvolvimento, para o DynamoDB Local
 
 ## ⚙️ Configuração e Instalação Local
 
@@ -44,7 +44,7 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
 ### Pré-requisitos
 * [Git](https://git-scm.com/)
 * [Node.js](https://nodejs.org/en) (versão 24, ver `.nvmrc`)
-* [Docker](https://www.docker.com/products/docker-desktop/) e Docker Compose
+* [Docker](https://www.docker.com/products/docker-desktop/) e Docker Compose (para o DynamoDB Local)
 
 ### Passos
 1.  **Clone o repositório:**
@@ -53,33 +53,26 @@ Para rodar este projeto na sua máquina local, siga os passos abaixo.
     cd BRCO---SIMPLE
     ```
 
-2.  **Configure o Backend:**
-    * Navegue até a pasta do backend: `cd backend`
-    * Crie um arquivo de ambiente: `cp .env.example .env` (ou crie um `.env` manualmente).
-    * Preencha as variáveis de ambiente no arquivo `.env`.
-    * Instale as dependências: `npm install`
-    * Execute as migrações do Prisma para criar o banco de dados local: `npx prisma migrate dev`
-    * Volte para a pasta raiz: `cd ..`
-
-3.  **Configure o Frontend:**
-    * Navegue até a pasta do frontend: `cd frontend`
-    * Instale as dependências: `npm install` (o frontend não precisa de variáveis de ambiente)
-    * Volte para a pasta raiz: `cd ..`
-
-4.  **Inicie a Aplicação com Docker Compose:**
-    Na raiz do projeto (onde está o arquivo `docker-compose.yml`), rode o comando:
+2.  **Suba o DynamoDB Local** (na raiz do projeto):
     ```bash
-    docker compose --profile local up --build -d
+    docker compose up -d
     ```
-    Isso irá construir as imagens e iniciar o backend, o Caddy e o frontend (perfil `local`).
-    Sem Docker, rode `npm run dev` no backend e no frontend (o Vite encaminha `/api` para a porta 3000).
+    Se a porta 8000 estiver ocupada, use outra: `DYNAMODB_PORT=8010 docker compose up -d` (e ajuste `DYNAMODB_ENDPOINT` no `.env`).
+
+3.  **Configure o Backend:**
+    * Navegue até a pasta do backend: `cd backend`
+    * Crie um arquivo de ambiente: `cp .env.example .env` e preencha as variáveis.
+    * Instale as dependências: `npm install`
+    * Crie as tabelas e cadastre os alimentos iniciais: `npm run db:create-tables && npm run seed`
+    * Inicie a API: `npm run dev` (porta 3000)
+
+4.  **Configure o Frontend** (em outro terminal):
+    * `cd frontend && npm install && npm run dev` (o Vite encaminha `/api` para a porta 3000)
 
 5.  **Acesse a Aplicação:**
-    * **Frontend:** [http://localhost:8080](http://localhost:8080)
-    * **Backend API (via Caddy):** [https://localhost](https://localhost)
-    * **Documentação da API v1 (gerada do código):** [https://localhost/api-docs/v1](https://localhost/api-docs/v1)
-    * **Documentação da API v0 (legado):** [https://localhost/api-docs](https://localhost/api-docs)
-    * **Painel de Admin (Login):** [http://localhost:8080/admin](http://localhost:8080/admin)
+    * **Frontend:** [http://localhost:5173](http://localhost:5173)
+    * **Documentação da API v1 (gerada do código):** [http://localhost:3000/api-docs/v1](http://localhost:3000/api-docs/v1)
+    * **Painel de Admin (Login):** [http://localhost:5173/admin](http://localhost:5173/admin)
 
 ## 🧭 API v1 (contrato de apresentação)
 
@@ -91,7 +84,8 @@ O backend concentra todas as regras; o frontend apenas exibe e coleta dados. Doc
 | `catalog/` | Espécies, genótipos, sexos, regras da dieta e metadados dos resultados (codes, grupos, labels pt/en) |
 | `contracts/` | Schemas Zod: validação de entrada, respostas e geração do OpenAPI |
 | `presenters/` | Transformam o resultado bruto do domínio na resposta da v1 e no CSV |
-| `services/` | Execução, persistência dos cálculos e estatísticas |
+| `services/` | Execução dos cálculos e estatísticas |
+| `repositories/` | Acesso ao DynamoDB (alimentos, cálculos salvos e registros de uso) |
 | `controllers/v1`, `routes/v1` | Endpoints da v1 |
 
 | Endpoint | Descrição |
@@ -105,26 +99,28 @@ O backend concentra todas as regras; o frontend apenas exibe e coleta dados. Doc
 
 * **Idiomas:** `pt-BR` (padrão) e `en`, por `?lang=en` ou `Accept-Language`.
 * **Erros:** sempre `{ "error": { "code", "message", "fields": [{ "path", "code", "message" }] } }`, com mensagens prontas para exibir.
-* **Retenção:** cálculos ficam guardados por 6 meses e são apagados automaticamente (rotina diária).
+* **Retenção:** cálculos ficam guardados por 6 meses e são apagados automaticamente (TTL do DynamoDB).
 * **Fonte única:** limites e regras dos campos ficam em `contracts/`; a mesma definição valida a entrada e alimenta o catálogo.
-* **v0 (`/api/...`):** depreciada (header `Deprecation`) e mantida só até o frontend novo estar no ar. Ver [DEPLOY.md](DEPLOY.md).
 
 ## 🧪 Testes
 
 ```bash
+docker compose up -d   # DynamoDB Local (na raiz)
 cd backend
 npm test
 ```
+
+Cada arquivo de teste cria as próprias tabelas no DynamoDB Local. Os testes também cobrem o handler da Lambda (eventos da Function URL) e a migração do SQLite antigo.
 
 Os testes cobrem as fórmulas (valores de referência em `test/fixtures/golden.json`), o solver de dieta, o CSV, a validação, a autenticação e o contrato da v1: toda chave do domínio precisa de metadado de apresentação, e toda rota precisa estar no OpenAPI. Ao corrigir uma fórmula de propósito, regenere as referências com `npm run test:update-golden` e revise o diff.
 
 ## ☁️ Estratégia de Deploy
 
-* O **Backend** é containerizado com Docker e implantado em uma instância **AWS EC2**, atrás do **Caddy** (HTTPS automático). Só as portas 80 e 443 ficam abertas.
+* O **Backend** roda numa **AWS Lambda** (Function URL, `sa-east-1`) com dados no **DynamoDB**, tudo definido em `backend/template.yaml` e publicado com `sam deploy`.
 * O **Frontend** é implantado na **Netlify**. O proxy do Netlify (`netlify.toml`) encaminha `/api` para o backend via HTTPS e **assina** cada requisição; o backend recusa o que não vem assinado.
 * O painel admin usa login por senha, que gera um token de sessão de 2 horas. Nenhuma chave fica no código do frontend.
 
-Passo a passo completo, variáveis e migração do servidor atual: **[DEPLOY.md](DEPLOY.md)**.
+Passo a passo completo, variáveis e migração dos dados do servidor antigo: **[DEPLOY.md](DEPLOY.md)**.
 
 ---
 

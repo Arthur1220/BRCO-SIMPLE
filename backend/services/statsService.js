@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+const { listUsageLogsSince } = require('../repositories/usageLogsRepository');
 
 /**
  * Data de início do filtro de período ('7d', '30d' ou 'all'/indefinido = sem filtro).
@@ -12,26 +12,16 @@ function getDateFilter(period) {
   return date;
 }
 
-const whereFor = (period) => {
-  const startDate = getDateFilter(period);
-  return startDate ? { createdAt: { gte: startDate } } : {};
-};
-
 /**
  * Total de cálculos e distribuição por tipo.
  */
 async function getStats(period) {
-  const where = whereFor(period);
-  const totalCalculations = await prisma.calculationLog.count({ where });
-  const rawCountByType = await prisma.calculationLog.groupBy({
-    by: ['calculationType'],
-    where,
-    _count: { calculationType: true },
-    orderBy: { _count: { calculationType: 'desc' } },
-  });
+  const logs = await listUsageLogsSince(getDateFilter(period));
+  const countByType = new Map();
+  for (const log of logs) countByType.set(log.calculationType, (countByType.get(log.calculationType) || 0) + 1);
   return {
-    totalCalculations,
-    statsByType: rawCountByType.map((item) => ({ type: item.calculationType, count: item._count.calculationType })),
+    totalCalculations: logs.length,
+    statsByType: Array.from(countByType, ([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count),
   };
 }
 
@@ -39,7 +29,8 @@ async function getStats(period) {
  * Últimos 100 registros de uso.
  */
 async function getLogs(period) {
-  return prisma.calculationLog.findMany({ take: 100, where: whereFor(period), orderBy: { createdAt: 'desc' } });
+  const logs = await listUsageLogsSince(getDateFilter(period));
+  return logs.reverse().slice(0, 100);
 }
 
 /**
@@ -48,16 +39,11 @@ async function getLogs(period) {
  */
 async function getStatsOverTime(period = '30d') {
   let startDate = getDateFilter(period);
+  const logs = await listUsageLogsSince(startDate);
   if (!startDate) {
-    const first = await prisma.calculationLog.findFirst({ orderBy: { createdAt: 'asc' }, select: { createdAt: true } });
-    startDate = new Date(first ? first.createdAt : Date.now());
+    startDate = new Date(logs.length > 0 ? logs[0].createdAt : Date.now());
     startDate.setHours(0, 0, 0, 0);
   }
-
-  const logs = await prisma.calculationLog.findMany({
-    where: { createdAt: { gte: startDate } },
-    select: { createdAt: true },
-  });
 
   const countsByDay = new Map();
   const today = new Date();

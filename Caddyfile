@@ -1,6 +1,0 @@
-# API_DOMAIN deve apontar para o IP do servidor (ex.: 98-94-173-47.sslip.io).
-# O Caddy emite e renova o certificado HTTPS automaticamente.
-{$API_DOMAIN} {
-	encode gzip
-	reverse_proxy backend:3000
-}

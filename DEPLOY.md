@@ -3,27 +3,37 @@
 Arquitetura em produção:
 
 ```
-Navegador ──HTTPS──▶ Netlify (frontend + proxy /api, assinado) ──HTTPS──▶ EC2: Caddy :443 ──▶ backend :3000 (rede interna do Docker)
+Navegador ──HTTPS──▶ Netlify (frontend + proxy /api, assinado) ──HTTPS──▶ Lambda Function URL (sa-east-1) ──▶ DynamoDB
 ```
 
-- O navegador nunca fala direto com o EC2 e **não carrega nenhuma chave**.
-- O Netlify assina cada requisição do proxy (header `X-Nf-Sign`). O backend recusa (403) tudo o que não vem assinado.
-- O Caddy emite e renova o certificado HTTPS sozinho (Let's Encrypt). O domínio padrão é o `sslip.io`, que é gratuito e resolve direto para o IP: `98-94-173-47.sslip.io` → `98.94.173.47`.
-- O SQLite fica no volume Docker `brco_data` e sobrevive a rebuilds.
+- O navegador nunca fala direto com a Lambda e **não carrega nenhuma chave**.
+- O Netlify assina cada requisição do proxy (header `X-Nf-Sign`). A API recusa (403) tudo o que não vem assinado, inclusive acessos diretos à Function URL.
+- A Lambda roda a mesma aplicação Express do desenvolvimento (`backend/lambda.js`, via `serverless-http`).
+- Os dados ficam em 3 tabelas DynamoDB sob demanda, com backup contínuo (PITR, 35 dias) e `DeletionPolicy: Retain`: apagar a stack **não** apaga os dados.
 
-## Variáveis de ambiente
+Toda a infraestrutura está em `backend/template.yaml` (AWS SAM).
 
-### Backend (`backend/.env` no EC2)
+## Pré-requisitos
 
-| Variável | Descrição |
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) e AWS CLI com acesso à conta (`aws sso login --profile organizador`)
+- Node.js 24
+
+## Primeiro deploy
+
+```bash
+cd backend
+sam build
+sam deploy --guided --profile organizador
+```
+
+O `--guided` pergunta os parâmetros e grava as respostas não secretas no `samconfig.toml` (stack `brco-api`, região `sa-east-1`):
+
+| Parâmetro | Descrição |
 |---|---|
-| `NODE_ENV` | `production` |
-| `PANEL_PASSWORD` | Senha do painel `/admin` |
-| `ADMIN_JWT_SECRET` | Segredo do token de sessão (≥ 32 caracteres) |
-| `NETLIFY_PROXY_SECRET` | Mesmo valor de `API_SIGNATURE_TOKEN` no Netlify |
-| `FRONTEND_URL` | `https://brco.netlify.app` (opcional) |
-
-O `DATABASE_URL` é definido pelo `docker-compose.yml` (`file:/app/data/brco.db`).
+| `PanelPassword` | Senha do painel `/admin` |
+| `AdminJwtSecret` | Segredo do token de sessão (≥ 32 caracteres) |
+| `NetlifyProxySecret` | Mesmo valor de `API_SIGNATURE_TOKEN` no Netlify |
+| `FrontendUrl` | `https://brco.netlify.app` (padrão) |
 
 Para gerar os segredos:
 
@@ -31,100 +41,76 @@ Para gerar os segredos:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-### Raiz do projeto no EC2 (`.env` ao lado do `docker-compose.yml`)
+No fim, o deploy mostra os **Outputs**: `ApiUrl` (a Function URL) e os nomes das tabelas.
 
-```
-API_DOMAIN=98-94-173-47.sslip.io
-```
+## Migração dos dados do servidor antigo (uma vez)
 
-### Netlify (Site settings → Environment variables)
-
-| Variável | Ação |
-|---|---|
-| `API_SIGNATURE_TOKEN` | **Criar**, com o mesmo valor de `NETLIFY_PROXY_SECRET` |
-| `VITE_ADMIN_API_KEY`, `VITE_PUBLIC_API_KEY`, `VITE_API_URL` | **Remover** (não são mais usadas) |
-
-## Migração do servidor atual (uma vez)
-
-> O banco atual está **dentro** do container (`/app/prisma/dev.db`) e seria perdido no rebuild. Copie-o **antes** de qualquer outro passo.
+O servidor antigo (Lightsail `brosimple-lightsail`, us-east-1) guarda o SQLite **dentro** do container.
 
 ```bash
-# 1. Backup do banco atual
-docker cp backend:/app/prisma/dev.db ~/brco-backup-$(date +%F).db
+# 1. No servidor antigo: copiar o banco para fora do container
+docker cp backend:/app/prisma/dev.db ~/brco.db
+# (se o servidor já estiver na versão com volume: docker cp backend:/app/data/brco.db ~/brco.db)
 
-# 2. Atualizar o código
-git pull   # branch com estas mudanças
+# 2. Na sua máquina: baixar o arquivo
+scp ubuntu@98.94.173.47:brco.db ./brco.db
 
-# 3. Ajustar backend/.env (ver tabela acima) e criar .env na raiz com API_DOMAIN
+# 3. Conferir o que será importado (não grava nada)
+cd backend
+FOODS_TABLE=<FoodsTableName> CALCULATIONS_TABLE=<CalculationsTableName> USAGE_LOGS_TABLE=<UsageLogsTableName> \
+AWS_PROFILE=organizador AWS_REGION=sa-east-1 npm run migrate:sqlite -- ../brco.db --dry-run
 
-# 4. Criar o volume e copiar o banco antigo para dentro dele
-docker compose create backend
-docker run --rm -v brco-simple_brco_data:/data -v ~/:/backup alpine \
-  sh -c "cp /backup/brco-backup-$(date +%F).db /data/brco.db && chown 1000:1000 /data/brco.db"
-
-# 5. Subir tudo (as migrations são aplicadas automaticamente no start)
-docker compose up -d --build
-docker compose logs -f backend
+# 4. Importar (mesmo comando, sem --dry-run)
 ```
 
-O nome do volume depende da pasta do projeto. Confira com `docker volume ls`.
+A importação mantém os ids dos alimentos (os novos continuam a numeração), todo o histórico de uso e os cálculos ainda válidos. Pode ser repetida sem duplicar nada.
 
-Se o `migrate deploy` falhar com **P3005** (banco sem histórico de migrations), marque a migration inicial como aplicada e reinicie:
+Se o banco antigo não tiver alimentos, cadastre os iniciais com `npm run seed` (mesmas variáveis de ambiente).
+
+## Netlify
+
+1. Em `frontend/netlify.toml`, troque o destino do proxy `/api/*` pela `ApiUrl` do deploy:
+   ```toml
+   to = "https://<id>.lambda-url.sa-east-1.on.aws/api/:splat"
+   ```
+2. Em **Site settings → Environment variables**: `API_SIGNATURE_TOKEN` com o mesmo valor de `NetlifyProxySecret`. Remova `VITE_ADMIN_API_KEY`, `VITE_PUBLIC_API_KEY` e `VITE_API_URL`, se ainda existirem.
+3. Faça o deploy do frontend.
+
+## Depois do deploy
+
+1. Teste a calculadora (exigências, NDT e dieta), o link de um cálculo salvo, o CSV e o login do `/admin`.
+2. Confirme o bloqueio do acesso direto: `curl <ApiUrl>api/v1/foods` deve responder **403**.
+3. Confira se o país e o estado aparecem no histórico do admin. Eles vêm do header de geolocalização do Netlify; se vierem como `Unknown`, o proxy não está repassando esse header.
+4. Deixe o Lightsail antigo ligado por cerca de uma semana como plano B. Depois, faça um snapshot e apague a instância e o IP estático.
+
+## Atualizações
 
 ```bash
-docker compose run --rm --entrypoint "" backend npx prisma migrate resolve --applied 20251119152811_init_com_categorias
-docker compose restart backend
+cd backend
+sam build && sam deploy --profile organizador
 ```
-
-### AWS Security Group
-
-- **Abrir**: 80/tcp e 443/tcp (0.0.0.0/0). O Caddy precisa da porta 80 para emitir o certificado.
-- **Fechar**: 3000/tcp e 8080/tcp. O backend não publica mais nenhuma porta.
-- Manter o 22/tcp (SSH) restrito ao seu IP.
-
-### Depois do deploy
-
-1. Faça um novo deploy no Netlify, para aplicar o `netlify.toml` e as variáveis.
-2. Teste a calculadora e o login do `/admin`.
-3. Confirme o bloqueio do acesso direto: `curl https://98-94-173-47.sslip.io/api/foods` deve responder **403**.
-4. Troque a `PANEL_PASSWORD` se ela já foi compartilhada. As antigas `ADMIN_API_KEY` e `PUBLIC_API_KEY` ficaram públicas no bundle e não têm mais uso: apague-as do `.env`.
-
-## Remoção da API v0
-
-O frontend novo usa apenas a `/api/v1`. A v0 continua no ar, marcada como depreciada, para não quebrar abas abertas com a versão antiga durante o deploy. Cada chamada à v0 gera a linha `Uso da API v0` no log:
-
-```bash
-docker compose logs --since 336h backend | grep -c "Uso da API v0"
-```
-
-Quando o resultado ficar em **0 por cerca de 14 dias** depois do deploy, a v0 pode ser removida: `routes/apiRoutes.js`, `routes/adminRoutes.js`, os controllers antigos, `middleware/deprecateV0.js` e `config/openapi.json`.
 
 ## Retenção dos cálculos
 
-Os cálculos da v1 ficam no banco por **6 meses** (`expiresAt`) e uma rotina diária no próprio backend apaga os vencidos. As estatísticas do admin (`calculation_logs`) não guardam entrada nem resultado e não expiram.
+Os cálculos ficam guardados por **6 meses**. Cada item tem o atributo `ttl` e o próprio DynamoDB apaga os vencidos (pode levar alguns dias; enquanto isso a API já responde 404). As estatísticas do admin não guardam entrada nem resultado e não expiram.
 
 ## Backups
 
-```bash
-docker compose exec backend npm run backup   # grava em /app/data/backups (mantém os 7 últimos)
-```
-
-Os backups ficam no mesmo volume e protegem contra erros e corrupção, mas não contra a perda do disco. Para isso, ative snapshots do EBS ou copie os backups para fora do servidor:
+O PITR das tabelas permite restaurar qualquer momento dos últimos 35 dias (console do DynamoDB → tabela → *Backups* → *Restore to point in time*). Para uma cópia avulsa:
 
 ```bash
-docker cp backend:/app/data/backups ./backups
-```
-
-Sugestão de cron no EC2 (diário, às 3h):
-
-```
-0 3 * * * cd /caminho/BRCO-SIMPLE && docker compose exec -T backend npm run backup
+aws dynamodb create-backup --table-name <FoodsTableName> --backup-name brco-foods-$(date +%F) --profile organizador --region sa-east-1
 ```
 
 ## Logs
 
-Os logs vão só para o stdout. O Docker rotaciona: no máximo 3 arquivos de 10 MB por serviço.
+Os logs da Lambda ficam no CloudWatch, no grupo `/aws/lambda/brco-api` (retenção de 30 dias):
 
 ```bash
-docker compose logs --tail 200 backend
+sam logs --stack-name brco-api --tail --profile organizador
 ```
+
+## Limites e custos
+
+- A Lambda, as Function URLs e o DynamoDB sob demanda cabem no nível gratuito com o volume atual.
+- O limite de requisições (`express-rate-limit`) fica em memória: na Lambda, cada instância tem o próprio contador, então ele é só uma proteção de melhor esforço. A assinatura do Netlify continua barrando quem chama a Function URL diretamente.

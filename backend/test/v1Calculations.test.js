@@ -1,12 +1,15 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { migrateTestDb, startServer } = require('./helpers/server');
+const { UpdateCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
+const { setupTestTables, startServer } = require('./helpers/server');
+const { db, TABLES } = require('../lib/dynamo');
+const { createFood } = require('../repositories/foodsRepository');
+const { listUsageLogsSince } = require('../repositories/usageLogsRepository');
 const { calculateAllRequirements } = require('../domain/requirementService');
 const { calculateNdt } = require('../domain/ndtService');
 
 let server;
-let prisma;
 const foodIds = {};
 
 const requirementsInput = { especie: 'caprino', genotipo: 'leiteiro', sexo: 'femea', pesoInicial: 20, pesoFinal: 30, GMD: 150 };
@@ -14,8 +17,7 @@ const ndtInput = { PB: 9.55, EE: 2.36, FDN: 63.54, Lignina: 5.2, MO: 89.26, PIDN
 const animal = { especie: 'ovino', sexo: 'inteiro', pesoInicial: 25, pesoFinal: 35, GMD: 200 };
 
 test.before(async () => {
-  migrateTestDb();
-  prisma = require('../lib/prisma');
+  await setupTestTables();
   const base = { MS: 880, MO: 930, EE: 30, PDR: 50, PNDR: 40, CNF: 300 };
   const foods = [
     { key: 'silagem', name: 'Silagem de milho', category: 'VOLUMOSO', PB: 71.8, NDT: 632.2, FDNcp: 509.3, Ca: 2.8, P: 1.9 },
@@ -23,14 +25,13 @@ test.before(async () => {
     { key: 'soja', name: 'Farelo de soja', category: 'CONCENTRADO', PB: 487.9, NDT: 811.6, FDNcp: 131.8, Ca: 3.4, P: 5.9, defaultMax: 30 },
   ];
   for (const { key, ...food } of foods) {
-    foodIds[key] = (await prisma.food.create({ data: { ...base, ...food } })).id;
+    foodIds[key] = (await createFood({ ...base, ...food })).id;
   }
   server = await startServer();
 });
 
 test.after(async () => {
   await server.close();
-  await prisma.$disconnect();
 });
 
 // ------------------------------------------------------------------
@@ -226,18 +227,26 @@ test('cálculo salvo: GET por id em outro idioma e validade de 6 meses', async (
   assert.deepEqual(fetched.body.highlights.map((h) => h.value), created.body.highlights.map((h) => h.value));
 });
 
-test('cálculo salvo: inexistente ou vencido responde 404; o expurgo remove os vencidos', async () => {
+test('cálculo salvo: inexistente ou vencido responde 404; o TTL do DynamoDB fica em 6 meses', async () => {
   const missing = await server.request('GET', '/api/v1/calculations/nao-existe');
   assert.equal(missing.status, 404);
   assert.equal(missing.body.error.code, 'NOT_FOUND');
 
   const created = await server.request('POST', '/api/v1/calculations/ndt', { body: ndtInput });
-  await prisma.calculation.update({ where: { id: created.body.calculationId }, data: { expiresAt: new Date(Date.now() - 1000) } });
-  assert.equal((await server.request('GET', `/api/v1/calculations/${created.body.calculationId}`)).status, 404);
+  const key = { id: created.body.calculationId };
+  const { Item } = await db.send(new GetCommand({ TableName: TABLES.calculations, Key: key }));
+  const { RETENTION_DAYS } = require('../services/calculationService');
+  assert.equal(Item.ttl, Math.floor(Date.parse(Item.expiresAt) / 1000));
+  assert.equal(Math.round((Date.parse(Item.expiresAt) - Date.parse(Item.createdAt)) / 86400000), RETENTION_DAYS);
 
-  const { purgeExpiredCalculations } = require('../services/calculationService');
-  assert.ok((await purgeExpiredCalculations()) >= 1);
-  assert.equal(await prisma.calculation.count({ where: { id: created.body.calculationId } }), 0);
+  // Vencido mas ainda não apagado pelo TTL (o DynamoDB pode levar dias): já responde 404
+  await db.send(new UpdateCommand({
+    TableName: TABLES.calculations,
+    Key: key,
+    UpdateExpression: 'SET expiresAt = :past',
+    ExpressionAttributeValues: { ':past': new Date(Date.now() - 1000).toISOString() },
+  }));
+  assert.equal((await server.request('GET', `/api/v1/calculations/${created.body.calculationId}`)).status, 404);
 });
 
 test('exportação CSV: gerada do cálculo salvo, no idioma pedido', async () => {
@@ -261,9 +270,10 @@ test('exportação CSV: gerada do cálculo salvo, no idioma pedido', async () =>
 });
 
 test('uso continua registrado para as estatísticas do admin', async () => {
-  const before = await prisma.calculationLog.count({ where: { calculationType: 'diet_calculation' } });
+  const countDiet = async () => (await listUsageLogsSince()).filter((log) => log.calculationType === 'diet_calculation').length;
+  const before = await countDiet();
   await server.request('POST', '/api/v1/calculations/diet', { body: { animal, ingredients: [{ foodId: foodIds.silagem }, { foodId: foodIds.milho }] } });
-  assert.equal(await prisma.calculationLog.count({ where: { calculationType: 'diet_calculation' } }), before + 1);
+  assert.equal(await countDiet(), before + 1);
 });
 
 test('JSON malformado na v1 responde no formato de erro da v1', async () => {

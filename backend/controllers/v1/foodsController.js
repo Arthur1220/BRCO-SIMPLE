@@ -1,4 +1,4 @@
-const prisma = require('../../lib/prisma');
+const foodsRepository = require('../../repositories/foodsRepository');
 const { t } = require('../../lib/i18n');
 const { errorMapFor } = require('../../contracts/localized');
 const { sendError } = require('../../lib/apiErrors');
@@ -30,7 +30,7 @@ const parse = (schema, data, locale) => schema.parse(data, { errorMap: errorMapF
  * GET /api/v1/foods (público)
  */
 async function listFoods(req, res) {
-    const foods = await prisma.food.findMany({ orderBy: { name: 'asc' } });
+    const foods = await foodsRepository.listFoods();
     res.json(foods.map((food) => presentFood(food, req.locale)));
 }
 
@@ -39,7 +39,7 @@ async function listFoods(req, res) {
  */
 async function createFood(req, res) {
     const data = parse(createFoodSchema, req.body, req.locale);
-    const food = await prisma.food.create({ data });
+    const food = await foodsRepository.createFood(data);
     res.status(201).json(presentFood(food, req.locale));
 }
 
@@ -48,7 +48,7 @@ async function withFoodOr404(req, res, action) {
     try {
         return await action(id);
     } catch (error) {
-        if (error.code === 'P2025') return sendError(req, res, 404, 'NOT_FOUND', 'Alimento não encontrado.');
+        if (error instanceof foodsRepository.FoodNotFoundError) return sendError(req, res, 404, 'NOT_FOUND', 'Alimento não encontrado.');
         throw error;
     }
 }
@@ -59,7 +59,7 @@ async function withFoodOr404(req, res, action) {
 async function updateFood(req, res) {
     await withFoodOr404(req, res, async (id) => {
         const data = parse(updateFoodSchema, req.body, req.locale);
-        const food = await prisma.food.update({ where: { id }, data });
+        const food = await foodsRepository.updateFood(id, data);
         res.json(presentFood(food, req.locale));
     });
 }
@@ -69,7 +69,7 @@ async function updateFood(req, res) {
  */
 async function deleteFood(req, res) {
     await withFoodOr404(req, res, async (id) => {
-        await prisma.food.delete({ where: { id } });
+        await foodsRepository.deleteFood(id);
         res.status(204).end();
     });
 }

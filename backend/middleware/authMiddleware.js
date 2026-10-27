@@ -69,7 +69,22 @@ function verifyNetlifyProxy(req, res, next) {
   // Requisição confiável: o Netlify informa o IP real do usuário neste header.
   const clientIp = req.headers['x-nf-client-connection-ip'];
   if (clientIp) req.clientIp = clientIp;
+  req.geo = parseNetlifyGeo(req.headers);
   return next();
+}
+
+/**
+ * Localização aproximada enviada pelo Netlify (substitui o geoip-lite, pesado demais para a Lambda).
+ * `x-nf-geo` é um JSON em base64 ({ country: { code }, subdivision: { code } });
+ * `x-country` é o fallback só com o país.
+ */
+function parseNetlifyGeo(headers) {
+  try {
+    const geo = JSON.parse(Buffer.from(headers['x-nf-geo'] || '', 'base64').toString('utf8'));
+    return { country: geo.country?.code, region: geo.subdivision?.code };
+  } catch {
+    return headers['x-country'] ? { country: headers['x-country'] } : undefined;
+  }
 }
 
 /**

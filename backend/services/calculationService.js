@@ -1,5 +1,6 @@
 const { ZodError } = require('zod');
-const prisma = require('../lib/prisma');
+const foodsRepository = require('../repositories/foodsRepository');
+const calculationsRepository = require('../repositories/calculationsRepository');
 const { L, t } = require('../lib/i18n');
 const { ENGINE_VERSION } = require('../domain/version');
 const { calculateAllRequirements } = require('../domain/requirementService');
@@ -39,7 +40,7 @@ function runNdt(input) {
  */
 async function resolveIngredients(ingredients, locale) {
     const ids = ingredients.filter((ing) => ing.foodId !== undefined).map((ing) => ing.foodId);
-    const foods = await prisma.food.findMany({ where: { id: { in: ids } } });
+    const foods = await foodsRepository.findFoodsByIds(ids);
     const foodsById = new Map(foods.map((food) => [food.id, food]));
 
     const missing = [];
@@ -77,39 +78,24 @@ async function runDiet(input, locale) {
 // Persistência
 // ------------------------------------------------------------------
 
-function toRecord(row) {
-    return { ...row, input: JSON.parse(row.input), output: JSON.parse(row.output) };
-}
-
+// A remoção dos vencidos é feita pelo TTL do DynamoDB (atributo `ttl`).
 async function saveCalculation(type, input, output) {
     const now = new Date();
-    const row = await prisma.calculation.create({
-        data: {
-            type,
-            engineVersion: ENGINE_VERSION,
-            input: JSON.stringify(input),
-            output: JSON.stringify(output),
-            createdAt: now,
-            expiresAt: new Date(now.getTime() + RETENTION_DAYS * DAY_MS),
-        },
+    return calculationsRepository.saveCalculation({
+        type,
+        engineVersion: ENGINE_VERSION,
+        input,
+        output,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + RETENTION_DAYS * DAY_MS),
     });
-    return toRecord(row);
 }
 
 /**
  * Busca um cálculo ainda dentro da validade (null se não existe ou expirou).
  */
-async function findCalculation(id) {
-    const row = await prisma.calculation.findFirst({ where: { id, expiresAt: { gt: new Date() } } });
-    return row ? toRecord(row) : null;
-}
-
-/**
- * Remove os cálculos vencidos. Retorna quantos foram apagados.
- */
-async function purgeExpiredCalculations() {
-    const { count } = await prisma.calculation.deleteMany({ where: { expiresAt: { lte: new Date() } } });
-    return count;
+function findCalculation(id) {
+    return calculationsRepository.findValidCalculation(id);
 }
 
 module.exports = {
@@ -120,5 +106,4 @@ module.exports = {
     runDiet,
     saveCalculation,
     findCalculation,
-    purgeExpiredCalculations,
 };

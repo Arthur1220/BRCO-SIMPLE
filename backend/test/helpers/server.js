@@ -1,16 +1,11 @@
-const { execSync } = require('child_process');
 const http = require('http');
-const path = require('path');
+const { createTables } = require('../../lib/tables');
 
 /**
- * Cria o schema no banco temporário (prisma migrate deploy).
+ * Cria as tabelas deste arquivo de teste no DynamoDB Local.
  */
-function migrateTestDb() {
-  execSync('npx prisma migrate deploy', {
-    cwd: path.join(__dirname, '..', '..'),
-    env: process.env,
-    stdio: 'ignore',
-  });
+async function setupTestTables() {
+  await createTables();
 }
 
 /**
@@ -55,4 +50,4 @@ async function startServer() {
   return { baseUrl, request, rawGet, close: () => new Promise((resolve) => server.close(resolve)) };
 }
 
-module.exports = { migrateTestDb, startServer };
+module.exports = { setupTestTables, startServer };

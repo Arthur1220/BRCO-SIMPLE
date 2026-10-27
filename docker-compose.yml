@@ -1,62 +1,10 @@
-# Rotação dos logs dos containers (no máximo 3 arquivos de 10 MB por serviço)
-x-logging: &default-logging
-  driver: json-file
-  options:
-    max-size: "10m"
-    max-file: "3"
-
+# Desenvolvimento local: DynamoDB Local (o backend roda com `npm run dev` e o
+# frontend com `npm run dev`; em produção a API é uma Lambda e o frontend fica no Netlify).
+#   docker compose up -d
 services:
-  # Proxy reverso com HTTPS automático (Let's Encrypt).
-  # É o único serviço exposto à internet; o backend fica na rede interna.
-  caddy:
-    image: caddy:2-alpine
-    container_name: caddy
-    restart: always
+  dynamodb:
+    image: amazon/dynamodb-local:2.6.1
+    container_name: brco-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - API_DOMAIN=${API_DOMAIN:-localhost}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-    logging: *default-logging
-
-  # Serviço do Backend (sem porta publicada: só o Caddy o acessa)
-  backend:
-    build:
-      context: ./backend
-    container_name: backend
-    restart: always
-    expose:
-      - "3000"
-    env_file:
-      - ./backend/.env
-    environment:
-      - DATABASE_URL=file:/app/data/brco.db
-    volumes:
-      - brco_data:/app/data
-    logging: *default-logging
-
-  # Frontend apenas para uso local (em produção ele fica no Netlify).
-  # Suba com: docker compose --profile local up --build
-  frontend:
-    profiles: ["local"]
-    build:
-      context: ./frontend
-    container_name: frontend
-    restart: always
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    logging: *default-logging
-
-volumes:
-  # Banco SQLite e backups: sobrevivem a rebuild/recriação dos containers
-  brco_data:
-  caddy_data:
-  caddy_config:
+      - "${DYNAMODB_PORT:-8000}:8000"

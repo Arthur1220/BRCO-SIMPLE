@@ -12,7 +12,8 @@ const V1_MESSAGES = {
     INTERNAL: L('Ocorreu um erro inesperado no servidor.', 'An unexpected server error occurred.'),
 };
 
-const isV1 = (req) => req.originalUrl.startsWith('/api/v1');
+// Toda a API (/api) usa o formato da v1; o formato antigo só sobra para rotas fora de /api.
+const isV1 = (req) => req.originalUrl.startsWith('/api');
 
 /**
  * Converte os issues do Zod no formato `fields` da v1.

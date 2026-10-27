@@ -1,7 +1,8 @@
 require('./helpers/env');
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { migrateTestDb, startServer } = require('./helpers/server');
+const { setupTestTables, startServer } = require('./helpers/server');
+const { createUsageLog } = require('../repositories/usageLogsRepository');
 
 const validFood = {
   name: 'Capim teste', category: 'VOLUMOSO',
@@ -10,18 +11,15 @@ const validFood = {
 };
 
 let server;
-let prisma;
 let auth;
 
 test.before(async () => {
-  migrateTestDb();
-  prisma = require('../lib/prisma');
+  await setupTestTables();
   server = await startServer();
 });
 
 test.after(async () => {
   await server.close();
-  await prisma.$disconnect();
 });
 
 test('v1 login: senha errada responde 401 no formato v1 e no idioma pedido', async () => {
@@ -44,7 +42,7 @@ test('v1 admin: sem token responde 401 no formato v1', async () => {
 });
 
 test('v1 admin: estatísticas com labels dos tipos e período validado', async () => {
-  await prisma.calculationLog.create({ data: { calculationType: 'requirement_especie_2', country: 'BR' } });
+  await createUsageLog({ calculationType: 'requirement_especie_2', country: 'BR' });
 
   const stats = await server.request('GET', '/api/v1/admin/stats?period=7d&lang=en', { headers: auth });
   assert.equal(stats.status, 200);
@@ -60,16 +58,17 @@ test('v1 admin: estatísticas com labels dos tipos e período validado', async (
 
 test('v1 admin: gráfico em "all" começa no primeiro registro (antes vinha vazio)', async () => {
   const tenDaysAgo = new Date(Date.now() - 10 * 86400000);
-  await prisma.calculationLog.create({ data: { calculationType: 'ndt_calculation', createdAt: tenDaysAgo } });
+  await createUsageLog({ calculationType: 'ndt_calculation', createdAt: tenDaysAgo });
 
   const res = await server.request('GET', '/api/v1/admin/stats/over-time?period=all', { headers: auth });
   assert.equal(res.status, 200);
   assert.ok(res.body.length >= 10);
   assert.ok(res.body.reduce((sum, point) => sum + point.count, 0) >= 2);
 
-  // A v0 usa o mesmo serviço: também deixou de vir vazia
-  const v0 = await server.request('GET', '/api/admin/stats/over-time?period=all', { headers: auth });
-  assert.ok(v0.body.length >= 10);
+  // Em 30d o registro de 10 dias atrás entra; em 7d não
+  const last30 = await server.request('GET', '/api/v1/admin/stats?period=30d', { headers: auth });
+  const last7 = await server.request('GET', '/api/v1/admin/stats?period=7d', { headers: auth });
+  assert.equal(last30.body.totalCalculations - last7.body.totalCalculations, 1);
 });
 
 test('v1 foods: CRUD com label de categoria, unidade explícita e 204 no delete', async () => {

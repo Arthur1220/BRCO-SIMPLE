@@ -1,5 +1,6 @@
 # Proxy da API: o navegador chama /api no próprio domínio do Netlify e o Netlify
-# repassa para o backend via HTTPS (Caddy no EC2).
+# repassa para a API na AWS Lambda (Function URL). Depois do `sam deploy`, troque o
+# destino abaixo pela ApiUrl dos Outputs da stack (ver DEPLOY.md).
 # `signed` faz o Netlify assinar cada requisição (header X-Nf-Sign) com o valor da
 # variável de ambiente API_SIGNATURE_TOKEN do site; o backend só aceita requisições
 # assinadas (NETLIFY_PROXY_SECRET com o mesmo valor).

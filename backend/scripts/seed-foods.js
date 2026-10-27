@@ -1,5 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+/**
+ * Cadastra os alimentos iniciais que ainda não existem (idempotente, compara pelo nome).
+ * Uso: npm run seed   (variáveis FOODS_TABLE / DYNAMODB_ENDPOINT definem onde gravar)
+ */
+require('dotenv').config();
+const { listFoods, createFood } = require('../repositories/foodsRepository');
 
 const initialFoods = [
   // VOLUMOSOS
@@ -23,25 +27,22 @@ const initialFoods = [
 ];
 
 async function main() {
-  console.log('Iniciando seed de foods...');
-
+  const existing = new Set((await listFoods()).map((food) => food.name));
   for (const food of initialFoods) {
-    const exists = await prisma.food.findFirst({
-      where: { name: food.name }
-    });
-
-    if (!exists) {
-      await prisma.food.create({ data: food });
-      console.log(`Food created: ${food.name}`);
+    if (existing.has(food.name)) {
+      console.log(`Alimento já existe: ${food.name}`);
     } else {
-        // Opcional: Atualizar se já existe para garantir categorias corretas
-        // await prisma.food.update({ where: { id: exists.id }, data: food });
-        console.log(`Food already exists: ${food.name}`);
+      await createFood(food);
+      console.log(`Alimento criado: ${food.name}`);
     }
   }
-  console.log('Seed finalizado.');
 }
 
-main()
-  .catch((e) => { console.error(e); process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); });
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('Falha no seed:', error);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { initialFoods };
