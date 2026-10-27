@@ -1,12 +1,24 @@
+# O site é publicado pelo deploy contínuo do Netlify (Git, branch main), com
+# "Base directory" = frontend nas configurações do site; por isso este arquivo fica
+# aqui e não na raiz. Ver DEPLOY.md, seção CI/CD.
+[build]
+  command = "npm run build"
+  publish = "dist"
+  # Só gera um deploy novo quando algo em frontend/ mudou (o comando roda na pasta base).
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+
+[build.environment]
+  # Mesma versão do .nvmrc da raiz (o Netlify procura o .nvmrc só na pasta base).
+  NODE_VERSION = "24"
+
 # Proxy da API: o navegador chama /api no próprio domínio do Netlify e o Netlify
-# repassa para a API na AWS Lambda (Function URL). Depois do `sam deploy`, troque o
-# destino abaixo pela ApiUrl dos Outputs da stack (ver DEPLOY.md).
+# repassa para a API na AWS Lambda (Function URL, ApiUrl dos Outputs da stack brco-api).
 # `signed` faz o Netlify assinar cada requisição (header X-Nf-Sign) com o valor da
 # variável de ambiente API_SIGNATURE_TOKEN do site; o backend só aceita requisições
 # assinadas (NETLIFY_PROXY_SECRET com o mesmo valor).
 [[redirects]]
   from = "/api/*"
-  to = "https://98-94-173-47.sslip.io/api/:splat"
+  to = "https://j3irwo45tdk32uwo4jsqc6pzwy0dgqmq.lambda-url.sa-east-1.on.aws/api/:splat"
   status = 200
   force = true
   signed = "API_SIGNATURE_TOKEN"
