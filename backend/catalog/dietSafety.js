@@ -114,6 +114,20 @@ const DIET_WARNINGS = {
             'Males on high-concentrate diets are at risk of urolithiasis (urinary calculi): keep clean water available and discuss ammonium chloride (0.5 to 1% of DM) with your nutritionist.'
         ),
     },
+    prices_missing_all: {
+        severity: 'warning',
+        message: L(
+            'Nenhum alimento tem preço: sem preço não há como achar a dieta mais barata, e esta é só uma combinação que atende às exigências e às travas. Informe os preços para a dieta de menor custo.',
+            'No food has a price: without prices the cheapest diet cannot be found, so this is just one mix that meets the requirements and limits. Enter prices to get the least-cost diet.'
+        ),
+    },
+    prices_missing: {
+        severity: 'warning',
+        message: L(
+            'Sem preço: {foods}. Esses alimentos entram como se fossem de graça, o que favorece o uso deles na dieta.',
+            'No price: {foods}. These foods count as free, which favors them in the diet.'
+        ),
+    },
     protein_fractions_not_evaluated: {
         severity: 'warning',
         message: L(

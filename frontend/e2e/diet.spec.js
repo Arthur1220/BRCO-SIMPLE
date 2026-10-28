@@ -42,6 +42,8 @@ test('dieta completa: trato do lote, travas, custo e PDF personalizado', async (
   const feeding = page.getByRole('region', { name: 'Trato do lote' });
   await expect(feeding).toContainText('20 animais · 2 tratos por dia');
   await expect(feeding.getByRole('row', { name: /Milho fubá/ })).toBeVisible();
+  // Calcário por trato fica em gramas (não "0,00 kg")
+  await expect(feeding.getByRole('row', { name: /Calcáreo/ })).toContainText(/\d+(,\d)? g/);
 
   const safety = page.getByRole('region', { name: 'Travas de segurança' });
   await expect(safety.getByRole('row', { name: /Relação cálcio:fósforo/ })).toContainText('Dentro');

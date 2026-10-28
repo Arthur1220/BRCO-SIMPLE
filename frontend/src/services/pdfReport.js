@@ -6,6 +6,8 @@
  * As fontes padrão do PDF (Helvetica) só têm caracteres Latin-1: nada de ≤, ≥ ou —.
  */
 
+import { formatMass } from './format.js';
+
 const BRAND = [217, 119, 6];
 const INK = [31, 41, 55];
 const MUTED = [107, 114, 128];
@@ -175,7 +177,7 @@ export async function buildPdf(calculation, options) {
     table(
       [L.ingredient, L.perFeedingAsFed, L.perFeedingDM],
       [
-        ...feeding.perFeeding.map((item) => [item.name, fmt(item.kgAsFed, locale), fmt(item.kgDryMatter, locale)]),
+        ...feeding.perFeeding.map((item) => [item.name, formatMass(item.kgAsFed, locale), formatMass(item.kgDryMatter, locale)]),
         [L.lotPerDay, `${fmt(feeding.kgAsFedPerDay, locale)} kg MN`, `${fmt(feeding.kgDryMatterPerDay, locale)} kg MS · R$ ${fmt(feeding.costPerDay, locale)}`],
       ],
       { didParseCell: (data) => { if (data.row.index === feeding.perFeeding.length) data.cell.styles.fontStyle = 'bold'; } }
@@ -257,7 +259,7 @@ function feedingSheet(doc, autoTable, solution, options) {
 
   const rows = feeding.perFeeding.map((item) => [
     item.name,
-    item.kgAsFed == null ? `${fmt(item.kgDryMatter, locale)} kg MS` : `${fmt(item.kgAsFed, locale, 1)} kg`,
+    item.kgAsFed == null ? `${formatMass(item.kgDryMatter, locale)} MS` : formatMass(item.kgAsFed, locale),
     ...Array.from({ length: feeding.feedingsPerDay }, () => ''),
   ]);
   autoTable(doc, {

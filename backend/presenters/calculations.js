@@ -1,5 +1,5 @@
 const { t } = require('../lib/i18n');
-const { round } = require('../domain/calculationConstants');
+const { round } = require('../lib/round');
 const { findCategory, DIET_RULES } = require('../catalog/diet');
 const {
     REQUIREMENT_GROUPS, REQUIREMENT_HIGHLIGHTS, requirementOutputs,
@@ -75,7 +75,8 @@ function presentSolution(solution, locale, input = {}) {
     const lot = { animals: input.lot?.animals ?? 1, feedingsPerDay: input.lot?.feedingsPerDay ?? 1 };
 
     const ingredients = solution.optimizedIngredients.map((ing) => {
-        const kgPerDay = (intakeG * (ing.percent / 100)) / 1000;
+        // Cálculos salvos antes da 1.2.1 não têm a fração exata, só a porcentagem arredondada.
+        const kgPerDay = (intakeG * (ing.fraction ?? ing.percent / 100)) / 1000;
         const kgAsFed = asFed(kgPerDay, ing.MS);
         const category = findCategory(ing.category);
         return {
@@ -85,6 +86,7 @@ function presentSolution(solution, locale, input = {}) {
             categoryLabel: category ? t(category.label, locale) : ing.category,
             percent: ing.percent,
             kgPerDay: round(kgPerDay, 3),
+            kgPerDayExact: kgPerDay,
             kgAsFedPerDay: kgAsFed === null ? null : round(kgAsFed, 3),
             costPerDay: round(kgPerDay * Number(ing.price || 0), 2),
             min: ing.min,
@@ -109,8 +111,9 @@ function presentSolution(solution, locale, input = {}) {
         perFeeding: ingredients.filter((ing) => ing.percent > 0).map((ing) => ({
             foodId: ing.foodId,
             name: ing.name,
-            kgAsFed: ing.kgAsFedPerDay === null ? null : round((ing.kgAsFedPerDay * lot.animals) / lot.feedingsPerDay, 2),
-            kgDryMatter: round((ing.kgPerDay * lot.animals) / lot.feedingsPerDay, 2),
+            // 4 casas (0,1 g): ureia e minerais por trato ficam em poucos gramas.
+            kgAsFed: ing.kgAsFedPerDay === null ? null : round((asFed(ing.kgPerDayExact, ing.dryMatter) * lot.animals) / lot.feedingsPerDay, 4),
+            kgDryMatter: round((ing.kgPerDayExact * lot.animals) / lot.feedingsPerDay, 4),
         })),
     };
 
@@ -131,7 +134,7 @@ function presentSolution(solution, locale, input = {}) {
 
     return {
         feasible: solution.isFeasible,
-        ingredients,
+        ingredients: ingredients.map(({ kgPerDayExact, ...ing }) => ing),
         totals: {
             intakeKgPerDay: round(intakeG / 1000, 3),
             intakeKgAsFedPerDay: kgAsFedPerDay === null ? null : round(kgAsFedPerDay, 3),
