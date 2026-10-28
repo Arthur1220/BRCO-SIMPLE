@@ -133,12 +133,14 @@ test('conflito: "priorizar a nutrição" ignora os limites do usuário; "respeit
   const ideal = output.resultIdeal;
   assert.equal(ideal.isFeasible, true);
   assert.ok(ideal.dietBalance['NDT'].diff >= -0.5);
-  assert.ok(ideal.safetyChecks.every((c) => c.ok !== false));
+  // Teto de PB/NDT é preferência e pode ter sido relaxado (com aviso); as travas duras valem.
+  const SOFT = ['pb_max', 'ndt_max'];
+  assert.ok(ideal.safetyChecks.every((c) => SOFT.includes(c.code) || c.ok !== false));
 
   const realistic = output.resultRealistic;
   assert.equal(realistic.isFeasible, true);
   assert.ok(percentOf(realistic, 'Milho fubá') <= 1.01);
-  assert.ok(realistic.safetyChecks.every((c) => c.ok !== false));
+  assert.ok(realistic.safetyChecks.every((c) => SOFT.includes(c.code) || c.ok !== false));
 });
 
 test('balanço: PDR, PNDR e microminerais aparecem; micromineral sem dado fica sem fornecimento', () => {
@@ -192,4 +194,30 @@ test('preços: sem nenhum preço avisa e não explica custo; preço parcial list
   const warning = partial.warnings.find((w) => w.code === 'prices_missing');
   assert.deepEqual(warning.params.foods, ['Calcário']);
   assert.ok(partial.costInsights);
+});
+
+test('teto: PB e NDT ficam até 10% acima da exigência, mesmo sem preços', () => {
+  const trigo = { name: 'Farelo de trigo', category: 'CONCENTRADO', PB: 174.5, NDT: 700.5, FDNcp: 383.4, EE: 38.1, CNF: 344.6, Ca: 1.7, P: 10.4, min: 0, max: 100, price: 0 };
+  const free = [silagem, milho, soja, calcario, trigo].map((f) => ({ ...f, price: 0 }));
+  // Caso do PDF (caprino leiteiro macho): antes o NDT ficava 19% acima.
+  const { result } = calculateDiet({ ...goat, sexoId: 1 }, free);
+  for (const [key, code] of [['Proteína Bruta', 'pb_max'], ['NDT', 'ndt_max']]) {
+    const { required, supplied } = result.dietBalance[key];
+    assert.ok(supplied <= required * 1.1 + 0.05, `${key}: ${supplied} > 110% de ${required}`);
+    assert.equal(checkOf(result, code).ok, true);
+    assert.equal(checkOf(result, code).limit, 110);
+  }
+  assert.ok(!codes(result).some((code) => code.startsWith('excess_unavoidable')));
+});
+
+test('teto: é preferência; quando os alimentos forçam excesso, a dieta sai sem o teto e avisa', () => {
+  // Com só silagem, milho, soja e calcário, a energia exigida obriga a PB a passar de 110%.
+  const { hasConflict, result } = calculateDiet(animal, foods);
+  assert.equal(hasConflict, false);
+  const warning = result.warnings.find((w) => w.code === 'excess_unavoidable');
+  assert.deepEqual(warning.params.checks, ['pb_max']); // só o que passou de 110%
+  assert.equal(warning.params.percent, 120);           // o teto sobe aos poucos, não some
+  const pb = result.dietBalance['Proteína Bruta'];
+  assert.ok(pb.supplied <= pb.required * 1.2 + 0.05);
+  assert.equal(checkOf(result, 'pb_max').ok, false);   // o excesso continua visível nas travas
 });
