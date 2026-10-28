@@ -39,3 +39,11 @@ test('foodIdSchema: aceita apenas inteiros positivos', () => {
   assert.throws(() => foodIdSchema.parse('-1'));
   assert.throws(() => foodIdSchema.parse('1.5'));
 });
+
+test('createFoodSchema: dados opcionais de segurança (Cu, Mo, S, NNP e espécie de destino)', () => {
+  const salBovino = { ...validFood, category: 'SUPLEMENTO', Cu: 1500, Mo: 20, S: 15, NNP: null, targetSpecies: 'BOVINO' };
+  assert.deepEqual(createFoodSchema.parse(salBovino), salBovino);
+  assert.deepEqual(createFoodSchema.parse(validFood), validFood); // continuam opcionais
+  assert.throws(() => createFoodSchema.parse({ ...validFood, targetSpecies: 'EQUINO' }));
+  assert.throws(() => createFoodSchema.parse({ ...validFood, Cu: -1 }));
+});

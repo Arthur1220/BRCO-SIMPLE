@@ -47,6 +47,16 @@ const customFoodFields = {
     P: { label: L('Fósforo (P)', 'Phosphorus (P)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.01, placeholder: '3' },
 };
 
+// Dados opcionais usados pelas travas de segurança da dieta (catalog/dietSafety).
+const foodSafetyFields = {
+    EE: { label: L('Extrato etéreo (EE)', 'Ether extract (EE)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.1, placeholder: '30' },
+    CNF: { label: L('Carboidratos não fibrosos (CNF)', 'Non-fiber carbohydrates (NFC)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.1, placeholder: '300' },
+    NNP: { label: L('Nitrogênio não proteico (NNP), em equivalente de PB', 'Non-protein nitrogen (NPN), as CP equivalent'), unit: 'g/kg MS', min: 0, max: 3000, step: 0.1, placeholder: '0' },
+    Cu: { label: L('Cobre (Cu)', 'Copper (Cu)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.1, placeholder: '10' },
+    Mo: { label: L('Molibdênio (Mo)', 'Molybdenum (Mo)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.01, placeholder: '1' },
+    S: { label: L('Enxofre (S)', 'Sulfur (S)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.01, placeholder: '2' },
+};
+
 const MESSAGES = {
     required: L('{label} é obrigatório.', '{label} is required.'),
     number: L('{label} deve ser um número.', '{label} must be a number.'),
@@ -99,6 +109,6 @@ function publicField(name, def, locale, extra = {}) {
 }
 
 module.exports = {
-    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields,
+    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields, foodSafetyFields,
     numberField, publicField, format,
 };

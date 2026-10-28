@@ -23,6 +23,8 @@ test.before(async () => {
     { key: 'silagem', name: 'Silagem de milho', category: 'VOLUMOSO', PB: 71.8, NDT: 632.2, FDNcp: 509.3, Ca: 2.8, P: 1.9 },
     { key: 'milho', name: 'Milho fubá', category: 'CONCENTRADO', PB: 92.3, NDT: 844.2, FDNcp: 91.7, Ca: 0.4, P: 2.9 },
     { key: 'soja', name: 'Farelo de soja', category: 'CONCENTRADO', PB: 487.9, NDT: 811.6, FDNcp: 131.8, Ca: 3.4, P: 5.9, defaultMax: 30 },
+    { key: 'calcario', name: 'Calcário', category: 'SUPLEMENTO', MS: 992, MO: 0, EE: 0, PDR: 0, PNDR: 0, CNF: 0, PB: 0, NDT: 0, FDNcp: 0, Ca: 370.2, P: 0.2, Cu: 0, defaultMax: 1.5 },
+    { key: 'salBovino', name: 'Sal mineral bovino', category: 'SUPLEMENTO', MS: 990, MO: 0, EE: 0, PDR: 0, PNDR: 0, CNF: 0, PB: 0, NDT: 0, FDNcp: 0, Ca: 145, P: 85, Cu: 1500, targetSpecies: 'BOVINO', defaultMax: 1.5 },
   ];
   for (const { key, ...food } of foods) {
     foodIds[key] = (await createFood({ ...base, ...food })).id;
@@ -129,6 +131,7 @@ test('diet: solução ótima com kg, custo e status do balanço calculados no se
         { foodId: foodIds.silagem, price: 0.3 },
         { foodId: foodIds.milho, price: 1.2 },
         { foodId: foodIds.soja, price: 2.5 },
+        { foodId: foodIds.calcario, price: 0.5 },
       ],
     },
   });
@@ -149,6 +152,38 @@ test('diet: solução ótima com kg, custo e status do balanço calculados no se
   assert.deepEqual(solution.balance.map((b) => b.code), ['pb', 'ndt', 'ca', 'p']);
   assert.ok(solution.balance.every((b) => ['ideal', 'deficit', 'excess', 'info'].includes(b.status)));
   assert.equal(res.body.requirements.highlights[0].code, 'cms_g_d');
+
+  // Travas de segurança e avisos já traduzidos
+  const caP = solution.safetyChecks.find((c) => c.code === 'ca_p');
+  assert.equal(caP.label, 'Relação cálcio:fósforo');
+  assert.equal(caP.ok, true);
+  assert.ok(solution.warnings.every((w) => w.message && w.severityLabel));
+  assert.ok(solution.warnings.some((w) => w.code === 'missing_data' && w.message.includes('cobre')));
+});
+
+test('diet: sal mineral de bovino é retirado da dieta de ovinos', async () => {
+  const res = await server.request('POST', '/api/v1/calculations/diet', {
+    body: { animal, ingredients: [{ foodId: foodIds.silagem }, { foodId: foodIds.milho }, { foodId: foodIds.soja }, { foodId: foodIds.calcario }, { foodId: foodIds.salBovino, min: 1 }] },
+  });
+  assert.equal(res.status, 201);
+  const solution = res.body.solution ?? res.body.options[1].solution;
+  assert.equal(solution.ingredients.find((ing) => ing.foodId === foodIds.salBovino).percent, 0);
+  const blocked = solution.warnings.find((w) => w.code === 'supplement_blocked_species');
+  assert.equal(blocked.severity, 'blocked');
+  assert.match(blocked.message, /Sal mineral bovino/);
+});
+
+test('diet: sem fonte de cálcio, macho não recebe dieta e o motivo é explicado', async () => {
+  const res = await server.request('POST', '/api/v1/calculations/diet', {
+    body: { animal, ingredients: [{ foodId: foodIds.silagem }, { foodId: foodIds.milho }, { foodId: foodIds.soja }] },
+  });
+  assert.equal(res.body.status, 'conflict');
+  assert.match(res.body.statusLabel, /Não há dieta segura/);
+  for (const option of res.body.options) {
+    assert.equal(option.solution.feasible, false);
+    const blocked = option.solution.warnings.find((w) => w.code === 'safety_infeasible');
+    assert.match(blocked.message, /Relação cálcio:fósforo/);
+  }
 });
 
 test('diet: a composição de alimentos cadastrados vem do banco, não do cliente', async () => {
@@ -161,7 +196,7 @@ test('diet: a composição de alimentos cadastrados vem do banco, não do client
 
 test('diet: conflito devolve as duas opções para o usuário escolher', async () => {
   const res = await server.request('POST', '/api/v1/calculations/diet', {
-    body: { animal, ingredients: [{ foodId: foodIds.silagem }, { foodId: foodIds.milho, max: 1 }] },
+    body: { animal, ingredients: [{ foodId: foodIds.silagem }, { foodId: foodIds.milho, max: 1 }, { foodId: foodIds.calcario }] },
   });
   assert.equal(res.status, 201);
   assert.equal(res.body.status, 'conflict');
@@ -177,6 +212,7 @@ test('diet: alimento personalizado em g/kg MS (mesma unidade do banco)', async (
         { custom: { name: 'Capim local', category: 'VOLUMOSO', MS: 300, PB: 80, NDT: 550, FDNcp: 600, Ca: 4, P: 2 } },
         { foodId: foodIds.milho },
         { foodId: foodIds.soja },
+        { custom: { name: 'Calcário local', category: 'SUPLEMENTO', MS: 990, PB: 0, NDT: 0, FDNcp: 0, Ca: 380, P: 0, Cu: 0, EE: 0, CNF: 0 } },
       ],
     },
   });

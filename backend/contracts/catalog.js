@@ -76,6 +76,7 @@ const catalogSchema = z
             tolerancePercent: z.number(),
             ingredientDefaults: z.object({ min: z.number(), max: z.number(), price: z.number() }),
             categories: z.array(z.object({ code: z.string(), label: z.string(), pluralLabel: z.string() })),
+            targetSpecies: z.array(z.object({ code: z.string(), label: z.string() })).openapi({ description: 'Espécie de destino de um suplemento.' }),
             foodNutrientUnit: z.string(),
         }),
     })

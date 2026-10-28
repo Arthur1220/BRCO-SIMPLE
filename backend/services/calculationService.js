@@ -53,7 +53,7 @@ async function resolveIngredients(ingredients, locale) {
         });
 
         if (ing.custom) {
-            return { foodId: null, ...ing.custom, ...limits(null) };
+            return { foodId: null, ...ing.custom, ...limits(null), foodMin: defaults.min, foodMax: defaults.max };
         }
 
         const food = foodsById.get(ing.foodId);
@@ -61,8 +61,13 @@ async function resolveIngredients(ingredients, locale) {
             missing.push({ code: 'custom', path: ['ingredients', index, 'foodId'], message: t(FOOD_NOT_FOUND, locale), params: { rule: 'food_not_found' } });
             return null;
         }
-        const { id, name, category, MS, PB, NDT, FDNcp, Ca, P } = food;
-        return { foodId: id, name, category, MS, PB, NDT, FDNcp, Ca, P, ...limits(food) };
+        const { id, name, category, MS, PB, NDT, FDNcp, Ca, P, EE, CNF } = food;
+        const safety = { NNP: food.NNP ?? null, Cu: food.Cu ?? null, Mo: food.Mo ?? null, S: food.S ?? null, targetSpecies: food.targetSpecies ?? null };
+        // foodMin/foodMax: padrões do alimento, usados na opção "priorizar a nutrição".
+        return {
+            foodId: id, name, category, MS, PB, NDT, FDNcp, Ca, P, EE, CNF, ...safety, ...limits(food),
+            foodMin: food.defaultMin ?? defaults.min, foodMax: food.defaultMax ?? defaults.max,
+        };
     });
 
     if (missing.length > 0) throw new ZodError(missing);

@@ -60,11 +60,27 @@ const dietSolutionSchema = z
             code: z.string(),
             label: z.string(),
             unit: z.string(),
-            required: z.number(),
+            required: z.number().nullable().openapi({ description: 'null quando a exigência não está disponível para o animal.' }),
             supplied: z.number(),
-            diff: z.number(),
+            diff: z.number().nullable(),
             status: z.enum(['ideal', 'deficit', 'excess', 'info']),
             statusLabel: z.string(),
+        })),
+        safetyChecks: z.array(z.object({
+            code: z.string(),
+            label: z.string(),
+            unit: z.string(),
+            value: z.number().nullable().openapi({ description: 'null quando nenhum alimento da dieta tem o dado.' }),
+            limit: z.number().nullable().openapi({ description: 'null quando não há limite para este animal.' }),
+            kind: z.enum(['min', 'max']),
+            ok: z.boolean().nullable(),
+            incomplete: z.boolean().openapi({ description: 'Algum alimento da dieta não tem o dado.' }),
+        })).openapi({ description: 'Travas de segurança da dieta (catalog/dietSafety).' }),
+        warnings: z.array(z.object({
+            code: z.string(),
+            severity: z.enum(['info', 'warning', 'blocked']),
+            severityLabel: z.string(),
+            message: z.string(),
         })),
     })
     .openapi('DietSolution');
@@ -93,6 +109,8 @@ const foodSchema = z
         unit: z.string().openapi({ example: 'g/kg MS' }),
         MS: z.number(), MO: z.number(), EE: z.number(), PB: z.number(), PDR: z.number(), PNDR: z.number(),
         NDT: z.number(), FDNcp: z.number(), CNF: z.number(), Ca: z.number(), P: z.number(),
+        NNP: z.number().nullable(), Cu: z.number().nullable(), Mo: z.number().nullable(), S: z.number().nullable(),
+        targetSpecies: z.string().nullable().openapi({ description: 'Espécie de destino (suplementos). BOVINO não entra em dieta de ovino.' }),
         updatedAt: z.string().datetime(),
     })
     .openapi('Food');

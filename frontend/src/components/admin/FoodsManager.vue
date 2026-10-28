@@ -62,6 +62,25 @@
             <input :id="`food-${field}`" v-model.number="form[field]" class="input" type="number" step="0.01" :class="{ 'has-error': fieldErrors[field] }">
             <small v-if="fieldErrors[field]" class="field-error">{{ fieldErrors[field] }}</small>
           </div>
+          <fieldset class="safety span-2">
+            <legend class="label">{{ $t('admin.foods.safetyTitle') }}</legend>
+            <p class="small muted">{{ $t('admin.foods.safetyHint') }}</p>
+            <div class="food-grid">
+              <div v-for="field in safetyFields" :key="field.name" class="field">
+                <label class="label" :for="`food-${field.name}`">{{ field.name }} <span class="unit">({{ field.unit }})</span></label>
+                <input :id="`food-${field.name}`" v-model="form[field.name]" class="input" type="number" step="0.01" min="0" :placeholder="$t('admin.foods.noData')" :class="{ 'has-error': fieldErrors[field.name] }">
+                <small v-if="fieldErrors[field.name]" class="field-error">{{ fieldErrors[field.name] }}</small>
+              </div>
+              <div class="field span-2">
+                <label class="label" for="food-target">{{ $t('admin.foods.targetSpecies') }}</label>
+                <select id="food-target" v-model="form.targetSpecies" class="select">
+                  <option :value="null">{{ $t('admin.foods.targetSpeciesNone') }}</option>
+                  <option v-for="species in targetSpecies" :key="species.code" :value="species.code">{{ species.label }}</option>
+                </select>
+                <small class="small muted">{{ $t('admin.foods.targetSpeciesHint') }}</small>
+              </div>
+            </div>
+          </fieldset>
           <div v-if="saveError" class="alert alert-error span-2" role="alert">{{ saveError }}</div>
         </div>
         <footer class="dialog-foot">
@@ -88,6 +107,7 @@ const catalog = useCatalogStore();
 const { t, locale } = useI18n();
 // Categorias e unidade dos nutrientes vêm do catálogo da API.
 const categories = computed(() => catalog.diet?.categories ?? []);
+const targetSpecies = computed(() => catalog.diet?.targetSpecies ?? []);
 const unit = computed(() => catalog.diet?.foodNutrientUnit ?? '');
 // A matéria seca é expressa sobre a matéria natural (g/kg); os demais, sobre a MS.
 const unitFor = (field) => (field === 'MS' ? 'g/kg' : unit.value);
@@ -102,10 +122,21 @@ const fieldErrors = ref({});
 
 const nutrientFields = ['MS', 'MO', 'EE', 'PB', 'NDT', 'FDNcp', 'CNF', 'Ca', 'P', 'PDR', 'PNDR'];
 
-const form = reactive({
+// Opcionais, usados nas travas de segurança da dieta. Vazio = sem dado (null).
+const safetyFields = [
+  { name: 'Cu', unit: 'mg/kg MS' },
+  { name: 'Mo', unit: 'mg/kg MS' },
+  { name: 'S', unit: 'g/kg MS' },
+  { name: 'NNP', unit: 'g/kg MS' },
+];
+
+const emptyForm = () => ({
   name: '', category: 'VOLUMOSO',
-  MS: 0, MO: 0, EE: 0, PB: 0, NDT: 0, FDNcp: 0, CNF: 0, Ca: 0, P: 0, PDR: 0, PNDR: 0
+  MS: 0, MO: 0, EE: 0, PB: 0, NDT: 0, FDNcp: 0, CNF: 0, Ca: 0, P: 0, PDR: 0, PNDR: 0,
+  Cu: null, Mo: null, S: null, NNP: null, targetSpecies: null,
 });
+
+const form = reactive(emptyForm());
 
 const currentPage = ref(1);
 const itemsPerPage = 10;
@@ -129,11 +160,11 @@ const openModal = (food = null) => {
   if (food) {
     isEditing.value = true;
     editingId.value = food.id;
-    Object.assign(form, food);
+    Object.assign(form, emptyForm(), food);
   } else {
     isEditing.value = false;
     editingId.value = null;
-    Object.keys(form).forEach(key => form[key] = (key === 'category' ? 'VOLUMOSO' : (key === 'name' ? '' : 0)));
+    Object.assign(form, emptyForm());
   }
   showModal.value = true;
 };
@@ -147,10 +178,14 @@ const saveFood = async () => {
   saveError.value = null;
   fieldErrors.value = {};
   try {
+    const payload = { ...form };
+    for (const { name } of safetyFields) {
+      payload[name] = payload[name] === '' || payload[name] === null ? null : Number(payload[name]);
+    }
     if (isEditing.value) {
-      await updateFood(editingId.value, form);
+      await updateFood(editingId.value, payload);
     } else {
-      await createFood(form);
+      await createFood(payload);
     }
     await loadFoods();
     closeModal();
@@ -213,6 +248,17 @@ onMounted(() => {
 .span-2 { grid-column: span 3; }
 
 .label .unit { color: var(--ink-3); font-weight: 400; }
+
+.safety {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px 14px;
+  margin: 0;
+}
+
+.safety legend { padding: 0 6px; }
+
+.safety > p { margin: 0 0 12px; }
 
 @media (max-width: 600px) {
   .food-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

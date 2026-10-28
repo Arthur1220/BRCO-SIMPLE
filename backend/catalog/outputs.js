@@ -140,15 +140,15 @@ const DIET_OPTIONS = {
     ideal: {
         label: L('Priorizar a nutrição', 'Prioritize nutrition'),
         description: L(
-            'Atinge as exigências nutricionais, mas viola os limites de inclusão que você definiu.',
-            'Meets nutritional requirements but violates the inclusion limits you set.'
+            'Atende as exigências nutricionais ignorando os limites de inclusão que você definiu (valem só os padrões de cada alimento e as travas de segurança).',
+            'Meets nutritional requirements ignoring the inclusion limits you set (only each food\'s defaults and the safety limits apply).'
         ),
     },
     realistic: {
         label: L('Respeitar meus limites', 'Respect my limits'),
         description: L(
-            'Respeita os limites de inclusão, mas não atende todas as exigências nutricionais.',
-            'Respects the inclusion limits but does not meet all nutritional requirements.'
+            'Respeita os seus limites de inclusão e as travas de segurança, mas não atende todas as exigências nutricionais.',
+            'Respects your inclusion limits and the safety limits but does not meet all nutritional requirements.'
         ),
     },
 };
@@ -158,6 +158,10 @@ const DIET_STATUS = {
     conflict: L(
         'Não é possível atender a nutrição respeitando todos os limites. Escolha uma das opções.',
         'Nutrition cannot be met within all limits. Choose one of the options.'
+    ),
+    blocked: L(
+        'Não há dieta segura com estes alimentos. Veja o motivo abaixo e ajuste os alimentos.',
+        'There is no safe diet with these foods. See the reason below and adjust the foods.'
     ),
 };
 

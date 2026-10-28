@@ -3,11 +3,12 @@ const { t, SUPPORTED_LOCALES } = require('../lib/i18n');
 const { SPECIES } = require('./animals');
 const { DIET_RULES } = require('./diet');
 const {
-    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields, publicField,
+    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields, foodSafetyFields, publicField,
 } = require('../contracts/fields');
 const { requirementRules } = require('../contracts/requirements');
 const { ndtRules, ndtOptionalGroups } = require('../contracts/ndt');
-const { dietRules } = require('../contracts/diet');
+const { dietRules, customFoodOptionalGroups } = require('../contracts/diet');
+const { TARGET_SPECIES } = require('./dietSafety');
 const { publicRule } = require('../contracts/rules');
 
 /**
@@ -44,11 +45,12 @@ function buildCatalog(locale) {
             ndt: buildForm(ndtFields, ndtRules, locale, ndtOptionalGroups),
             dietAnimal: buildForm(dietAnimalFields, requirementRules, locale),
             dietIngredient: buildForm(ingredientFields, dietRules, locale),
-            customFood: buildForm(customFoodFields, [], locale),
+            customFood: buildForm({ ...customFoodFields, ...foodSafetyFields }, [], locale, customFoodOptionalGroups),
         },
         diet: {
             ...DIET_RULES,
             categories: DIET_RULES.categories.map((c) => ({ code: c.code, label: t(c.label, locale), pluralLabel: t(c.pluralLabel, locale) })),
+            targetSpecies: TARGET_SPECIES.map((s) => ({ code: s.code, label: t(s.label, locale) })),
         },
     };
     const version = crypto.createHash('sha256').update(JSON.stringify(content)).digest('hex').slice(0, 12);

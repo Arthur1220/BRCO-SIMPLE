@@ -1,9 +1,10 @@
 const { z } = require('./zod');
-const { dietAnimalFields, ingredientFields, customFoodFields, numberField } = require('./fields');
+const { dietAnimalFields, ingredientFields, customFoodFields, foodSafetyFields, numberField } = require('./fields');
 const { animalSchema } = require('./requirements');
 const { perLocale } = require('./localized');
 const { L, t } = require('../lib/i18n');
 const { DIET_RULES, CATEGORY_CODES } = require('../catalog/diet');
+const { TARGET_SPECIES_CODES } = require('../catalog/dietSafety');
 
 const MESSAGES = {
     oneSource: L('Informe um alimento cadastrado (foodId) ou um alimento personalizado (custom).', 'Provide either a registered food (foodId) or a custom food (custom).'),
@@ -26,10 +27,15 @@ function customFoodSchema(locale) {
     const nutrients = Object.fromEntries(
         Object.entries(customFoodFields).map(([name, def]) => [name, numberField(def, locale)])
     );
+    const safety = Object.fromEntries(
+        Object.entries(foodSafetyFields).map(([name, def]) => [name, numberField(def, locale).nullable().optional()])
+    );
     return z.object({
         name: z.string().trim().min(1, t(MESSAGES.name, locale)).max(120),
         category: z.enum(CATEGORY_CODES),
+        targetSpecies: z.enum(TARGET_SPECIES_CODES).nullable().optional(),
         ...nutrients,
+        ...safety,
     });
 }
 
@@ -83,4 +89,9 @@ const getDietInputSchema = perLocale((locale) =>
         .openapi('DietInput')
 );
 
-module.exports = { getDietInputSchema, dietRules };
+// Grupo opcional do formulário de alimento personalizado (catálogo).
+const customFoodOptionalGroups = [
+    { code: 'safety', label: L('Dados para as travas de segurança (opcional)', 'Data for the safety limits (optional)'), fields: Object.keys(foodSafetyFields) },
+];
+
+module.exports = { getDietInputSchema, dietRules, customFoodOptionalGroups };
