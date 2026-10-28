@@ -1,5 +1,5 @@
 const { calculateAllRequirements } = require('./requirementService');
-const { round } = require('./calculationConstants');
+const { round } = require('../lib/round');
 const solver = require('javascript-lp-solver');
 const {
     DIET_SAFETY, UREA_PB_EQUIVALENT, TRUE_PROTEIN_MAX, SPECIES_CODES, MALE_SEX_IDS, DIET_WARNINGS,
@@ -284,20 +284,18 @@ function processSolution(solution, prepared, requirements, targetCMS_g, status, 
         'PDR (g)': 0, 'PNDR (g)': 0, 'FDN (g)': 0,
     };
 
-    const optimizedIngredients = prepared.map(({ ing }, index) => {
-        const raw = isFeasible ? Math.max(solution[`ing_${index}`] || 0, 0) : 0;
-        return { ...ing, percent: round(raw * 100, 2) };
-    });
+    // Frações exatas do solver: balanço e travas usam estas; só a porcentagem exibida é
+    // arredondada (senão uma trava no limite, como Ca:P = 2,00, aparece como 1,99).
+    const fractions = prepared.map((_, index) => (isFeasible ? Math.max(solution[`ing_${index}`] || 0, 0) : 0));
+    const totalFraction = fractions.reduce((sum, x) => sum + x, 0);
+    if (totalFraction > 1.001) fractions.forEach((x, index) => { fractions[index] = x / totalFraction; });
 
-    const totalPercent = optimizedIngredients.reduce((sum, ing) => sum + ing.percent, 0);
-    if (totalPercent > 100.1) {
-        optimizedIngredients.forEach((ing) => { ing.percent = round((ing.percent / totalPercent) * 100, 2); });
-    }
+    const optimizedIngredients = prepared.map(({ ing }, index) => ({ ...ing, percent: round(fractions[index] * 100, 2), fraction: fractions[index] }));
 
     const included = [];
     optimizedIngredients.forEach((ing, index) => {
         const { comp } = prepared[index];
-        const x = ing.percent / 100;
+        const x = fractions[index];
         const amount_g = targetCMS_g * x;
         if (x > 0) included.push({ ing, x, comp: { ...comp, concentrate: isConcentrate(ing.category) ? 1 : 0 } });
 
@@ -476,6 +474,12 @@ function calculateDiet(animalInput, ingredients) {
     const blockedNames = prepared.filter((p) => p.blocked).map((p) => p.ing.name);
     const globalWarnings = blockedNames.length > 0 ? [warning('supplement_blocked_species', { foods: blockedNames })] : [];
 
+    // Sem preço o solver fica indiferente ao custo: a "dieta de menor custo" perde o sentido.
+    const withoutPrice = prepared.filter((p) => !p.blocked && !(Number(p.ing.price) > 0)).map((p) => p.ing.name);
+    const noPrices = withoutPrice.length === prepared.filter((p) => !p.blocked).length;
+    if (noPrices) globalWarnings.push(warning('prices_missing_all'));
+    else if (withoutPrice.length > 0) globalWarnings.push(warning('prices_missing', { foods: withoutPrice }));
+
     // PDR e PNDR mínimos só quando todos os alimentos têm os dois dados e a exigência existe.
     const reqPDR = dietaryRequirement(requirements, 'Proteína degradável no rúmen');
     const reqPNDR = dietaryRequirement(requirements, 'Proteína não degradável no rúmen');
@@ -501,7 +505,8 @@ function calculateDiet(animalInput, ingredients) {
     const optimal = solve(prepared, targets, optimalOptions);
     if (optimal.solution) {
         const result = processSolution(optimal.solution, prepared, requirements, targetCMS_g, 'Solução Ótima Encontrada', globalWarnings);
-        result.costInsights = costInsights(prepared, targets, optimalOptions, optimal.solution, targetCMS_g / 1000);
+        // A explicação do custo só faz sentido com preços.
+        result.costInsights = noPrices ? null : costInsights(prepared, targets, optimalOptions, optimal.solution, targetCMS_g / 1000);
         return { hasConflict: false, result, animalRequirements: requirements };
     }
 

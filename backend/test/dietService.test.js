@@ -173,3 +173,23 @@ test('custo: aponta o limite do usuário que encarece e o preço em que um alime
 test('PDR/PNDR: fora da formulação por padrão (aguardando revisão técnica)', () => {
   assert.equal(DIET_SAFETY.proteinFractionsInFormulation, false);
 });
+
+test('arredondamento: trava no limite não aparece como fora (Ca:P = 2,00, não 1,99)', () => {
+  const goatMale = { ...goat, sexoId: 1 };
+  const free = [silagem, milho, soja, calcario, ureia].map((f) => ({ ...f, price: 0 }));
+  const { result } = calculateDiet(goatMale, free);
+  const caP = checkOf(result, 'ca_p');
+  assert.ok(caP.value >= DIET_SAFETY.caPMinMale);
+  assert.equal(caP.ok, true);
+});
+
+test('preços: sem nenhum preço avisa e não explica custo; preço parcial lista os alimentos', () => {
+  const free = calculateDiet(animal, foods.map((f) => ({ ...f, price: 0 }))).result;
+  assert.ok(codes(free).includes('prices_missing_all'));
+  assert.equal(free.costInsights, null);
+
+  const partial = calculateDiet(animal, [silagem, milho, soja, { ...calcario, price: 0 }]).result;
+  const warning = partial.warnings.find((w) => w.code === 'prices_missing');
+  assert.deepEqual(warning.params.foods, ['Calcário']);
+  assert.ok(partial.costInsights);
+});

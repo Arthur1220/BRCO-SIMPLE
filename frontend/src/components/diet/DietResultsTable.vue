@@ -93,8 +93,8 @@
           <tbody>
             <tr v-for="item in solution.feeding.perFeeding" :key="item.foodId ?? item.name">
               <td>{{ item.name }}</td>
-              <td class="num">{{ item.kgAsFed == null ? '—' : formatNum(item.kgAsFed) }}</td>
-              <td class="num">{{ formatNum(item.kgDryMatter) }}</td>
+              <td class="num">{{ item.kgAsFed == null ? '—' : formatMass(item.kgAsFed, locale) }}</td>
+              <td class="num">{{ formatMass(item.kgDryMatter, locale) }}</td>
             </tr>
           </tbody>
           <tfoot>
@@ -193,6 +193,7 @@ import { useI18n } from 'vue-i18n';
 import { parseApiError } from '@/services/axiosSetup';
 import { saveAs } from 'file-saver';
 import PdfDialog from '@/components/report/PdfDialog.vue';
+import { formatMass } from '@/services/format';
 
 // kg/dia, custo, balanço e status vêm calculados da API v1.
 const store = useDietStore();

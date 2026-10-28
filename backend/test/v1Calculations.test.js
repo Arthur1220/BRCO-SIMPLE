@@ -189,6 +189,9 @@ test('diet: preço por kg de matéria natural, trato do lote e custo por kg de g
   const { feeding, totals } = solution;
   assert.equal(feeding.animals, 20);
   assert.ok(Math.abs(feeding.kgDryMatterPerDay - totals.intakeKgPerDay * 20) < 0.02);
+  // Quantidades pequenas por trato não somem no arredondamento (calcário: poucos gramas)
+  const calcarioTrato = feeding.perFeeding.find((item) => item.foodId === foodIds.calcario);
+  assert.ok(calcarioTrato.kgAsFed > 0 && calcarioTrato.kgAsFed < 1);
   const milhoTrato = feeding.perFeeding.find((item) => item.foodId === foodIds.milho);
   assert.ok(Math.abs(milhoTrato.kgAsFed - (milho.kgAsFedPerDay * 20) / 2) < 0.02);
   assert.ok(Math.abs(totals.costPerKgGain - totals.costPerDay / 0.2) < 0.02); // GMD 200 g/d
