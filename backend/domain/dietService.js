@@ -89,14 +89,23 @@ function dietaryRequirement(requirements, key) {
  */
 function safetyConstraints(context) {
     const s = DIET_SAFETY;
-    const constraints = {
+    const constraints = {};
+    // Teto de PB e NDT (em % da MS, a partir da exigência), quando a exigência existe.
+    const { targets } = context;
+    if (Number.isFinite(targets?.PB) && targets.PB > 0) {
+        constraints.pb_max = { coefficient: (c) => toPercent(c.PB), max: targets.PB * s.pbMaxOfRequirement, target: targets.PB };
+    }
+    if (Number.isFinite(targets?.NDT) && targets.NDT > 0) {
+        constraints.ndt_max = { coefficient: (c) => toPercent(c.NDT), max: targets.NDT * s.ndtMaxOfRequirement, target: targets.NDT };
+    }
+    Object.assign(constraints, {
         ee: { coefficient: (c) => toPercent(c.EE ?? 0), max: s.eeMaxPercent },
         fdn: { coefficient: (c) => toPercent(c.FDN), min: s.fdnMinPercent },
         cnf: { coefficient: (c) => toPercent(c.CNF ?? 0), max: s.cnfMaxPercent },
         urea: { coefficient: (c) => toPercent(c.NNP), max: (s.ureaMaxPercent * UREA_PB_EQUIVALENT) / 1000 },
         nnp_share: { coefficient: (c) => c.NNP - c.PB * s.nnpMaxShareOfPb, max: 0 },
         s: { coefficient: (c) => toPercent(c.S ?? 0), max: s.sulfurMaxPercent },
-    };
+    });
     if (context.isMale) {
         constraints.ca_p = { coefficient: (c) => c.Ca - s.caPMinMale * c.P, min: 0 };
     }
@@ -183,15 +192,40 @@ function buildModel(prepared, targets, { strictNutrients, limits, safety }) {
  * Resolve o modelo; se for inviável, descobre quais travas de segurança impedem a
  * solução (retirando uma por vez).
  */
+// Tetos de PB e NDT são preferência: se impedirem a dieta, sobem aos poucos (em % da
+// exigência) até a dieta fechar; em último caso saem. Sempre com aviso.
+const SOFT_LIMITS = ['pb_max', 'ndt_max'];
+const SOFT_STEPS = [1.2, 1.3, 1.5, 2.0];
+
 function solve(prepared, targets, options) {
     const solution = solver.Solve(buildModel(prepared, targets, options));
-    if (solution.feasible) return { solution, blocking: [] };
+    if (solution.feasible) return { solution, blocking: [], relaxed: [], options };
 
-    const blocking = Object.keys(options.safety).filter((code) => {
-        const { [code]: _removed, ...rest } = options.safety;
-        return solver.Solve(buildModel(prepared, targets, { ...options, safety: rest })).feasible;
+    const soft = Object.keys(options.safety).filter((code) => SOFT_LIMITS.includes(code));
+    const hardSafety = Object.fromEntries(Object.entries(options.safety).filter(([code]) => !soft.includes(code)));
+    const hardOptions = { ...options, safety: hardSafety };
+    if (soft.length > 0) {
+        for (const factor of [...SOFT_STEPS, null]) {
+            const raised = factor === null ? {} : Object.fromEntries(soft.map((code) => [code, { ...options.safety[code], max: options.safety[code].target * factor }]));
+            const attemptOptions = { ...options, safety: { ...hardSafety, ...raised } };
+            const relaxedSolution = solver.Solve(buildModel(prepared, targets, attemptOptions));
+            if (relaxedSolution.feasible) {
+                // Só os tetos que de fato passaram do limite original entram no aviso.
+                const exceeded = soft.filter((code) => {
+                    const def = options.safety[code];
+                    const lhs = prepared.reduce((sum, p, index) => sum + (relaxedSolution[`ing_${index}`] || 0) * def.coefficient(p.comp), 0);
+                    return lhs > def.max + 1e-6;
+                });
+                return { solution: relaxedSolution, blocking: [], relaxed: exceeded.length ? exceeded : soft, raisedTo: factor, options: attemptOptions };
+            }
+        }
+    }
+
+    const blocking = Object.keys(hardOptions.safety).filter((code) => {
+        const { [code]: _removed, ...rest } = hardOptions.safety;
+        return solver.Solve(buildModel(prepared, targets, { ...hardOptions, safety: rest })).feasible;
     });
-    return { solution: null, blocking };
+    return { solution: null, blocking, relaxed: [], options: hardOptions };
 }
 
 const warning = (code, params = {}) => ({ code, severity: DIET_WARNINGS[code].severity, params });
@@ -224,7 +258,15 @@ function safetyChecks(included, context) {
         return { code, value: rounded, limit, kind, ok, incomplete };
     };
 
+    // PB e NDT em % da exigência (teto), sem limite quando a exigência não existe.
+    const { targets } = context;
+    const ofRequirement = (supplied, target) => (Number.isFinite(target) && target > 0 ? (supplied / target) * 100 : null);
+    const pbLimit = Number.isFinite(targets?.PB) && targets.PB > 0 ? round(s.pbMaxOfRequirement * 100, 2) : null;
+    const ndtLimit = Number.isFinite(targets?.NDT) && targets.NDT > 0 ? round(s.ndtMaxOfRequirement * 100, 2) : null;
+
     return [
+        check('pb_max', ofRequirement(toPercent(totalPB), targets?.PB), pbLimit, 'max'),
+        check('ndt_max', ofRequirement(toPercent(sum((c) => c.NDT)), targets?.NDT), ndtLimit, 'max'),
         check('ee', ee.value === null ? null : toPercent(ee.value), s.eeMaxPercent, 'max', ee.incomplete),
         check('fdn', toPercent(sum((c) => c.FDN)), s.fdnMinPercent, 'min'),
         check('cnf', cnf.value === null ? null : toPercent(cnf.value), s.cnfMaxPercent, 'max', cnf.incomplete),
@@ -461,6 +503,7 @@ function calculateDiet(animalInput, ingredients) {
         species: SPECIES_CODES[animalInput.especieId],
         isMale: MALE_SEX_IDS.has(animalInput.sexoId),
         meanWeight: (Number(animalInput.pesoInicial) + Number(animalInput.pesoFinal)) / 2,
+        targets,
     };
 
     // Suplemento de bovino não entra em dieta de ovino (cobre).
@@ -498,15 +541,23 @@ function calculateDiet(animalInput, ingredients) {
     const safety = safetyConstraints(context);
     const infeasibleWarnings = (blocking, strict) => {
         if (blocking.length > 0) return [warning('safety_infeasible', { checks: blocking })];
-        return strict ? [warning('nutrition_infeasible')] : [warning('safety_infeasible', { checks: Object.keys(safety) })];
+        const hard = Object.keys(safety).filter((code) => !SOFT_LIMITS.includes(code));
+        return strict ? [warning('nutrition_infeasible')] : [warning('safety_infeasible', { checks: hard })];
     };
 
-    const optimalOptions = { strictNutrients: true, limits: 'user', safety };
-    const optimal = solve(prepared, targets, optimalOptions);
+    // Teto de PB/NDT relaxado: o excesso é inevitável com estes alimentos e limites.
+    const relaxedWarnings = (attempt) => {
+        if (attempt.relaxed.length === 0) return [];
+        return attempt.raisedTo === null
+            ? [warning('excess_unavoidable_no_limit', { checks: attempt.relaxed })]
+            : [warning('excess_unavoidable', { checks: attempt.relaxed, percent: round(attempt.raisedTo * 100, 0) })];
+    };
+
+    const optimal = solve(prepared, targets, { strictNutrients: true, limits: 'user', safety });
     if (optimal.solution) {
-        const result = processSolution(optimal.solution, prepared, requirements, targetCMS_g, 'Solução Ótima Encontrada', globalWarnings);
+        const result = processSolution(optimal.solution, prepared, requirements, targetCMS_g, 'Solução Ótima Encontrada', [...globalWarnings, ...relaxedWarnings(optimal)]);
         // A explicação do custo só faz sentido com preços.
-        result.costInsights = noPrices ? null : costInsights(prepared, targets, optimalOptions, optimal.solution, targetCMS_g / 1000);
+        result.costInsights = noPrices ? null : costInsights(prepared, targets, optimal.options, optimal.solution, targetCMS_g / 1000);
         return { hasConflict: false, result, animalRequirements: requirements };
     }
 
@@ -518,12 +569,12 @@ function calculateDiet(animalInput, ingredients) {
         resultIdeal: processSolution(
             ideal.solution, prepared, requirements, targetCMS_g,
             'Atende a nutrição sem os limites de inclusão do usuário.',
-            [...globalWarnings, ...(ideal.solution ? [] : infeasibleWarnings(ideal.blocking, true))]
+            [...globalWarnings, ...relaxedWarnings(ideal), ...(ideal.solution ? [] : infeasibleWarnings(ideal.blocking, true))]
         ),
         resultRealistic: processSolution(
             realistic.solution, prepared, requirements, targetCMS_g,
             'Respeita os limites do usuário, mas não atende a nutrição.',
-            [...globalWarnings, ...(realistic.solution ? [] : infeasibleWarnings(realistic.blocking, false))]
+            [...globalWarnings, ...relaxedWarnings(realistic), ...(realistic.solution ? [] : infeasibleWarnings(realistic.blocking, false))]
         ),
         animalRequirements: requirements,
     };

@@ -21,6 +21,10 @@ const DIET_SAFETY = {
     concentrateAdaptationPercent: 60, // Acima disso, a dieta exige adaptação
     maleUrolithiasisConcentratePercent: 50, // Macho com muito concentrado: cloreto de amônio
     fdnIntakeMaxPercentBW: 1.4,
+    // Teto de PB e NDT em relação à exigência (1,10 = até 10% acima). A formulação só
+    // tinha mínimos: sem preço (ou com concentrado barato) o excesso ficava solto.
+    pbMaxOfRequirement: 1.10,
+    ndtMaxOfRequirement: 1.10,
     // PDR e PNDR mínimos como restrição da formulação. Desligado até a revisão técnica:
     // com a PNDR do BR-CO, dietas comuns passam a exigir muito farelo e PB bem acima do
     // necessário. Ligado ou não, PDR e PNDR sempre aparecem no balanço.
@@ -49,6 +53,8 @@ const TARGET_SPECIES_CODES = TARGET_SPECIES.map((s) => s.code);
  * Verificações exibidas no resultado. `unit` é a unidade do valor calculado.
  */
 const SAFETY_CHECKS = [
+    { code: 'pb_max', unit: '% da exigência', label: L('Proteína bruta em relação à exigência', 'Crude protein vs. requirement') },
+    { code: 'ndt_max', unit: '% da exigência', label: L('NDT em relação à exigência', 'TDN vs. requirement') },
     { code: 'ee', unit: '%MS', label: L('Gordura (extrato etéreo)', 'Fat (ether extract)') },
     { code: 'fdn', unit: '%MS', label: L('Fibra (FDN total)', 'Fiber (total NDF)') },
     { code: 'cnf', unit: '%MS', label: L('Carboidratos não fibrosos', 'Non-fiber carbohydrates') },
@@ -140,6 +146,20 @@ const DIET_WARNINGS = {
         message: L(
             'A dieta tem consumo de FDN de {value}% do peso vivo (acima de {max}%): o enchimento do rúmen pode impedir o animal de comer tudo. Reduza o volumoso mais fibroso.',
             'The diet has an NDF intake of {value}% of body weight (above {max}%): rumen fill may keep the animal from eating it all. Reduce the most fibrous roughage.'
+        ),
+    },
+    excess_unavoidable: {
+        severity: 'warning',
+        message: L(
+            'Com estes alimentos e limites não dá para manter {checks} até 10% acima da exigência; o teto subiu para {percent}% da exigência. Para reduzir o excesso, inclua um alimento com menos proteína ou energia, ou ajuste os limites de inclusão.',
+            'With these foods and limits, {checks} cannot be kept within 10% of the requirement; the ceiling was raised to {percent}% of the requirement. To reduce the excess, add a food with less protein or energy, or adjust the inclusion limits.'
+        ),
+    },
+    excess_unavoidable_no_limit: {
+        severity: 'warning',
+        message: L(
+            'Com estes alimentos e limites, {checks} fica mais que o dobro da exigência; a dieta foi calculada sem teto. Revise os alimentos e os limites de inclusão.',
+            'With these foods and limits, {checks} is more than twice the requirement; the diet was formulated without a ceiling. Review the foods and the inclusion limits.'
         ),
     },
     nutrition_infeasible: {
