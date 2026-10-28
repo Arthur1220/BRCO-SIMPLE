@@ -14,6 +14,7 @@ process.env.DYNAMODB_ENDPOINT = process.env.DYNAMODB_ENDPOINT || 'http://localho
 process.env.FOODS_TABLE = `${prefix}-foods`;
 process.env.CALCULATIONS_TABLE = `${prefix}-calculations`;
 process.env.USAGE_LOGS_TABLE = `${prefix}-usage-logs`;
+process.env.FOOD_HISTORY_TABLE = `${prefix}-food-history`;
 process.env.PANEL_PASSWORD = 'senha-de-teste';
 process.env.ADMIN_JWT_SECRET = 'segredo-de-teste-com-pelo-menos-32-caracteres';
 delete process.env.NETLIFY_PROXY_SECRET;

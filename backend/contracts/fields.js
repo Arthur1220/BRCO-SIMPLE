@@ -34,7 +34,8 @@ const ndtFields = {
 const ingredientFields = {
     min: { label: L('Inclusão mínima', 'Minimum inclusion'), unit: '%', min: 0, max: 100, step: 0.1, placeholder: '0' },
     max: { label: L('Inclusão máxima', 'Maximum inclusion'), unit: '%', min: 0, max: 100, step: 0.1, placeholder: '100' },
-    price: { label: L('Preço', 'Price'), unit: 'R$/kg MS', min: 0, max: 100000, step: 0.01, placeholder: '1.50' },
+    // A unidade depende de priceBasis (R$/kg MS ou R$/kg de matéria natural).
+    price: { label: L('Preço', 'Price'), unit: 'R$/kg', min: 0, max: 100000, step: 0.01, placeholder: '1.50' },
 };
 
 // Composição de alimento personalizado, na mesma unidade dos alimentos cadastrados.
@@ -55,6 +56,18 @@ const foodSafetyFields = {
     Cu: { label: L('Cobre (Cu)', 'Copper (Cu)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.1, placeholder: '10' },
     Mo: { label: L('Molibdênio (Mo)', 'Molybdenum (Mo)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.01, placeholder: '1' },
     S: { label: L('Enxofre (S)', 'Sulfur (S)'), unit: 'g/kg MS', min: 0, max: 1000, step: 0.01, placeholder: '2' },
+    PDR: { label: L('Proteína degradável no rúmen (PDR)', 'Rumen-degradable protein (RDP)'), unit: 'g/kg MS', min: 0, max: 3000, step: 0.1, placeholder: '70' },
+    PNDR: { label: L('Proteína não degradável no rúmen (PNDR)', 'Rumen-undegradable protein (RUP)'), unit: 'g/kg MS', min: 0, max: 3000, step: 0.1, placeholder: '40' },
+    Zn: { label: L('Zinco (Zn)', 'Zinc (Zn)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.1, placeholder: '30' },
+    Mn: { label: L('Manganês (Mn)', 'Manganese (Mn)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.1, placeholder: '40' },
+    Fe: { label: L('Ferro (Fe)', 'Iron (Fe)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.1, placeholder: '100' },
+    Co: { label: L('Cobalto (Co)', 'Cobalt (Co)'), unit: 'mg/kg MS', min: 0, max: 100000, step: 0.01, placeholder: '0.2' },
+};
+
+// Lote e trato (dieta no cocho).
+const dietLotFields = {
+    animals: { label: L('Animais no lote', 'Animals in the group'), unit: 'animais', min: 1, max: 100000, step: 1, placeholder: '20' },
+    feedingsPerDay: { label: L('Tratos por dia', 'Feedings per day'), unit: 'tratos/d', min: 1, max: 6, step: 1, placeholder: '2' },
 };
 
 const MESSAGES = {
@@ -109,6 +122,6 @@ function publicField(name, def, locale, extra = {}) {
 }
 
 module.exports = {
-    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields, foodSafetyFields,
+    requirementFields, dietAnimalFields, ndtFields, ingredientFields, customFoodFields, foodSafetyFields, dietLotFields,
     numberField, publicField, format,
 };

@@ -8,6 +8,7 @@ const { client, TABLES } = require('./dynamo');
  * - foods:        id (N). O item id=0 guarda o contador de ids (auto incremento).
  * - calculations: id (S). Atributo `ttl` (epoch em segundos): o DynamoDB apaga após 6 meses.
  * - usageLogs:    day (S, AAAA-MM-DD UTC) + sk (S, createdAt#id): consultas por período.
+ * - foodHistory:  foodId (N) + sk (S, at#uuid): alterações do cadastro de alimentos.
  */
 const definitions = () => [
     {
@@ -29,6 +30,17 @@ const definitions = () => [
         ],
         KeySchema: [
             { AttributeName: 'day', KeyType: 'HASH' },
+            { AttributeName: 'sk', KeyType: 'RANGE' },
+        ],
+    },
+    {
+        TableName: TABLES.foodHistory,
+        AttributeDefinitions: [
+            { AttributeName: 'foodId', AttributeType: 'N' },
+            { AttributeName: 'sk', AttributeType: 'S' },
+        ],
+        KeySchema: [
+            { AttributeName: 'foodId', KeyType: 'HASH' },
             { AttributeName: 'sk', KeyType: 'RANGE' },
         ],
     },

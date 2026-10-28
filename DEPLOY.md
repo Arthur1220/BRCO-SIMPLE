@@ -9,7 +9,7 @@ Navegador ──HTTPS──▶ Netlify (frontend + proxy /api, assinado) ──H
 - O navegador nunca fala direto com a Lambda e **não carrega nenhuma chave**.
 - O Netlify assina cada requisição do proxy (header `X-Nf-Sign`). A API recusa (403) tudo o que não vem assinado, inclusive acessos diretos à Function URL.
 - A Lambda roda a mesma aplicação Express do desenvolvimento (`backend/lambda.js`, via `serverless-http`).
-- Os dados ficam em 3 tabelas DynamoDB sob demanda, com backup contínuo (PITR, 35 dias) e `DeletionPolicy: Retain`: apagar a stack **não** apaga os dados.
+- Os dados ficam em 4 tabelas DynamoDB sob demanda (alimentos, cálculos, uso e histórico de alterações dos alimentos), com backup contínuo (PITR, 35 dias) e `DeletionPolicy: Retain`: apagar a stack **não** apaga os dados.
 
 Toda a infraestrutura está em `backend/template.yaml` (AWS SAM).
 
@@ -98,7 +98,7 @@ Tudo o que entra na `main` é publicado sozinho:
 
 | O quê | Quem faz | Quando |
 |---|---|---|
-| Testes do backend (com DynamoDB Local) e build do frontend | GitHub Actions (`.github/workflows/ci.yml`) | Todo PR e todo push |
+| Testes do backend (com DynamoDB Local), build do frontend e testes de ponta a ponta (Playwright) | GitHub Actions (`.github/workflows/ci.yml`) | Todo PR e todo push |
 | Deploy do backend (`sam build` + `sam deploy`) | GitHub Actions, job `deploy-backend` | Push na `main` que muda `backend/**`, **só se os testes passarem** |
 | Deploy do frontend | Netlify (deploy contínuo pelo Git, site `brcosimple`) | Push na `main` que muda `frontend/**` (`ignore` no `frontend/netlify.toml`) |
 

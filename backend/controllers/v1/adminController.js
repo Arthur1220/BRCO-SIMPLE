@@ -24,9 +24,11 @@ const usageLabel = (type, locale) => (USAGE_TYPE_LABELS[type] ? t(USAGE_TYPE_LAB
  * POST /api/v1/admin/login
  */
 async function login(req, res) {
-    const { password } = req.body || {};
+    const { password, name } = req.body || {};
     if (process.env.PANEL_PASSWORD && safeEqual(password, process.env.PANEL_PASSWORD)) {
-        return res.json({ token: issueAdminToken(), expiresIn: 2 * 60 * 60 });
+        // Nome de quem entrou: identifica as alterações no histórico do cadastro.
+        const editor = typeof name === 'string' && name.trim() ? name.trim().slice(0, 60) : null;
+        return res.json({ token: issueAdminToken(editor), expiresIn: 2 * 60 * 60, name: editor });
     }
     logger.warn('Tentativa de login no painel com senha incorreta.');
     return sendError(req, res, 401, 'UNAUTHORIZED', 'Senha incorreta.', undefined, WRONG_PASSWORD);

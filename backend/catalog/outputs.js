@@ -125,9 +125,32 @@ const ndtOutputs = [
 const DIET_BALANCE = [
     { key: 'Proteína Bruta', code: 'pb', label: L('Proteína bruta', 'Crude protein') },
     { key: 'NDT', code: 'ndt', label: L('Nutrientes digestíveis totais', 'Total digestible nutrients') },
+    { key: 'PDR', code: 'pdr', label: L('Proteína degradável no rúmen', 'Rumen-degradable protein') },
+    { key: 'PNDR', code: 'pndr', label: L('Proteína não degradável no rúmen', 'Rumen-undegradable protein') },
     { key: 'Cálcio', code: 'ca', label: L('Cálcio', 'Calcium') },
     { key: 'Fósforo', code: 'p', label: L('Fósforo', 'Phosphorus') },
+    { key: 'Cobre', code: 'cu', label: L('Cobre', 'Copper') },
+    { key: 'Zinco', code: 'zn', label: L('Zinco', 'Zinc') },
+    { key: 'Manganês', code: 'mn', label: L('Manganês', 'Manganese') },
+    { key: 'Ferro', code: 'fe', label: L('Ferro', 'Iron') },
+    { key: 'Cobalto', code: 'co', label: L('Cobalto', 'Cobalt') },
 ];
+
+// Explicação do custo da dieta (costInsights do dietService).
+const COST_INSIGHTS = {
+    nutrient: L('Exigência de {label}: cada 1% a mais custaria {value}/animal/dia.', '{label} requirement: each extra 1% would cost {value}/animal/day.'),
+    max: L('{food} está no limite máximo ({limit}%): 1 ponto a mais de folga economizaria {value}/animal/dia.', '{food} is at its maximum ({limit}%): 1 more point would save {value}/animal/day.'),
+    min: L('{food} está no limite mínimo ({limit}%): 1 ponto a menos economizaria {value}/animal/dia.', '{food} is at its minimum ({limit}%): 1 point less would save {value}/animal/day.'),
+    safety: L('Trava no limite: {label}.', 'Safety limit reached: {label}.'),
+    unusedEnters: L('{food} entraria na dieta custando até {price} (hoje {current}).', '{food} would enter the diet at up to {price} (now {current}).'),
+    unusedNever: L('{food} não entra na dieta nem de graça com as exigências e limites atuais.', '{food} would not enter the diet even for free with the current requirements and limits.'),
+};
+const NUTRIENT_SHORT = {
+    PB: L('proteína bruta', 'crude protein'),
+    NDT: L('NDT', 'TDN'),
+    PDR: L('PDR', 'RDP'),
+    PNDR: L('PNDR', 'RUP'),
+};
 
 const BALANCE_STATUS = {
     ideal: L('Ideal', 'Ideal'),
@@ -169,5 +192,5 @@ module.exports = {
     normalizeUnit,
     REQUIREMENT_GROUPS, REQUIREMENT_HIGHLIGHTS, requirementOutputs,
     NDT_GROUPS, NDT_HIGHLIGHTS, ndtOutputs,
-    DIET_BALANCE, BALANCE_STATUS, DIET_OPTIONS, DIET_STATUS,
+    DIET_BALANCE, BALANCE_STATUS, DIET_OPTIONS, DIET_STATUS, COST_INSIGHTS, NUTRIENT_SHORT,
 };

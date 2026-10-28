@@ -5,9 +5,10 @@ import apiClient, { setAdminToken, clearAdminToken } from './axiosSetup.js';
 /**
  * Faz login no painel de admin e guarda o token de sessão.
  * @param {string} password - A senha digitada pelo usuário.
+ * @param {string} name - Quem está entrando (aparece no histórico de alterações dos alimentos).
  */
-export const loginAdmin = async (password) => {
-  const response = await apiClient.post('/v1/admin/login', { password });
+export const loginAdmin = async (password, name) => {
+  const response = await apiClient.post('/v1/admin/login', { password, name });
   setAdminToken(response.data.token);
   return response.data;
 };
@@ -62,4 +63,36 @@ export const updateFood = async (id, foodData) => {
  */
 export const deleteFood = async (id) => {
   await apiClient.delete(`/v1/admin/foods/${id}`);
+};
+
+/**
+ * Avisos de consistência de um alimento ainda não salvo (composição, PDR/PNDR, Ca e P...).
+ */
+export const checkFood = async (foodData) => {
+  const response = await apiClient.post('/v1/admin/foods/check', foodData);
+  return response.data.quality;
+};
+
+/**
+ * Avisos de consistência de todos os alimentos: [{ id, name, quality }].
+ */
+export const getFoodsQuality = async () => {
+  const response = await apiClient.get('/v1/admin/foods/quality');
+  return response.data;
+};
+
+/**
+ * Histórico de alterações de um alimento (mais recente primeiro).
+ */
+export const getFoodHistory = async (id) => {
+  const response = await apiClient.get(`/v1/admin/foods/${id}/history`);
+  return response.data;
+};
+
+/**
+ * Últimas alterações do cadastro de alimentos.
+ */
+export const getRecentHistory = async () => {
+  const response = await apiClient.get('/v1/admin/history');
+  return response.data;
 };

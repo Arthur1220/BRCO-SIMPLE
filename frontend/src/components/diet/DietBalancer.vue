@@ -1,12 +1,27 @@
 <template>
   <p v-if="store.selectedIngredients.length === 0" class="empty">{{ $t('balancer.empty') }}</p>
 
-  <div v-else-if="fields" class="table-wrap">
+  <div v-else-if="fields" class="balancer-options">
+    <fieldset class="basis">
+      <legend class="label">{{ $t('balancer.priceBasis') }}</legend>
+      <div class="segmented" role="radiogroup">
+        <label v-for="basis in catalog.diet.priceBases" :key="basis.code" class="segment" :class="{ 'is-active': store.priceBasis === basis.code }">
+          <input v-model="store.priceBasis" type="radio" name="price-basis" :value="basis.code" class="visually-hidden">
+          {{ basis.label }}
+        </label>
+      </div>
+    </fieldset>
+    <div class="lot">
+      <NumberField v-for="field in lotFields" :key="field.name" :field="field" id-prefix="lot-" v-model="store.lot[field.name]" />
+    </div>
+  </div>
+
+  <div v-if="store.selectedIngredients.length > 0 && fields" class="table-wrap">
     <table class="table balancer">
       <thead>
         <tr>
           <th>{{ $t('balancer.food') }}</th>
-          <th v-for="field in fields" :key="field.name">{{ field.label }} <span class="unit">({{ field.unit }})</span></th>
+          <th v-for="field in fields" :key="field.name">{{ field.label }} <span class="unit">({{ field.name === 'price' ? priceUnit : field.unit }})</span></th>
           <th><span class="visually-hidden">{{ $t('common.remove') }}</span></th>
         </tr>
       </thead>
@@ -45,12 +60,16 @@
 import { computed } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
 import { useCatalogStore } from '@/stores/catalogStore';
+import NumberField from '@/components/ui/NumberField.vue';
 
 const store = useDietStore();
 const catalog = useCatalogStore();
 
 // Ordem de exibição: preço, mínimo, máximo.
 const ORDER = ['price', 'min', 'max'];
+const lotFields = computed(() => catalog.form('dietLot')?.fields ?? []);
+const priceUnit = computed(() => catalog.diet?.priceBases.find((b) => b.code === store.priceBasis)?.unit ?? '');
+
 const fields = computed(() => {
   const form = catalog.form('dietIngredient');
   return form ? ORDER.map((name) => form.fields.find((f) => f.name === name)) : null;
@@ -69,7 +88,31 @@ const fields = computed(() => {
 
 .input-sm { height: 34px; max-width: 120px; font-size: 0.875rem; }
 
+.balancer-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  align-items: flex-end;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.basis { border: 0; margin: 0; padding: 0; }
+.basis legend { margin-bottom: 6px; }
+
+.segmented { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+.segment { padding: 7px 12px; font-size: 0.8125rem; cursor: pointer; color: var(--ink-2); }
+.segment + .segment { border-left: 1px solid var(--line-strong); }
+.segment.is-active { background: var(--brand); color: #fff; }
+.segment:focus-within { outline: 2px solid var(--brand); outline-offset: -2px; }
+
+.lot { display: grid; grid-template-columns: repeat(2, minmax(120px, 160px)); gap: 12px; }
+
 @media (max-width: 720px) {
+  .balancer-options { padding: 14px 16px; }
+  .basis, .segmented { width: 100%; }
+  .segment { flex: 1; text-align: center; }
+  .lot { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .balancer th:first-child,
   .balancer td:first-child { padding-left: 16px; }
 }

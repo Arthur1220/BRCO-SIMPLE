@@ -140,3 +140,36 @@ test('conflito: "priorizar a nutrição" ignora os limites do usuário; "respeit
   assert.ok(percentOf(realistic, 'Milho fubá') <= 1.01);
   assert.ok(realistic.safetyChecks.every((c) => c.ok !== false));
 });
+
+test('balanço: PDR, PNDR e microminerais aparecem; micromineral sem dado fica sem fornecimento', () => {
+  const withFractions = [silagem, milho, soja, calcario].map((f) => ({ ...f, PDR: f.PB * 0.6, PNDR: f.PB * 0.4 }));
+  const { result } = calculateDiet(animal, withFractions);
+  assert.ok(result.dietBalance['PDR'].required > 0);
+  assert.ok(result.dietBalance['PNDR'].supplied > 0);
+  assert.equal(result.dietBalance['Zinco'].supplied, null);
+  const withZinc = calculateDiet(animal, withFractions.map((f) => ({ ...f, Zn: 30 }))).result;
+  assert.ok(Math.abs(withZinc.dietBalance['Zinco'].supplied - withZinc.dietSupply['Consumo Estimado (g)'] / 1000 * 30) < 0.05);
+});
+
+test('enchimento: consumo de FDN acima de 1,4% do peso vivo gera aviso', () => {
+  const capimRuim = { name: 'Capim seco', category: 'VOLUMOSO', PB: 40, NDT: 450, FDNcp: 800, EE: 15, CNF: 50, Ca: 3, P: 1.5, min: 90, max: 100, price: 0.1 };
+  const output = calculateDiet(goat, [capimRuim, soja]);
+  const result = output.result ?? output.resultRealistic;
+  assert.ok(result.warnings.some((w) => w.code === 'intake_fill'));
+});
+
+test('custo: aponta o limite do usuário que encarece e o preço em que um alimento entraria', () => {
+  const trigo = { name: 'Farelo de trigo', category: 'CONCENTRADO', PB: 174.5, NDT: 700.5, FDNcp: 383.4, EE: 38.1, CNF: 344.6, Ca: 1.7, P: 10.4, min: 0, max: 100, price: 3 };
+  const { result } = calculateDiet(animal, [silagem, { ...milho, max: 20 }, soja, calcario, trigo]);
+  const milhoMax = result.costInsights.limiting.find((item) => item.kind === 'max' && item.foodName === 'Milho fubá');
+  assert.ok(milhoMax.deltaPerDay < 0);
+  const unused = result.costInsights.unusedFoods.find((item) => item.foodName === 'Farelo de trigo');
+  assert.ok(unused.breakEvenPrice > 0 && unused.breakEvenPrice < 3);
+  // No preço de equilíbrio (um pouco abaixo), o farelo entra na dieta
+  const cheaper = calculateDiet(animal, [silagem, { ...milho, max: 20 }, soja, calcario, { ...trigo, price: unused.breakEvenPrice * 0.98 }]).result;
+  assert.ok(percentOf(cheaper, 'Farelo de trigo') > 0);
+});
+
+test('PDR/PNDR: fora da formulação por padrão (aguardando revisão técnica)', () => {
+  assert.equal(DIET_SAFETY.proteinFractionsInFormulation, false);
+});

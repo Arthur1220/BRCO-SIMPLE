@@ -149,7 +149,8 @@ test('diet: solução ótima com kg, custo e status do balanço calculados no se
   const expectedKg = Math.round(solution.totals.intakeKgPerDay * soja.percent / 100 * 1000) / 1000;
   assert.ok(Math.abs(soja.kgPerDay - expectedKg) <= 0.002);
 
-  assert.deepEqual(solution.balance.map((b) => b.code), ['pb', 'ndt', 'ca', 'p']);
+  assert.deepEqual(solution.balance.map((b) => b.code), ['pb', 'ndt', 'pdr', 'pndr', 'ca', 'p', 'cu', 'zn', 'mn', 'fe', 'co']);
+  assert.equal(solution.balance.find((b) => b.code === 'zn').supplied, null); // nenhum alimento com Zn
   assert.ok(solution.balance.every((b) => ['ideal', 'deficit', 'excess', 'info'].includes(b.status)));
   assert.equal(res.body.requirements.highlights[0].code, 'cms_g_d');
 
@@ -159,6 +160,58 @@ test('diet: solução ótima com kg, custo e status do balanço calculados no se
   assert.equal(caP.ok, true);
   assert.ok(solution.warnings.every((w) => w.message && w.severityLabel));
   assert.ok(solution.warnings.some((w) => w.code === 'missing_data' && w.message.includes('cobre')));
+});
+
+test('diet: preço por kg de matéria natural, trato do lote e custo por kg de ganho', async () => {
+  const body = (priceBasis) => ({
+    animal,
+    priceBasis,
+    lot: { animals: 20, feedingsPerDay: 2 },
+    ingredients: [
+      { foodId: foodIds.silagem, price: 0.1 },
+      { foodId: foodIds.milho, price: 1.0 },
+      { foodId: foodIds.soja, price: 2.0 },
+      { foodId: foodIds.calcario, price: 0.5 },
+    ],
+  });
+  const res = await server.request('POST', '/api/v1/calculations/diet', { body: body('MN') });
+  assert.equal(res.status, 201);
+  const { solution } = res.body;
+  assert.equal(solution.priceBasis, 'MN');
+
+  // R$/kg MN informado → R$/kg MS no cálculo (MS do cadastro: 880 g/kg)
+  const milho = solution.ingredients.find((ing) => ing.foodId === foodIds.milho);
+  assert.ok(Math.abs(milho.price - 1.0 / 0.88) < 0.001);
+  assert.equal(milho.priceAsFed, 1);
+  assert.ok(Math.abs(milho.kgAsFedPerDay - milho.kgPerDay / 0.88) < 0.002);
+
+  // Lote: 20 animais, 2 tratos
+  const { feeding, totals } = solution;
+  assert.equal(feeding.animals, 20);
+  assert.ok(Math.abs(feeding.kgDryMatterPerDay - totals.intakeKgPerDay * 20) < 0.02);
+  const milhoTrato = feeding.perFeeding.find((item) => item.foodId === foodIds.milho);
+  assert.ok(Math.abs(milhoTrato.kgAsFed - (milho.kgAsFedPerDay * 20) / 2) < 0.02);
+  assert.ok(Math.abs(totals.costPerKgGain - totals.costPerDay / 0.2) < 0.02); // GMD 200 g/d
+
+  // Mesmos números informados como R$/kg MS mudam o preço usado
+  const ms = await server.request('POST', '/api/v1/calculations/diet', { body: body('MS') });
+  assert.equal(ms.body.solution.ingredients.find((ing) => ing.foodId === foodIds.milho).price, 1);
+
+  // Explicação do custo
+  assert.ok(Array.isArray(solution.costInsights.limiting));
+  assert.ok(solution.costInsights.limiting.every((item) => item.message));
+});
+
+test('diet: preço por matéria natural exige MS no alimento personalizado', async () => {
+  const res = await server.request('POST', '/api/v1/calculations/diet', {
+    body: {
+      animal,
+      priceBasis: 'MN',
+      ingredients: [{ custom: { name: 'Sem MS', category: 'VOLUMOSO', MS: 0, PB: 80, NDT: 550, FDNcp: 600, Ca: 4, P: 2 }, price: 0.2 }, { foodId: foodIds.milho }],
+    },
+  });
+  assert.equal(res.status, 400);
+  assert.equal(res.body.error.fields[0].code, 'ms_required_for_mn_price');
 });
 
 test('diet: sal mineral de bovino é retirado da dieta de ovinos', async () => {
@@ -201,7 +254,7 @@ test('diet: conflito devolve as duas opções para o usuário escolher', async (
   assert.equal(res.status, 201);
   assert.equal(res.body.status, 'conflict');
   assert.deepEqual(res.body.options.map((o) => o.code), ['ideal', 'realistic']);
-  assert.ok(res.body.options.every((o) => o.label && o.description && o.solution.balance.length === 4));
+  assert.ok(res.body.options.every((o) => o.label && o.description && o.solution.balance.length === 11));
 });
 
 test('diet: alimento personalizado em g/kg MS (mesma unidade do banco)', async () => {

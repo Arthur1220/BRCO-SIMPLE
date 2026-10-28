@@ -32,6 +32,10 @@ const foodSchema = z.object({
     Cu: nutrient.nullable().optional(),
     Mo: nutrient.nullable().optional(),
     S: nutrient.nullable().optional(),
+    Zn: nutrient.nullable().optional(),
+    Mn: nutrient.nullable().optional(),
+    Fe: nutrient.nullable().optional(),
+    Co: nutrient.nullable().optional(),
     targetSpecies: z.enum(TARGET_SPECIES_CODES).nullable().optional(),
 });
 

@@ -69,6 +69,7 @@ const catalogSchema = z
             dietAnimal: formSchema,
             dietIngredient: formSchema,
             customFood: formSchema,
+            dietLot: formSchema,
         }),
         diet: z.object({
             maxIngredients: z.number().int(),
@@ -77,6 +78,9 @@ const catalogSchema = z
             ingredientDefaults: z.object({ min: z.number(), max: z.number(), price: z.number() }),
             categories: z.array(z.object({ code: z.string(), label: z.string(), pluralLabel: z.string() })),
             targetSpecies: z.array(z.object({ code: z.string(), label: z.string() })).openapi({ description: 'Espécie de destino de um suplemento.' }),
+            priceBases: z.array(z.object({ code: z.string(), label: z.string(), unit: z.string() })),
+            defaultPriceBasis: z.string(),
+            lotDefaults: z.object({ animals: z.number().int(), feedingsPerDay: z.number().int() }),
             foodNutrientUnit: z.string(),
         }),
     })

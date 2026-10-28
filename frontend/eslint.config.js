@@ -10,12 +10,22 @@ export default defineConfig([
     files: ['**/*.{js,mjs,jsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/test-results/**', '**/playwright-report/**']),
 
   {
     languageOptions: {
       globals: {
         ...globals.browser,
+      },
+    },
+  },
+
+  // Configuração do Vite e testes de ponta a ponta rodam no Node.
+  {
+    files: ['vite.config.js', 'e2e/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
       },
     },
   },

@@ -27,6 +27,7 @@ const TABLES = {
     get foods() { return process.env.FOODS_TABLE || 'brco-foods'; },
     get calculations() { return process.env.CALCULATIONS_TABLE || 'brco-calculations'; },
     get usageLogs() { return process.env.USAGE_LOGS_TABLE || 'brco-usage-logs'; },
+    get foodHistory() { return process.env.FOOD_HISTORY_TABLE || 'brco-food-history'; },
 };
 
 /**

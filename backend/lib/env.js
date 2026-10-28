@@ -9,7 +9,7 @@ function validateEnv() {
         .filter((name) => !process.env[name]);
 
     if (process.env.NODE_ENV === 'production') {
-        for (const name of ['NETLIFY_PROXY_SECRET', 'FOODS_TABLE', 'CALCULATIONS_TABLE', 'USAGE_LOGS_TABLE']) {
+        for (const name of ['NETLIFY_PROXY_SECRET', 'FOODS_TABLE', 'CALCULATIONS_TABLE', 'USAGE_LOGS_TABLE', 'FOOD_HISTORY_TABLE']) {
             if (!process.env[name]) missing.push(name);
         }
     }
