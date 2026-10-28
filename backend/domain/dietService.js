@@ -1,16 +1,55 @@
 const { calculateAllRequirements } = require('./requirementService');
 const { round } = require('./calculationConstants');
 const solver = require('javascript-lp-solver');
+const {
+    DIET_SAFETY, UREA_PB_EQUIVALENT, TRUE_PROTEIN_MAX, SPECIES_CODES, MALE_SEX_IDS, DIET_WARNINGS,
+} = require('../catalog/dietSafety');
 
 /**
- * Normaliza valores nutricionais para porcentagem se parecerem estar em g/kg.
+ * Formulação de dieta de custo mínimo.
+ *
+ * Usa as exigências de requirementService sem alterá-las: aqui só ficam a
+ * otimização, o balanço e as travas de segurança da dieta (catalog/dietSafety).
+ * Todos os nutrientes dos alimentos chegam em g/kg MS (Cu e Mo em mg/kg MS).
  */
-function getNutrientPercentage(val) {
-    return val > 15 ? val / 10 : val;
+
+const isConcentrate = (category) => category === 'CONCENTRADO' || category === 'ENERGETICO' || category === 'PROTEICO';
+
+/**
+ * Valor numérico de um campo, ou null quando o dado não foi informado.
+ */
+function optionalNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
 }
 
 /**
- * Tenta buscar o valor de uma exigência usando múltiplas chaves possíveis.
+ * Composição do alimento em g/kg MS (null = dado ausente).
+ * Sem NNP informado, PB acima de 1000 g/kg (impossível para proteína verdadeira,
+ * caso da ureia) é tratada como NNP.
+ */
+function composition(ing) {
+    const PB = optionalNumber(ing.PB) ?? 0;
+    return {
+        PB,
+        NDT: optionalNumber(ing.NDT) ?? 0,
+        FDN: optionalNumber(ing.FDNcp) ?? 0,
+        Ca: optionalNumber(ing.Ca) ?? 0,
+        P: optionalNumber(ing.P) ?? 0,
+        EE: optionalNumber(ing.EE),
+        CNF: optionalNumber(ing.CNF),
+        Cu: optionalNumber(ing.Cu),
+        Mo: optionalNumber(ing.Mo),
+        S: optionalNumber(ing.S),
+        NNP: optionalNumber(ing.NNP) ?? (PB > TRUE_PROTEIN_MAX ? PB : 0),
+    };
+}
+
+const toPercent = (gPerKg) => gPerKg / 10;
+
+/**
+ * Valor de uma exigência usando a primeira chave encontrada (0 se nenhuma existir).
  */
 function getRequirementValue(requirements, possibleKeys) {
     for (const key of possibleKeys) {
@@ -18,24 +57,58 @@ function getRequirementValue(requirements, possibleKeys) {
             return requirements[key].valor_requerido;
         }
     }
-    return 0; 
+    return 0;
 }
 
 /**
- * Constrói o modelo de programação linear para o solver.
+ * Exigência dietética de um mineral, ou null quando ela não está disponível
+ * (ausente, zero ou inválida) para este animal.
  */
-function buildModel(ingredients, targets, strictNutrients = true) {
+function dietaryRequirement(requirements, key) {
+    const value = requirements[key]?.valor_requerido;
+    return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/**
+ * Travas de segurança ativas para o animal: código → { coefficient(c), min | max }.
+ */
+function safetyConstraints(context) {
+    const s = DIET_SAFETY;
+    const constraints = {
+        ee: { coefficient: (c) => toPercent(c.EE ?? 0), max: s.eeMaxPercent },
+        fdn: { coefficient: (c) => toPercent(c.FDN), min: s.fdnMinPercent },
+        cnf: { coefficient: (c) => toPercent(c.CNF ?? 0), max: s.cnfMaxPercent },
+        urea: { coefficient: (c) => toPercent(c.NNP), max: (s.ureaMaxPercent * UREA_PB_EQUIVALENT) / 1000 },
+        nnp_share: { coefficient: (c) => c.NNP - c.PB * s.nnpMaxShareOfPb, max: 0 },
+        s: { coefficient: (c) => toPercent(c.S ?? 0), max: s.sulfurMaxPercent },
+    };
+    if (context.isMale) {
+        constraints.ca_p = { coefficient: (c) => c.Ca - s.caPMinMale * c.P, min: 0 };
+    }
+    if (context.species === 'ovino') {
+        constraints.cu = { coefficient: (c) => c.Cu ?? 0, max: s.copperMaxSheep };
+    }
+    return constraints;
+}
+
+/**
+ * Monta o modelo de programação linear.
+ * - strictNutrients: exige PB e NDT mínimos;
+ * - limits: 'user' (limites informados na dieta) ou 'food' (só os padrões do alimento);
+ * - safety: travas aplicadas (código → definição).
+ */
+function buildModel(prepared, targets, { strictNutrients, limits, safety }) {
     const model = {
-        optimize: "cost",
-        opType: "min",
+        optimize: 'cost',
+        opType: 'min',
         constraints: {
-            weight: { equal: 1 }, 
+            weight: { equal: 1 },
             FDN_Volumoso: { min: 18 },
             Total_Suplemento: { max: 0.015 },
-            Total_Volumoso: { min: 0.01 }, 
-            Total_Concentrado: { min: 0.01 } 
+            Total_Volumoso: { min: 0.01 },
+            Total_Concentrado: { min: 0.01 },
         },
-        variables: {}
+        variables: {},
     };
 
     if (strictNutrients) {
@@ -43,148 +116,278 @@ function buildModel(ingredients, targets, strictNutrients = true) {
         model.constraints.NDT = { min: targets.NDT };
     }
 
-    ingredients.forEach((ing, index) => {
-        const key = `ing_${index}`;
-        const valPB = getNutrientPercentage(Number(ing.PB) || 0);
-        const valNDT = getNutrientPercentage(Number(ing.NDT) || 0);
-        const valFDN = getNutrientPercentage(Number(ing.FDNcp) || 0);
-        const cost = Number(ing.price) > 0 ? Number(ing.price) : 0.001;
+    for (const [code, def] of Object.entries(safety)) {
+        model.constraints[`safety_${code}`] = def.min !== undefined ? { min: def.min } : { max: def.max };
+    }
 
-        model.variables[key] = {
-            weight: 1, PB: valPB, NDT: valNDT, cost: cost, _originalIndex: index
+    prepared.forEach(({ ing, comp, blocked }, index) => {
+        const key = `ing_${index}`;
+        const variable = {
+            weight: 1,
+            PB: toPercent(comp.PB),
+            NDT: toPercent(comp.NDT),
+            cost: Number(ing.price) > 0 ? Number(ing.price) : 0.001,
         };
 
         if (ing.category === 'VOLUMOSO') {
-            model.variables[key].FDN_Volumoso = valFDN;
-            model.variables[key].Total_Volumoso = 1;
-        } else if (ing.category === 'CONCENTRADO' || ing.category === 'ENERGETICO' || ing.category === 'PROTEICO') {
-            model.variables[key].Total_Concentrado = 1;
+            variable.FDN_Volumoso = toPercent(comp.FDN);
+            variable.Total_Volumoso = 1;
+        } else if (isConcentrate(ing.category)) {
+            variable.Total_Concentrado = 1;
         } else if (ing.category === 'SUPLEMENTO') {
-            model.variables[key].Total_Suplemento = 1;
+            variable.Total_Suplemento = 1;
         }
 
-        let userMin = 0;
-        if (ing.min !== undefined && ing.min !== null && ing.min !== '') userMin = Number(ing.min) / 100;
+        for (const [code, def] of Object.entries(safety)) {
+            variable[`safety_${code}`] = def.coefficient(comp);
+        }
 
-        let userMax = 1;
-        if (ing.max !== undefined && ing.max !== null && ing.max !== '') userMax = Number(ing.max) / 100;
+        const source = limits === 'food'
+            ? { min: ing.foodMin, max: ing.foodMax }
+            : { min: ing.min, max: ing.max };
+        const min = optionalNumber(source.min) ?? 0;
+        const max = blocked ? 0 : (optionalNumber(source.max) ?? 100);
 
-        const minName = `limit_min_${key}`;
-        const maxName = `limit_max_${key}`;
-        model.constraints[minName] = { min: userMin };
-        model.constraints[maxName] = { max: userMax };
-        model.variables[key][minName] = 1;
-        model.variables[key][maxName] = 1;
+        model.constraints[`limit_min_${key}`] = { min: Math.min(min, max) / 100 };
+        model.constraints[`limit_max_${key}`] = { max: max / 100 };
+        variable[`limit_min_${key}`] = 1;
+        variable[`limit_max_${key}`] = 1;
+
+        model.variables[key] = variable;
     });
 
     return model;
 }
 
 /**
- * Processa a solução do solver, calculando balanço e fornecimento.
+ * Resolve o modelo; se for inviável, descobre quais travas de segurança impedem a
+ * solução (retirando uma por vez).
  */
-function processSolution(solution, ingredients, requirements, targets, targetCMS_g, status, isFeasible) {
-    let supply = { 'Consumo Estimado (g)': 0, 'Proteína Bruta (g)': 0, 'NDT (g)': 0, 'Cálcio (g)': 0, 'Fósforo (g)': 0, 'Custo Total': 0 };
-    
-    const optimizedIngredients = ingredients.map((ing, index) => {
-        const key = `ing_${index}`;
-        let rawResult = solution[key] || 0;
-        if (rawResult < 0) rawResult = 0;
-        return { ...ing, percent: round(rawResult * 100, 2) };
+function solve(prepared, targets, options) {
+    const solution = solver.Solve(buildModel(prepared, targets, options));
+    if (solution.feasible) return { solution, blocking: [] };
+
+    const blocking = Object.keys(options.safety).filter((code) => {
+        const { [code]: _removed, ...rest } = options.safety;
+        return solver.Solve(buildModel(prepared, targets, { ...options, safety: rest })).feasible;
+    });
+    return { solution: null, blocking };
+}
+
+const warning = (code, params = {}) => ({ code, severity: DIET_WARNINGS[code].severity, params });
+
+/**
+ * Verificações de segurança da dieta resolvida (valor, limite e se está ok).
+ */
+function safetyChecks(included, context) {
+    const s = DIET_SAFETY;
+    const sum = (fn) => included.reduce((total, item) => total + item.x * fn(item.comp), 0);
+    // Para nutrientes opcionais: null se nenhum alimento da dieta tem o dado.
+    const optionalSum = (field) => {
+        const known = included.filter((item) => item.comp[field] !== null);
+        if (known.length === 0) return { value: null, incomplete: included.length > 0 };
+        return { value: sum((c) => c[field] ?? 0), incomplete: known.length < included.length };
+    };
+
+    const ee = optionalSum('EE');
+    const cnf = optionalSum('CNF');
+    const cu = optionalSum('Cu');
+    const sulfur = optionalSum('S');
+    const totalPB = sum((c) => c.PB);
+    const totalNNP = sum((c) => c.NNP);
+    const totalP = sum((c) => c.P);
+
+    const check = (code, value, limit, kind, incomplete = false) => {
+        // Compara já arredondado: o solver para exatamente no limite (45,0000001 é 45).
+        const rounded = value === null ? null : round(value, 2);
+        const ok = rounded === null || limit === null ? null : (kind === 'max' ? rounded <= limit : rounded >= limit);
+        return { code, value: rounded, limit, kind, ok, incomplete };
+    };
+
+    return [
+        check('ee', ee.value === null ? null : toPercent(ee.value), s.eeMaxPercent, 'max', ee.incomplete),
+        check('fdn', toPercent(sum((c) => c.FDN)), s.fdnMinPercent, 'min'),
+        check('cnf', cnf.value === null ? null : toPercent(cnf.value), s.cnfMaxPercent, 'max', cnf.incomplete),
+        check('ca_p', totalP > 0 ? sum((c) => c.Ca) / totalP : null, context.isMale ? s.caPMinMale : null, 'min'),
+        check('urea', (totalNNP / UREA_PB_EQUIVALENT) * 100, s.ureaMaxPercent, 'max'),
+        check('nnp_share', totalPB > 0 ? (totalNNP / totalPB) * 100 : 0, round(s.nnpMaxShareOfPb * 100, 2), 'max'),
+        check('cu', cu.value, context.species === 'ovino' ? s.copperMaxSheep : null, 'max', cu.incomplete),
+        check('s', sulfur.value === null ? null : toPercent(sulfur.value), s.sulfurMaxPercent, 'max', sulfur.incomplete),
+        check('concentrate', sum((c) => c.concentrate) * 100, null, 'max'),
+    ];
+}
+
+/**
+ * Avisos que dependem da dieta resolvida.
+ */
+function solutionWarnings(included, context) {
+    const s = DIET_SAFETY;
+    const warnings = [];
+    const namesMissing = (field) => included.filter((item) => item.comp[field] === null).map((item) => item.ing.name);
+
+    const fields = ['EE', 'CNF', ...(context.species === 'ovino' ? ['Cu'] : [])];
+    for (const field of fields) {
+        const foods = namesMissing(field);
+        if (foods.length > 0) warnings.push(warning('missing_data', { nutrient: field, foods }));
+    }
+
+    const sum = (fn) => included.reduce((total, item) => total + item.x * fn(item.comp), 0);
+    if (context.species === 'ovino') {
+        const cu = sum((c) => c.Cu ?? 0);
+        const mo = sum((c) => c.Mo ?? 0);
+        const ratio = mo > 0 ? cu / mo : null;
+        if (ratio !== null && (ratio < s.cuMoRange[0] || ratio > s.cuMoRange[1])) {
+            warnings.push(warning('cu_mo_ratio', { ratio: round(ratio, 1), min: s.cuMoRange[0], max: s.cuMoRange[1] }));
+        }
+    }
+
+    if (sum((c) => c.NNP) > 0) warnings.push(warning('urea_adaptation'));
+
+    const concentrate = sum((c) => c.concentrate) * 100;
+    if (concentrate > s.concentrateAdaptationPercent) {
+        warnings.push(warning('concentrate_adaptation', { value: round(concentrate, 1) }));
+    }
+    if (context.isMale && concentrate > s.maleUrolithiasisConcentratePercent) {
+        warnings.push(warning('urolithiasis_males'));
+    }
+    return warnings;
+}
+
+/**
+ * Converte a solução do solver em ingredientes, fornecimento, balanço,
+ * verificações de segurança e avisos. Solução inviável sai com tudo em 0%.
+ */
+function processSolution(solution, prepared, requirements, targetCMS_g, status, extraWarnings) {
+    const isFeasible = Boolean(solution);
+    const supply = { 'Consumo Estimado (g)': 0, 'Proteína Bruta (g)': 0, 'NDT (g)': 0, 'Cálcio (g)': 0, 'Fósforo (g)': 0, 'Custo Total': 0 };
+
+    const optimizedIngredients = prepared.map(({ ing }, index) => {
+        const raw = isFeasible ? Math.max(solution[`ing_${index}`] || 0, 0) : 0;
+        return { ...ing, percent: round(raw * 100, 2) };
     });
 
-    optimizedIngredients.forEach(ing => {
-        const inclusionDecimal = ing.percent / 100;
-        const amountInDiet_g = targetCMS_g * inclusionDecimal;
+    const totalPercent = optimizedIngredients.reduce((sum, ing) => sum + ing.percent, 0);
+    if (totalPercent > 100.1) {
+        optimizedIngredients.forEach((ing) => { ing.percent = round((ing.percent / totalPercent) * 100, 2); });
+    }
 
-        const valPB = getNutrientPercentage(Number(ing.PB) || 0);
-        const valNDT = getNutrientPercentage(Number(ing.NDT) || 0);
-        const valCa = getNutrientPercentage(Number(ing.Ca) || 0);
-        const valP = getNutrientPercentage(Number(ing.P) || 0);
-        const price = Number(ing.price || 0);
+    const included = [];
+    optimizedIngredients.forEach((ing, index) => {
+        const { comp } = prepared[index];
+        const x = ing.percent / 100;
+        const amount_g = targetCMS_g * x;
+        if (x > 0) included.push({ ing, x, comp: { ...comp, concentrate: isConcentrate(ing.category) ? 1 : 0 } });
 
-        supply['Consumo Estimado (g)'] += amountInDiet_g;
-        supply['Proteína Bruta (g)'] += amountInDiet_g * (valPB / 100);
-        supply['NDT (g)'] += amountInDiet_g * (valNDT / 100);
-        supply['Cálcio (g)'] += amountInDiet_g * (valCa / 100);
-        supply['Fósforo (g)'] += amountInDiet_g * (valP / 100);
-        supply['Custo Total'] += (amountInDiet_g / 1000) * price;
+        supply['Consumo Estimado (g)'] += amount_g;
+        supply['Proteína Bruta (g)'] += amount_g * (toPercent(comp.PB) / 100);
+        supply['NDT (g)'] += amount_g * (toPercent(comp.NDT) / 100);
+        supply['Cálcio (g)'] += amount_g * (toPercent(comp.Ca) / 100);
+        supply['Fósforo (g)'] += amount_g * (toPercent(comp.P) / 100);
+        supply['Custo Total'] += (amount_g / 1000) * Number(ing.price || 0);
     });
 
     const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
     const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
+    const reqCa = dietaryRequirement(requirements, 'Cálcio Dietético');
+    const reqP = dietaryRequirement(requirements, 'Fósforo Dietético');
 
-    const getVal = (k) => requirements[k] ? requirements[k].valor_requerido : 0;
-    const reqCa = getVal('Cálcio Mantença') + getVal('Cálcio Ganho');
-    const reqP = getVal('Fósforo Mantença') + getVal('Fósforo Ganho');
+    const line = (required, supplied) => ({
+        unit: 'g/d',
+        required: required === null ? null : round(required, 2),
+        supplied: round(supplied, 2),
+        diff: required === null ? null : round(supplied - required, 2),
+    });
 
-    const balance = {
-        'Proteína Bruta': { unit: 'g/d', required: round(targetPB_g, 2), supplied: round(supply['Proteína Bruta (g)'], 2), diff: round(supply['Proteína Bruta (g)'] - targetPB_g, 2) },
-        'NDT': { unit: 'g/d', required: round(targetNDT_g, 2), supplied: round(supply['NDT (g)'], 2), diff: round(supply['NDT (g)'] - targetNDT_g, 2) },
-        'Cálcio': { unit: 'g/d', required: round(reqCa, 2), supplied: round(supply['Cálcio (g)'], 2), diff: round(supply['Cálcio (g)'] - reqCa, 2) },
-        'Fósforo': { unit: 'g/d', required: round(reqP, 2), supplied: round(supply['Fósforo (g)'], 2), diff: round(supply['Fósforo (g)'] - reqP, 2) }
-    };
-    
-    const totalPercent = optimizedIngredients.reduce((sum, ing) => sum + ing.percent, 0);
-    if (totalPercent > 100.1) {
-        optimizedIngredients.forEach(ing => {
-            ing.percent = round((ing.percent / totalPercent) * 100, 2);
-        });
-    }
+    const warnings = [];
+    if (reqCa === null) warnings.push(warning('requirement_unavailable', { nutrient: 'Ca' }));
+    if (reqP === null) warnings.push(warning('requirement_unavailable', { nutrient: 'P' }));
+    warnings.push(...extraWarnings);
+    if (isFeasible) warnings.push(...solutionWarnings(included, prepared.context));
 
     return {
-        status: status,
-        isFeasible: isFeasible,
-        optimizedIngredients: optimizedIngredients,
+        status,
+        isFeasible,
+        optimizedIngredients,
         dietSupply: supply,
-        dietBalance: balance,
-        cost: supply['Custo Total']
+        dietBalance: {
+            'Proteína Bruta': line(targetPB_g, supply['Proteína Bruta (g)']),
+            'NDT': line(targetNDT_g, supply['NDT (g)']),
+            'Cálcio': line(reqCa, supply['Cálcio (g)']),
+            'Fósforo': line(reqP, supply['Fósforo (g)']),
+        },
+        safetyChecks: isFeasible ? safetyChecks(included, prepared.context) : [],
+        warnings,
+        cost: supply['Custo Total'],
     };
 }
 
 /**
- * Calcula a dieta ótima para o animal dado os ingredientes disponíveis.
- * Tenta primeiro uma solução ideal, e se falhar, tenta uma solução realista.
+ * Calcula a dieta de menor custo para o animal com os alimentos informados.
+ *
+ * 1. Tenta atender PB e NDT com os limites do usuário e as travas de segurança.
+ * 2. Se não der, oferece duas opções, ambas com as travas de segurança:
+ *    - ideal: atende PB e NDT ignorando os limites que o usuário definiu
+ *      (vale só o padrão de cada alimento);
+ *    - realista: respeita os limites do usuário sem exigir PB e NDT.
  */
 function calculateDiet(animalInput, ingredients) {
     const requirements = calculateAllRequirements(animalInput);
     const targetCMS_g = getRequirementValue(requirements, ['Consumo de matéria seca 1', 'Consumo de matéria seca']);
     const targetPB_g = getRequirementValue(requirements, ['Proteína bruta 1', 'Proteína bruta (g/dia)']);
     const targetNDT_g = getRequirementValue(requirements, ['Nutrientes digestíveis totais1', 'Nutrientes digestíveis totais (g/dia)']);
-    
+
     const targets = {
         PB: (targetPB_g / targetCMS_g) * 100,
-        NDT: (targetNDT_g / targetCMS_g) * 100
+        NDT: (targetNDT_g / targetCMS_g) * 100,
     };
 
-    // TENTATIVA IDEAL (Com Limites Nutricionais) ---
-    let modelIdeal = buildModel(ingredients, targets, true);
-    let solutionIdeal = solver.Solve(modelIdeal);
+    const context = {
+        species: SPECIES_CODES[animalInput.especieId],
+        isMale: MALE_SEX_IDS.has(animalInput.sexoId),
+    };
 
-    if (solutionIdeal.feasible) {
+    // Suplemento de bovino não entra em dieta de ovino (cobre).
+    const prepared = ingredients.map((ing) => ({
+        ing,
+        comp: composition(ing),
+        blocked: context.species === 'ovino' && ing.category === 'SUPLEMENTO' && ing.targetSpecies === 'BOVINO',
+    }));
+    prepared.context = context;
+
+    const blockedNames = prepared.filter((p) => p.blocked).map((p) => p.ing.name);
+    const globalWarnings = blockedNames.length > 0 ? [warning('supplement_blocked_species', { foods: blockedNames })] : [];
+
+    const safety = safetyConstraints(context);
+    const infeasibleWarnings = (blocking, strict) => {
+        if (blocking.length > 0) return [warning('safety_infeasible', { checks: blocking })];
+        return strict ? [warning('nutrition_infeasible')] : [warning('safety_infeasible', { checks: Object.keys(safety) })];
+    };
+
+    const optimal = solve(prepared, targets, { strictNutrients: true, limits: 'user', safety });
+    if (optimal.solution) {
         return {
             hasConflict: false,
-            result: processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, "Solução Ótima Encontrada", true),
-            animalRequirements: requirements
+            result: processSolution(optimal.solution, prepared, requirements, targetCMS_g, 'Solução Ótima Encontrada', globalWarnings),
+            animalRequirements: requirements,
         };
     }
 
-    // TENTATIVA REALISTA (Sem Limites Nutricionais, Respeitando SÓ Limites do Usuário) ---
-    let modelRealistic = buildModel(ingredients, targets, false);
-    let solutionRealistic = solver.Solve(modelRealistic);
-
-    const resultIdeal = processSolution(solutionIdeal, ingredients, requirements, targets, targetCMS_g, 
-        "Alerta: Inviável! Viola limites do usuário para atingir nutrição.", false);
-    
-    const resultRealistic = processSolution(solutionRealistic, ingredients, requirements, targets, targetCMS_g, 
-        "Resultado: Respeita limites, mas não atende nutrição.", solutionRealistic.feasible);
-
+    const ideal = solve(prepared, targets, { strictNutrients: true, limits: 'food', safety });
+    const realistic = solve(prepared, targets, { strictNutrients: false, limits: 'user', safety });
 
     return {
         hasConflict: true,
-        resultIdeal: resultIdeal,
-        resultRealistic: resultRealistic,
-        animalRequirements: requirements
+        resultIdeal: processSolution(
+            ideal.solution, prepared, requirements, targetCMS_g,
+            'Atende a nutrição sem os limites de inclusão do usuário.',
+            [...globalWarnings, ...(ideal.solution ? [] : infeasibleWarnings(ideal.blocking, true))]
+        ),
+        resultRealistic: processSolution(
+            realistic.solution, prepared, requirements, targetCMS_g,
+            'Respeita os limites do usuário, mas não atende a nutrição.',
+            [...globalWarnings, ...(realistic.solution ? [] : infeasibleWarnings(realistic.blocking, false))]
+        ),
+        animalRequirements: requirements,
     };
 }
 

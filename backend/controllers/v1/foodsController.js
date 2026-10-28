@@ -20,6 +20,8 @@ function presentFood(food, locale) {
         unit: DIET_RULES.foodNutrientUnit,
         MS: food.MS, MO: food.MO, EE: food.EE, PB: food.PB, PDR: food.PDR, PNDR: food.PNDR,
         NDT: food.NDT, FDNcp: food.FDNcp, CNF: food.CNF, Ca: food.Ca, P: food.P,
+        NNP: food.NNP ?? null, Cu: food.Cu ?? null, Mo: food.Mo ?? null, S: food.S ?? null,
+        targetSpecies: food.targetSpecies ?? null,
         updatedAt: food.updatedAt.toISOString(),
     };
 }

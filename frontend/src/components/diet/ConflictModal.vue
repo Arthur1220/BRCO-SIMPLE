@@ -13,16 +13,25 @@
           :key="option.code"
           type="button"
           class="option"
+          :disabled="!option.solution.feasible"
           @click="emit('select-option', option.code)"
         >
           <span class="option-title">{{ option.label }}</span>
           <span class="option-text">{{ option.description }}</span>
-          <span class="option-cost">
+          <!-- Sem solução segura: mostra o motivo (avisos de bloqueio) -->
+          <span v-for="item in blocking(option)" :key="item.code" class="option-block">{{ item.message }}</span>
+          <span v-if="!option.solution.feasible" class="option-cost">
+            <span class="pill pill-warn">{{ $t('conflict.unavailable') }}</span>
+          </span>
+          <span v-else class="option-cost">
             <span class="muted">{{ $t('conflict.estimatedCost') }}</span>
             <span class="num">{{ $t('common.currency', { value: formatMoney(option.solution.totals.costPerDay) }) }}/d</span>
           </span>
         </button>
       </div>
+      <footer class="dialog-foot">
+        <button type="button" class="btn btn-ghost" @click="emit('close')">{{ $t('conflict.back') }}</button>
+      </footer>
     </div>
   </div>
 </template>
@@ -36,8 +45,10 @@ defineProps({
   statusLabel: { type: String, default: '' },
 });
 
-const emit = defineEmits(['select-option']);
+const emit = defineEmits(['select-option', 'close']);
 const { locale } = useI18n();
+
+const blocking = (option) => (option.solution.warnings ?? []).filter((w) => w.severity === 'blocked');
 
 const formatMoney = (val) =>
   Number(val || 0).toLocaleString(locale.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -63,7 +74,12 @@ const formatMoney = (val) =>
   transition: border-color var(--ease), background-color var(--ease);
 }
 
-.option:hover { border-color: var(--brand); background: #fffaf5; }
+.option:hover:not(:disabled) { border-color: var(--brand); background: #fffaf5; }
+
+.option:disabled { cursor: not-allowed; background: var(--surface-2); }
+.option:disabled .option-title { color: var(--ink-2); }
+
+.option-block { font-size: 0.8125rem; color: var(--warn); line-height: 1.4; }
 
 .option-title { font-weight: 600; color: var(--ink); }
 .option-text { font-size: 0.875rem; color: var(--ink-2); flex: 1; }

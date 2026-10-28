@@ -18,6 +18,18 @@
       </div>
     </div>
 
+    <section v-if="solution.warnings?.length" class="panel" aria-labelledby="diet-warnings-title">
+      <header class="panel-head">
+        <h3 id="diet-warnings-title">{{ $t('dietResults.warningsTitle') }}</h3>
+      </header>
+      <ul class="warnings">
+        <li v-for="(item, index) in solution.warnings" :key="`${item.code}-${index}`" class="warning" :class="`is-${item.severity}`">
+          <span class="pill" :class="SEVERITY_CLASS[item.severity]">{{ item.severityLabel }}</span>
+          <span>{{ item.message }}</span>
+        </li>
+      </ul>
+    </section>
+
     <section class="panel">
       <header class="panel-head">
         <h3>{{ $t('dietResults.recipeTitle') }}</h3>
@@ -72,10 +84,39 @@
           <tbody>
             <tr v-for="item in solution.balance" :key="item.code">
               <td>{{ item.label }} <span class="small muted">({{ item.unit }})</span></td>
-              <td class="num">{{ formatNum(item.required) }}</td>
+              <td class="num">{{ item.required === null ? $t('dietResults.notAvailable') : formatNum(item.required) }}</td>
               <td class="num">{{ formatNum(item.supplied) }}</td>
-              <td class="num" :class="{ 'is-deficit': item.status === 'deficit' }">{{ item.diff > 0 ? '+' : '' }}{{ formatNum(item.diff) }}</td>
+              <td class="num" :class="{ 'is-deficit': item.status === 'deficit' }">{{ item.diff === null ? '—' : `${item.diff > 0 ? '+' : ''}${formatNum(item.diff)}` }}</td>
               <td><span class="pill" :class="STATUS_CLASS[item.status]">{{ item.statusLabel }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section v-if="solution.safetyChecks?.length" class="panel" aria-labelledby="diet-safety-title">
+      <header class="panel-head panel-head-stack">
+        <h3 id="diet-safety-title">{{ $t('dietResults.safetyTitle') }}</h3>
+        <p class="small muted">{{ $t('dietResults.safetyHint') }}</p>
+      </header>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ $t('dietResults.check') }}</th>
+              <th class="right">{{ $t('dietResults.value') }}</th>
+              <th class="right">{{ $t('dietResults.limit') }}</th>
+              <th>{{ $t('dietResults.status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="check in solution.safetyChecks" :key="check.code">
+              <td>{{ check.label }} <span class="small muted">({{ check.unit }})</span></td>
+              <td class="num">{{ check.value === null ? '—' : formatNum(check.value) }}</td>
+              <td class="num">{{ check.limit === null ? '—' : `${check.kind === 'max' ? '≤' : '≥'} ${formatNum(check.limit)}` }}</td>
+              <td>
+                <span class="pill" :class="checkClass(check)">{{ checkLabel(check) }}</span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -100,6 +141,20 @@ const isExporting = ref(false);
 
 // Apenas aparência: cor do selo por status.
 const STATUS_CLASS = { ideal: 'pill-ok', deficit: 'pill-warn', excess: 'pill-info', info: 'pill-info' };
+
+const SEVERITY_CLASS = { info: 'pill-info', warning: 'pill-warn', blocked: 'pill-warn' };
+
+// Com dado incompleto, "dentro do limite" não é garantido: mostra o aviso em vez do OK.
+const checkLabel = (check) => {
+  if (check.value === null) return t('dietResults.noData');
+  if (check.ok === null) return t('dietResults.noLimit');
+  if (check.ok && check.incomplete) return t('dietResults.incomplete');
+  return check.ok ? t('dietResults.within') : t('dietResults.outside');
+};
+const checkClass = (check) => {
+  if (check.ok === false) return 'pill-warn';
+  return check.ok && !check.incomplete ? 'pill-ok' : 'pill-info';
+};
 
 const balanceOk = computed(() => solution.value.balance.every((item) => item.status !== 'deficit'));
 
@@ -156,6 +211,18 @@ const exportToCsv = async () => {
 .is-zero td { color: var(--ink-3); }
 
 .is-deficit { color: var(--warn); }
+
+.panel-head-stack { flex-direction: column; align-items: flex-start; gap: 4px; }
+.panel-head-stack p { margin: 0; }
+
+.warnings { list-style: none; margin: 0; padding: 8px 24px 16px; display: flex; flex-direction: column; gap: 10px; }
+.warning { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
+.warning .pill { flex: none; }
+.warning.is-blocked { color: var(--warn); }
+
+@media (max-width: 720px) {
+  .warnings { padding: 8px 16px 14px; }
+}
 
 @media (max-width: 720px) {
   .table th:first-child,

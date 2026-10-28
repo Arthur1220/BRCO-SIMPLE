@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const { TARGET_SPECIES_CODES } = require('../catalog/dietSafety');
 
 const FOOD_CATEGORIES = ['VOLUMOSO', 'CONCENTRADO', 'SUPLEMENTO'];
 
@@ -26,6 +27,12 @@ const foodSchema = z.object({
     CNF: nutrient,
     Ca: nutrient,
     P: nutrient,
+    // Opcionais, usados pelas travas de segurança da dieta (Cu e Mo em mg/kg MS).
+    NNP: nutrient.nullable().optional(),
+    Cu: nutrient.nullable().optional(),
+    Mo: nutrient.nullable().optional(),
+    S: nutrient.nullable().optional(),
+    targetSpecies: z.enum(TARGET_SPECIES_CODES).nullable().optional(),
 });
 
 const createFoodSchema = foodSchema;

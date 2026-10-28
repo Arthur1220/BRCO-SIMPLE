@@ -8,6 +8,7 @@ const {
     normalizeUnit,
 } = require('../catalog/outputs');
 const { presentGroupedResult } = require('./results');
+const { SAFETY_CHECKS, DIET_WARNINGS, SEVERITY_LABELS, NUTRIENT_LABELS } = require('../catalog/dietSafety');
 
 const REQUIREMENTS_LAYOUT = { outputs: requirementOutputs, groups: REQUIREMENT_GROUPS, highlights: REQUIREMENT_HIGHLIGHTS };
 const NDT_LAYOUT = { outputs: ndtOutputs, groups: NDT_GROUPS, highlights: NDT_HIGHLIGHTS };
@@ -17,7 +18,7 @@ const NDT_LAYOUT = { outputs: ndtOutputs, groups: NDT_GROUPS, highlights: NDT_HI
  * Ideal: diferença dentro da tolerância, ou sobra < 0,1.
  */
 function balanceStatus(required, diff) {
-    if (required === 0) return 'info';
+    if (!required) return 'info'; // exigência indisponível ou zero
     const percentDiff = (diff / required) * 100;
     if (Math.abs(percentDiff) <= DIET_RULES.tolerancePercent || (diff >= 0 && diff < 0.1)) return 'ideal';
     return diff < 0 ? 'deficit' : 'excess';
@@ -69,7 +70,35 @@ function presentSolution(solution, locale) {
             costPerDay: round(solution.dietSupply['Custo Total'], 2),
         },
         balance,
+        // Cálculos salvos antes das travas de segurança não têm estes campos.
+        safetyChecks: (solution.safetyChecks ?? []).map((check) => presentSafetyCheck(check, locale)),
+        warnings: (solution.warnings ?? []).map((item) => presentWarning(item, locale)),
     };
+}
+
+const SAFETY_CHECKS_BY_CODE = new Map(SAFETY_CHECKS.map((check) => [check.code, check]));
+
+function presentSafetyCheck(check, locale) {
+    const meta = SAFETY_CHECKS_BY_CODE.get(check.code);
+    return { ...check, label: t(meta.label, locale), unit: meta.unit };
+}
+
+/**
+ * Aviso no idioma pedido: os parâmetros (códigos de nutriente, de trava e
+ * listas de alimentos) viram texto dentro da mensagem.
+ */
+function presentWarning({ code, severity, params = {} }, locale) {
+    const number = (value) => (typeof value === 'number' ? value.toLocaleString(locale) : value);
+    const text = {
+        ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, number(value)])),
+        nutrient: params.nutrient && NUTRIENT_LABELS[params.nutrient] ? t(NUTRIENT_LABELS[params.nutrient], locale) : params.nutrient,
+        foods: Array.isArray(params.foods) ? params.foods.join(', ') : params.foods,
+        checks: Array.isArray(params.checks)
+            ? params.checks.map((c) => (SAFETY_CHECKS_BY_CODE.has(c) ? t(SAFETY_CHECKS_BY_CODE.get(c).label, locale) : c)).join(', ')
+            : params.checks,
+    };
+    const message = t(DIET_WARNINGS[code].message, locale).replace(/\{(\w+)\}/g, (_, key) => String(text[key] ?? ''));
+    return { code, severity, severityLabel: t(SEVERITY_LABELS[severity], locale), message };
 }
 
 /**
@@ -115,10 +144,11 @@ function presentCalculation(record, locale) {
         };
     }
 
+    const noSafeDiet = !output.resultIdeal.isFeasible && !output.resultRealistic.isFeasible;
     return {
         ...header,
         status: 'conflict',
-        statusLabel: t(DIET_STATUS.conflict, locale),
+        statusLabel: t(noSafeDiet ? DIET_STATUS.blocked : DIET_STATUS.conflict, locale),
         options: [
             { code: 'ideal', label: t(DIET_OPTIONS.ideal.label, locale), description: t(DIET_OPTIONS.ideal.description, locale), solution: presentSolution(output.resultIdeal, locale) },
             { code: 'realistic', label: t(DIET_OPTIONS.realistic.label, locale), description: t(DIET_OPTIONS.realistic.description, locale), solution: presentSolution(output.resultRealistic, locale) },

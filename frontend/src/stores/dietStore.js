@@ -133,7 +133,13 @@ export const useDietStore = defineStore('diet', () => {
         );
         if (foodId) return { foodId, ...limits };
         const { name, category, MS, PB, NDT, FDNcp, Ca, P } = custom;
-        return { custom: { name, category, MS, PB, NDT, FDNcp, Ca, P }, ...limits };
+        // Dados opcionais das travas de segurança: só vão quando informados.
+        const safety = Object.fromEntries(
+          ['EE', 'CNF', 'NNP', 'Cu', 'Mo', 'S']
+            .filter((field) => custom[field] !== '' && custom[field] !== null && custom[field] !== undefined)
+            .map((field) => [field, Number(custom[field])])
+        );
+        return { custom: { name, category, MS, PB, NDT, FDNcp, Ca, P, ...safety }, ...limits };
       }),
     };
   }
@@ -173,6 +179,11 @@ export const useDietStore = defineStore('diet', () => {
   function finalizeCalculation(choice) {
     const option = conflictData.options.find((o) => o.code === choice);
     applyResult(conflictData.calculationId, option.solution, conflictData.requirements, choice);
+    showConflictModal.value = false;
+  }
+
+  // Fecha o modal sem escolher: o usuário volta para ajustar os alimentos.
+  function closeConflict() {
     showConflictModal.value = false;
   }
 
@@ -234,6 +245,7 @@ export const useDietStore = defineStore('diet', () => {
     removeIngredient,
     performDietCalculation,
     finalizeCalculation,
+    closeConflict,
     resetDiet
   };
 });

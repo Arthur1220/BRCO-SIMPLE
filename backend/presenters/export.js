@@ -21,6 +21,12 @@ const S = {
     ingredients: L('Ingredientes', 'Ingredients'),
     totals: L('Totais', 'Totals'),
     balance: L('Balanço nutricional', 'Nutritional balance'),
+    safety: L('Travas de segurança', 'Safety limits'),
+    warnings: L('Avisos', 'Warnings'),
+    within: L('Dentro do limite', 'Within limit'),
+    outside: L('Fora do limite', 'Outside limit'),
+    noData: L('Sem dado', 'No data'),
+    incomplete: L('dado incompleto', 'incomplete data'),
     id: L('Identificador', 'Identifier'),
     date: L('Data', 'Date'),
     engine: L('Versão das fórmulas', 'Formula version'),
@@ -45,6 +51,16 @@ function solutionRows(row, solution, sectionPrefix, locale) {
     rows.push(row({ section: `${sectionPrefix}${t(S.totals, locale)}`, item: t(S.cost, locale), value: solution.totals.costPerDay, unit: 'R$/d' }));
     for (const item of solution.balance) {
         rows.push(row({ section: `${sectionPrefix}${t(S.balance, locale)}`, item: item.label, code: item.code, value: item.supplied, reference: item.required, unit: item.unit, status: item.statusLabel }));
+    }
+    for (const check of solution.safetyChecks ?? []) {
+        let status = check.ok === null ? '' : t(check.ok ? S.within : S.outside, locale);
+        if (check.value === null) status = t(S.noData, locale);
+        else if (check.incomplete && check.ok) status = t(S.incomplete, locale);
+        const reference = check.limit === null ? '' : `${check.kind === 'max' ? '≤' : '≥'} ${check.limit}`;
+        rows.push(row({ section: `${sectionPrefix}${t(S.safety, locale)}`, item: check.label, code: check.code, value: check.value ?? '', reference, unit: check.unit, status }));
+    }
+    for (const item of solution.warnings ?? []) {
+        rows.push(row({ section: `${sectionPrefix}${t(S.warnings, locale)}`, item: item.message, code: item.code, status: item.severityLabel }));
     }
     return rows;
 }

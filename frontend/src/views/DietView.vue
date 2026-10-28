@@ -77,6 +77,7 @@
       :options="store.conflictData.options"
       :statusLabel="store.conflictData.statusLabel"
       @select-option="store.finalizeCalculation"
+      @close="store.closeConflict"
     />
   </div>
 </template>
