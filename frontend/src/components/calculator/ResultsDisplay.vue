@@ -5,11 +5,15 @@
         <h2>{{ $t('results.title') }}</h2>
         <p class="small muted">{{ $t('results.savedUntil', { date: formatDate(results.expiresAt) }) }}</p>
       </div>
-      <button type="button" class="btn btn-secondary btn-sm" :disabled="isExporting" @click="exportToCsv">
-        <span v-if="isExporting" class="spinner" aria-hidden="true"></span>
-        {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
-      </button>
+      <div class="cluster">
+        <button type="button" class="btn btn-primary btn-sm" @click="showPdf = true">{{ $t('pdf.button') }}</button>
+        <button type="button" class="btn btn-secondary btn-sm" :disabled="isExporting" @click="exportToCsv">
+          <span v-if="isExporting" class="spinner" aria-hidden="true"></span>
+          {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
+        </button>
+      </div>
     </header>
+    <PdfDialog v-if="showPdf" :type="results.type" :calculation-id="results.calculationId" @close="showPdf = false" />
 
     <div class="stats">
       <div v-for="(item, index) in results.highlights" :key="item.code" class="stat" :class="{ 'is-key': index === 0 }">
@@ -67,6 +71,7 @@
 </template>
 
 <script setup>
+import PdfDialog from '@/components/report/PdfDialog.vue';
 import { ref, computed, reactive, watch } from 'vue';
 import { useCalculationStore } from '@/stores/calculationStore';
 import { downloadCalculationCsv } from '@/services/apiService';
@@ -81,6 +86,7 @@ const results = computed(() => store.results);
 
 const expandedGroups = reactive({});
 const isExporting = ref(false);
+const showPdf = ref(false);
 
 const format = (item, value = item.value) =>
   Number(value).toLocaleString(locale.value, { minimumFractionDigits: item.decimals, maximumFractionDigits: item.decimals });

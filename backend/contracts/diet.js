@@ -1,9 +1,9 @@
 const { z } = require('./zod');
-const { dietAnimalFields, ingredientFields, customFoodFields, foodSafetyFields, numberField } = require('./fields');
+const { dietAnimalFields, ingredientFields, customFoodFields, foodSafetyFields, dietLotFields, numberField } = require('./fields');
 const { animalSchema } = require('./requirements');
 const { perLocale } = require('./localized');
 const { L, t } = require('../lib/i18n');
-const { DIET_RULES, CATEGORY_CODES } = require('../catalog/diet');
+const { DIET_RULES, CATEGORY_CODES, PRICE_BASES } = require('../catalog/diet');
 const { TARGET_SPECIES_CODES } = require('../catalog/dietSafety');
 
 const MESSAGES = {
@@ -71,6 +71,14 @@ const getDietInputSchema = perLocale((locale) =>
     z
         .object({
             animal: animalSchema(dietAnimalFields, locale),
+            // Base do preço informado: kg de matéria seca (padrão da API) ou de matéria natural.
+            priceBasis: z.enum(PRICE_BASES).default('MS'),
+            lot: z
+                .object({
+                    animals: numberField(dietLotFields.animals, locale).int().default(1),
+                    feedingsPerDay: numberField(dietLotFields.feedingsPerDay, locale).int().default(2),
+                })
+                .default({}),
             ingredients: z
                 .array(ingredientSchema(locale))
                 .min(1, t(MESSAGES.atLeastOne, locale))

@@ -32,6 +32,7 @@
       <AdminDashboard v-else-if="stats && logs" :class="{ 'is-stale': isLoading }" :stats="stats" :logs="logs" :chartData="chartData" />
 
       <FoodsManager />
+      <RecentHistory />
     </template>
   </div>
 </template>
@@ -44,6 +45,7 @@ import { hasValidAdminToken, parseApiError } from '@/services/axiosSetup';
 import AdminLogin from '@/components/admin/AdminLogin.vue';
 import AdminDashboard from '@/components/admin/AdminDashboard.vue';
 import FoodsManager from '@/components/admin/FoodsManager.vue';
+import RecentHistory from '@/components/admin/RecentHistory.vue';
 
 const PERIODS = [
   { code: '7d', label: 'admin.last7Days' },

@@ -6,6 +6,11 @@
 
       <form class="form" @submit.prevent="handleLogin">
         <div class="field">
+          <label class="label" for="admin-name">{{ $t('admin.login.name') }}</label>
+          <input id="admin-name" v-model="name" class="input" type="text" autocomplete="name" maxlength="60" required>
+          <small class="small muted">{{ $t('admin.login.nameHint') }}</small>
+        </div>
+        <div class="field">
           <label class="label" for="admin-password">{{ $t('admin.login.placeholder') }}</label>
           <input
             id="admin-password"
@@ -36,6 +41,9 @@ import { parseApiError } from '@/services/axiosSetup';
 
 const { t } = useI18n();
 const password = ref('');
+// O nome fica no navegador para os próximos logins.
+const NAME_KEY = 'brco.admin.name';
+const name = ref((() => { try { return localStorage.getItem(NAME_KEY) ?? ''; } catch { return ''; } })());
 const isLoading = ref(false);
 const error = ref(null);
 
@@ -45,7 +53,8 @@ const handleLogin = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    await loginAdmin(password.value);
+    await loginAdmin(password.value, name.value.trim());
+    try { localStorage.setItem(NAME_KEY, name.value.trim()); } catch { /* sem armazenamento */ }
     emit('login-success');
   } catch (err) {
     // Mensagem pronta da API (senha incorreta, muitas tentativas...)

@@ -114,6 +114,16 @@ Cada arquivo de teste cria as próprias tabelas no DynamoDB Local. Os testes tam
 
 Os testes cobrem as fórmulas (valores de referência em `test/fixtures/golden.json`), o solver de dieta, o CSV, a validação, a autenticação e o contrato da v1: toda chave do domínio precisa de metadado de apresentação, e toda rota precisa estar no OpenAPI. Ao corrigir uma fórmula de propósito, regenere as referências com `npm run test:update-golden` e revise o diff.
 
+### Testes de ponta a ponta (navegador)
+
+Com o DynamoDB Local rodando, o Playwright sobe a API e o frontend em portas próprias, cria tabelas novas com o seed e testa no navegador o fluxo da dieta (trato do lote, travas, PDF e bloqueio sem fonte de cálcio) e o painel (avisos do cadastro e histórico):
+
+```bash
+cd frontend
+npx playwright install chromium   # uma vez
+DYNAMODB_ENDPOINT=http://localhost:8000 npm run test:e2e
+```
+
 ## ☁️ Estratégia de Deploy
 
 * O **Backend** roda numa **AWS Lambda** (Function URL, `sa-east-1`) com dados no **DynamoDB**, tudo definido em `backend/template.yaml` e publicado com `sam deploy`.

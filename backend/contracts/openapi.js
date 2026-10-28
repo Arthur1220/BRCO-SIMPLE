@@ -101,9 +101,9 @@ function buildOpenApiDocument() {
     // ---------- Admin ----------
     path('post', '/api/v1/admin/login', ['Admin'], 'Login no painel administrativo.', {
         security: publicSecurity,
-        request: { body: { content: json(z.object({ password: z.string() })) } },
+        request: { body: { content: json(z.object({ password: z.string(), name: z.string().optional().openapi({ description: 'Quem está entrando: aparece no histórico de alterações dos alimentos.' }) })) } },
         responses: {
-            200: { description: 'Token de sessão.', content: json(z.object({ token: z.string(), expiresIn: z.number().int() })) },
+            200: { description: 'Token de sessão.', content: json(z.object({ token: z.string(), expiresIn: z.number().int(), name: z.string().nullable() })) },
             401: error('Senha incorreta.'),
             ...common,
         },
@@ -132,6 +132,34 @@ function buildOpenApiDocument() {
         security: adminSecurity,
         request: { params: foodIdParam, body: { content: json(updateFoodSchema) } },
         responses: { 200: { description: 'Alimento atualizado.', content: json(foodSchema) }, 404: error('Alimento não encontrado.'), ...validation, ...adminErrors, ...common },
+    });
+    const qualitySchema = z.array(z.object({ code: z.string(), severity: z.enum(['info', 'warning']), message: z.string() })).openapi('FoodQuality');
+    const historySchema = z.array(z.object({
+        foodId: z.number().int(),
+        foodName: z.string(),
+        at: z.string().datetime(),
+        action: z.enum(['create', 'update', 'delete']),
+        actionLabel: z.string(),
+        actor: z.string(),
+        changes: z.array(z.object({ field: z.string(), before: z.any(), after: z.any() })),
+    })).openapi('FoodHistory');
+    path('post', '/api/v1/admin/foods/check', ['Admin'], 'Avisos de consistência de um alimento (sem salvar).', {
+        security: adminSecurity,
+        request: { body: { content: json(updateFoodSchema) } },
+        responses: { 200: { description: 'Avisos.', content: json(z.object({ quality: qualitySchema })) }, ...adminErrors, ...common },
+    });
+    path('get', '/api/v1/admin/foods/quality', ['Admin'], 'Avisos de consistência de todos os alimentos.', {
+        security: adminSecurity,
+        responses: { 200: { description: 'Avisos por alimento.', content: json(z.array(z.object({ id: z.number().int(), name: z.string(), quality: qualitySchema }))) }, ...adminErrors, ...common },
+    });
+    path('get', '/api/v1/admin/foods/{id}/history', ['Admin'], 'Histórico de alterações de um alimento.', {
+        security: adminSecurity,
+        request: { params: foodIdParam },
+        responses: { 200: { description: 'Alterações, da mais recente para a mais antiga.', content: json(historySchema) }, ...adminErrors, ...common },
+    });
+    path('get', '/api/v1/admin/history', ['Admin'], 'Últimas 50 alterações do cadastro de alimentos.', {
+        security: adminSecurity,
+        responses: { 200: { description: 'Alterações recentes.', content: json(historySchema) }, ...adminErrors, ...common },
     });
     path('delete', '/api/v1/admin/foods/{id}', ['Admin'], 'Remove um alimento.', {
         security: adminSecurity,

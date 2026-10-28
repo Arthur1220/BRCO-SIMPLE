@@ -5,9 +5,14 @@
         <span class="stat-label">{{ $t('dietResults.totalIntake') }}</span>
         <span class="stat-value">{{ formatNum(solution.totals.intakeKgPerDay, 3) }}<small>kg MS/d</small></span>
       </div>
+      <div v-if="solution.totals.intakeKgAsFedPerDay != null" class="stat">
+        <span class="stat-label">{{ $t('dietResults.asFedIntake') }}</span>
+        <span class="stat-value">{{ formatNum(solution.totals.intakeKgAsFedPerDay, 3) }}<small>kg MN/d</small></span>
+      </div>
       <div class="stat">
         <span class="stat-label">{{ $t('dietResults.totalCost') }}</span>
         <span class="stat-value">{{ $t('common.currency', { value: formatNum(solution.totals.costPerDay) }) }}<small>/d</small></span>
+        <span v-if="solution.totals.costPerKgGain != null" class="stat-note small muted">{{ $t('dietResults.costPerKgGain', { value: formatNum(solution.totals.costPerKgGain) }) }}</span>
       </div>
       <div class="stat">
         <span class="stat-label">{{ $t('dietResults.status') }}</span>
@@ -33,10 +38,13 @@
     <section class="panel">
       <header class="panel-head">
         <h3>{{ $t('dietResults.recipeTitle') }}</h3>
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="isExporting" @click="exportToCsv">
-          <span v-if="isExporting" class="spinner" aria-hidden="true"></span>
-          {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
-        </button>
+        <div class="cluster">
+          <button type="button" class="btn btn-primary btn-sm" @click="showPdf = true">{{ $t('pdf.button') }}</button>
+          <button type="button" class="btn btn-secondary btn-sm" :disabled="isExporting" @click="exportToCsv">
+            <span v-if="isExporting" class="spinner" aria-hidden="true"></span>
+            {{ isExporting ? $t('common.generating') : $t('common.exportCsv') }}
+          </button>
+        </div>
       </header>
       <div class="table-wrap">
         <table class="table">
@@ -45,6 +53,7 @@
               <th>{{ $t('dietResults.ingredient') }}</th>
               <th class="share-col">{{ $t('dietResults.finalProportion') }}</th>
               <th class="right">{{ $t('dietResults.quantity') }}</th>
+              <th class="right">{{ $t('dietResults.quantityAsFed') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -60,10 +69,59 @@
                 </span>
               </td>
               <td class="num">{{ formatNum(ing.kgPerDay, 3) }}</td>
+              <td class="num">{{ ing.kgAsFedPerDay == null ? '—' : formatNum(ing.kgAsFedPerDay, 3) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section v-if="solution.feeding" class="panel" aria-labelledby="feeding-title">
+      <header class="panel-head panel-head-stack">
+        <h3 id="feeding-title">{{ $t('dietResults.feedingTitle') }}</h3>
+        <p class="small muted">{{ $t('dietResults.feedingHint', { animals: solution.feeding.animals, feedings: solution.feeding.feedingsPerDay }) }}</p>
+      </header>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ $t('dietResults.ingredient') }}</th>
+              <th class="right">{{ $t('dietResults.perFeedingAsFed') }}</th>
+              <th class="right">{{ $t('dietResults.perFeedingDryMatter') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in solution.feeding.perFeeding" :key="item.foodId ?? item.name">
+              <td>{{ item.name }}</td>
+              <td class="num">{{ item.kgAsFed == null ? '—' : formatNum(item.kgAsFed) }}</td>
+              <td class="num">{{ formatNum(item.kgDryMatter) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>{{ $t('dietResults.lotPerDay') }}</td>
+              <td class="num">{{ solution.feeding.kgAsFedPerDay == null ? '—' : `${formatNum(solution.feeding.kgAsFedPerDay)} kg MN` }}</td>
+              <td class="num">{{ formatNum(solution.feeding.kgDryMatterPerDay) }} kg MS · {{ $t('common.currency', { value: formatNum(solution.feeding.costPerDay) }) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section v-if="hasInsights" class="panel" aria-labelledby="insights-title">
+      <header class="panel-head">
+        <h3 id="insights-title">{{ $t('dietResults.insightsTitle') }}</h3>
+      </header>
+      <ul class="warnings">
+        <li v-for="(item, index) in solution.costInsights.limiting" :key="`l-${index}`" class="warning">
+          <span class="pill pill-info">{{ $t('dietResults.limitingTag') }}</span>
+          <span>{{ item.message }}</span>
+        </li>
+        <li v-for="(item, index) in solution.costInsights.unusedFoods" :key="`u-${index}`" class="warning">
+          <span class="pill pill-info">{{ $t('dietResults.unusedTag') }}</span>
+          <span>{{ item.message }}</span>
+        </li>
+      </ul>
     </section>
 
     <section class="panel">
@@ -85,7 +143,7 @@
             <tr v-for="item in solution.balance" :key="item.code">
               <td>{{ item.label }} <span class="small muted">({{ item.unit }})</span></td>
               <td class="num">{{ item.required === null ? $t('dietResults.notAvailable') : formatNum(item.required) }}</td>
-              <td class="num">{{ formatNum(item.supplied) }}</td>
+              <td class="num">{{ item.supplied === null ? $t('dietResults.noData') : formatNum(item.supplied) }}</td>
               <td class="num" :class="{ 'is-deficit': item.status === 'deficit' }">{{ item.diff === null ? '—' : `${item.diff > 0 ? '+' : ''}${formatNum(item.diff)}` }}</td>
               <td><span class="pill" :class="STATUS_CLASS[item.status]">{{ item.statusLabel }}</span></td>
             </tr>
@@ -122,6 +180,8 @@
         </table>
       </div>
     </section>
+
+    <PdfDialog v-if="showPdf" type="diet" :calculation-id="store.dietResults.calculationId" :option="store.dietResults.option" @close="showPdf = false" />
   </div>
 </template>
 
@@ -132,6 +192,7 @@ import { downloadCalculationCsv } from '@/services/apiService';
 import { useI18n } from 'vue-i18n';
 import { parseApiError } from '@/services/axiosSetup';
 import { saveAs } from 'file-saver';
+import PdfDialog from '@/components/report/PdfDialog.vue';
 
 // kg/dia, custo, balanço e status vêm calculados da API v1.
 const store = useDietStore();
@@ -156,7 +217,16 @@ const checkClass = (check) => {
   return check.ok && !check.incomplete ? 'pill-ok' : 'pill-info';
 };
 
-const balanceOk = computed(() => solution.value.balance.every((item) => item.status !== 'deficit'));
+const showPdf = ref(false);
+const hasInsights = computed(() => {
+  const insights = solution.value?.costInsights;
+  return Boolean(insights && (insights.limiting.length || insights.unusedFoods.length));
+});
+
+// O selo considera só o que a formulação busca atender (PB, NDT, Ca e P). PDR, PNDR e
+// microminerais aparecem no balanço como informação (ver proteinFractionsInFormulation).
+const FORMULATED = new Set(['pb', 'ndt', 'ca', 'p']);
+const balanceOk = computed(() => solution.value.balance.every((item) => !FORMULATED.has(item.code) || item.status !== 'deficit'));
 
 // Quando houve conflito, mostra qual cenário o usuário escolheu.
 const optionLabel = computed(() => {
@@ -213,6 +283,10 @@ const exportToCsv = async () => {
 .is-deficit { color: var(--warn); }
 
 .panel-head-stack { flex-direction: column; align-items: flex-start; gap: 4px; }
+
+tfoot td { font-weight: 600; border-top: 1px solid var(--line); }
+
+.stat-note { display: block; margin-top: 4px; }
 .panel-head-stack p { margin: 0; }
 
 .warnings { list-style: none; margin: 0; padding: 8px 24px 16px; display: flex; flex-direction: column; gap: 10px; }

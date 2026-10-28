@@ -20,6 +20,9 @@ export const useDietStore = defineStore('diet', () => {
   const availableFoods = ref([]);
   const selectedIngredients = ref([]);
   const animalData = ref(null);
+  // Base do preço (kg de matéria natural ou de MS) e lote para o trato.
+  const priceBasis = ref('MN');
+  const lot = reactive({ animals: 1, feedingsPerDay: 2 });
 
   // Resultados: { calculationId, option, solution, requirements } (option: escolha no conflito)
   const dietResults = ref(null);
@@ -126,6 +129,8 @@ export const useDietStore = defineStore('diet', () => {
   function buildPayload() {
     return {
       animal: animalData.value,
+      priceBasis: priceBasis.value,
+      lot: { animals: Number(lot.animals) || 1, feedingsPerDay: Number(lot.feedingsPerDay) || 1 },
       ingredients: selectedIngredients.value.map(({ foodId, custom, min, max, price }) => {
         // Campos vazios não são enviados: a API usa o padrão do alimento (ou do catálogo).
         const limits = Object.fromEntries(
@@ -212,6 +217,8 @@ export const useDietStore = defineStore('diet', () => {
     currentStep.value = 1;
     selectedIngredients.value = [];
     animalData.value = null;
+    priceBasis.value = 'MN';
+    Object.assign(lot, { animals: 1, feedingsPerDay: 2 });
     dietResults.value = null;
     error.value = null;
     notice.value = null;
@@ -225,6 +232,8 @@ export const useDietStore = defineStore('diet', () => {
     availableFoods,
     selectedIngredients,
     animalData,
+    priceBasis,
+    lot,
     dietResults,
     isLoading,
     error,

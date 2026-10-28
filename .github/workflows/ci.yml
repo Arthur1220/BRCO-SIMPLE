@@ -1,5 +1,6 @@
 # CI/CD do BRCO.
-# - Em PRs e pushes: testes do backend (com DynamoDB Local) e build do frontend.
+# - Em PRs e pushes: testes do backend (com DynamoDB Local), build do frontend e
+#   testes de ponta a ponta (Playwright: navegador + API local + DynamoDB Local).
 # - Em push na main, se backend/** mudou e os testes passaram: sam build + sam deploy.
 #   "Run workflow" na main força o deploy do backend.
 # - O frontend é publicado pelo próprio Netlify (deploy contínuo pelo Git), não por aqui.
@@ -79,9 +80,37 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  frontend-e2e:
+    name: Ponta a ponta (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      dynamodb:
+        image: amazon/dynamodb-local:2.6.1
+        ports:
+          - 8000:8000
+    env:
+      DYNAMODB_ENDPOINT: http://localhost:8000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e
+        working-directory: frontend
+
   deploy-backend:
     name: Deploy do backend (Lambda)
-    needs: [changes, backend-test]
+    needs: [changes, backend-test, frontend-e2e]
     # Push na main com mudança em backend/**, ou execução manual (Run workflow) na main.
     if: >-
       github.ref == 'refs/heads/main' &&

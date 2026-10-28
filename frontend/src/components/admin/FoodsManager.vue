@@ -14,6 +14,7 @@
             <th class="right">MS <span class="unit">({{ unitFor('MS') }})</span></th>
             <th class="right">PB <span class="unit">({{ unit }})</span></th>
             <th class="right">NDT <span class="unit">({{ unit }})</span></th>
+            <th>{{ $t('admin.foods.dataCheck') }}</th>
             <th><span class="visually-hidden">{{ $t('admin.foods.actions') }}</span></th>
           </tr>
         </thead>
@@ -24,7 +25,14 @@
             <td class="num">{{ food.MS }}</td>
             <td class="num">{{ food.PB }}</td>
             <td class="num">{{ food.NDT }}</td>
+            <td>
+              <span v-if="warningsOf(food).length" class="pill pill-warn" :title="warningsOf(food).map((w) => w.message).join('\n')">
+                {{ $t('admin.foods.warningsCount', { count: warningsOf(food).length }) }}
+              </span>
+              <span v-else class="pill pill-ok">{{ $t('admin.foods.dataOk') }}</span>
+            </td>
             <td class="right actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="historyFood = food">{{ $t('admin.foods.history') }}</button>
               <button type="button" class="btn btn-ghost btn-sm" @click="openModal(food)">{{ $t('common.edit') }}</button>
               <button type="button" class="btn btn-danger btn-sm" @click="confirmDelete(food)">{{ $t('common.delete') }}</button>
             </td>
@@ -81,6 +89,13 @@
               </div>
             </div>
           </fieldset>
+          <div v-if="formQuality.length" class="quality span-2" role="status" aria-live="polite">
+            <strong>{{ $t('admin.foods.qualityTitle') }}</strong>
+            <ul>
+              <li v-for="item in formQuality" :key="item.code" :class="`is-${item.severity}`">{{ item.message }}</li>
+            </ul>
+            <small class="muted">{{ $t('admin.foods.qualityHint') }}</small>
+          </div>
           <div v-if="saveError" class="alert alert-error span-2" role="alert">{{ saveError }}</div>
         </div>
         <footer class="dialog-foot">
@@ -92,6 +107,7 @@
         </footer>
       </form>
     </div>
+    <FoodHistoryDialog v-if="historyFood" :food="historyFood" @close="historyFood = null" />
   </section>
 </template>
 
@@ -99,7 +115,8 @@
 import { ref, computed, watch, onMounted, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getFoods } from '@/services/apiService';
-import { createFood, updateFood, deleteFood } from '@/services/adminService';
+import { createFood, updateFood, deleteFood, checkFood, getFoodsQuality } from '@/services/adminService';
+import FoodHistoryDialog from './FoodHistoryDialog.vue';
 import { parseApiError } from '@/services/axiosSetup';
 import { useCatalogStore } from '@/stores/catalogStore';
 
@@ -128,12 +145,16 @@ const safetyFields = [
   { name: 'Mo', unit: 'mg/kg MS' },
   { name: 'S', unit: 'g/kg MS' },
   { name: 'NNP', unit: 'g/kg MS' },
+  { name: 'Zn', unit: 'mg/kg MS' },
+  { name: 'Mn', unit: 'mg/kg MS' },
+  { name: 'Fe', unit: 'mg/kg MS' },
+  { name: 'Co', unit: 'mg/kg MS' },
 ];
 
 const emptyForm = () => ({
   name: '', category: 'VOLUMOSO',
   MS: 0, MO: 0, EE: 0, PB: 0, NDT: 0, FDNcp: 0, CNF: 0, Ca: 0, P: 0, PDR: 0, PNDR: 0,
-  Cu: null, Mo: null, S: null, NNP: null, targetSpecies: null,
+  Cu: null, Mo: null, S: null, NNP: null, Zn: null, Mn: null, Fe: null, Co: null, targetSpecies: null,
 });
 
 const form = reactive(emptyForm());
@@ -146,17 +167,48 @@ const paginatedFoods = computed(() => {
   return foods.value.slice(start, start + itemsPerPage);
 });
 
+// Avisos de consistência (composição, PDR/PNDR, Ca e P...) vêm da API.
+const qualityById = ref({});
+const warningsOf = (food) => qualityById.value[food.id] ?? [];
+const formQuality = ref([]);
+const historyFood = ref(null);
+
 const loadFoods = async () => {
   try {
-    foods.value = await getFoods();
+    const [list, quality] = await Promise.all([getFoods(), getFoodsQuality().catch(() => [])]);
+    foods.value = list;
+    qualityById.value = Object.fromEntries(quality.map((item) => [item.id, item.quality]));
   } catch (error) {
     console.error("Erro ao carregar alimentos:", error);
   }
 };
 
+const buildPayload = () => {
+  const payload = { ...form };
+  for (const { name } of safetyFields) {
+    payload[name] = payload[name] === '' || payload[name] === null ? null : Number(payload[name]);
+  }
+  return payload;
+};
+
+// Verifica enquanto o usuário digita (com espera), sem salvar.
+let checkTimer = null;
+watch(form, () => {
+  if (!showModal.value) return;
+  clearTimeout(checkTimer);
+  checkTimer = setTimeout(async () => {
+    try {
+      formQuality.value = await checkFood(buildPayload());
+    } catch {
+      formQuality.value = [];
+    }
+  }, 400);
+}, { deep: true });
+
 const openModal = (food = null) => {
   saveError.value = null;
   fieldErrors.value = {};
+  formQuality.value = [];
   if (food) {
     isEditing.value = true;
     editingId.value = food.id;
@@ -178,10 +230,7 @@ const saveFood = async () => {
   saveError.value = null;
   fieldErrors.value = {};
   try {
-    const payload = { ...form };
-    for (const { name } of safetyFields) {
-      payload[name] = payload[name] === '' || payload[name] === null ? null : Number(payload[name]);
-    }
+    const payload = buildPayload();
     if (isEditing.value) {
       await updateFood(editingId.value, payload);
     } else {
@@ -259,6 +308,18 @@ onMounted(() => {
 .safety legend { padding: 0 6px; }
 
 .safety > p { margin: 0 0 12px; }
+
+.quality {
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  font-size: 0.875rem;
+}
+
+.quality ul { margin: 6px 0; padding-left: 18px; }
+.quality li { margin-bottom: 4px; }
+.quality li.is-info { color: var(--ink-2); }
 
 @media (max-width: 600px) {
   .food-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

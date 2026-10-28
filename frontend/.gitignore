@@ -30,3 +30,7 @@ coverage
 *.tsbuildinfo
 
 .env
+
+# Testes de ponta a ponta (Playwright)
+test-results/
+playwright-report/

@@ -17,7 +17,16 @@ const DIET_RULES = {
     ],
     // Unidade em que os nutrientes dos alimentos (cadastrados e personalizados) são informados.
     foodNutrientUnit: 'g/kg MS',
+    // Base do preço: o produtor costuma saber o preço por kg de matéria natural (MN).
+    priceBases: [
+        { code: 'MN', label: L('kg de matéria natural (como compra)', 'kg as fed (as purchased)'), unit: 'R$/kg MN' },
+        { code: 'MS', label: L('kg de matéria seca', 'kg of dry matter'), unit: 'R$/kg MS' },
+    ],
+    defaultPriceBasis: 'MN',
+    lotDefaults: { animals: 1, feedingsPerDay: 2 },
 };
+
+const PRICE_BASES = DIET_RULES.priceBases.map((b) => b.code);
 
 const CATEGORY_CODES = DIET_RULES.categories.map((c) => c.code);
 
@@ -25,4 +34,4 @@ function findCategory(code) {
     return DIET_RULES.categories.find((c) => c.code === code);
 }
 
-module.exports = { DIET_RULES, CATEGORY_CODES, findCategory };
+module.exports = { DIET_RULES, CATEGORY_CODES, PRICE_BASES, findCategory };

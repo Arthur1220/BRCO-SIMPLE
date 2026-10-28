@@ -17,9 +17,10 @@ function safeEqual(a, b) {
 
 /**
  * Gera o token de sessão do painel administrativo.
+ * `name` (quem entrou) vai para o histórico de alterações do cadastro.
  */
-function issueAdminToken() {
-  return jwt.sign({ role: 'admin' }, process.env.ADMIN_JWT_SECRET, {
+function issueAdminToken(name = null) {
+  return jwt.sign({ role: 'admin', name }, process.env.ADMIN_JWT_SECRET, {
     algorithm: 'HS256',
     expiresIn: ADMIN_TOKEN_TTL,
   });
@@ -44,6 +45,7 @@ function requireAdmin(req, res, next) {
   try {
     const payload = jwt.verify(token, secret, { algorithms: ['HS256'] });
     if (payload.role !== 'admin') throw new Error('role inválida');
+    req.admin = { name: payload.name || null };
     return next();
   } catch {
     return sendError(req, res, 401, 'UNAUTHORIZED', 'Sessão expirada ou inválida.');

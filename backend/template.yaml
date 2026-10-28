@@ -50,6 +50,7 @@ Resources:
           FOODS_TABLE: !Ref FoodsTable
           CALCULATIONS_TABLE: !Ref CalculationsTable
           USAGE_LOGS_TABLE: !Ref UsageLogsTable
+          FOOD_HISTORY_TABLE: !Ref FoodHistoryTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FoodsTable
@@ -57,6 +58,8 @@ Resources:
             TableName: !Ref CalculationsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref UsageLogsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FoodHistoryTable
 
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
@@ -114,6 +117,22 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
+  # Histórico de alterações do cadastro de alimentos (quem mudou o quê e quando).
+  FoodHistoryTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: foodId, AttributeType: N }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: foodId, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
 Outputs:
   ApiUrl:
     Description: URL da Function URL (destino do proxy /api no netlify.toml)
@@ -124,3 +143,5 @@ Outputs:
     Value: !Ref CalculationsTable
   UsageLogsTableName:
     Value: !Ref UsageLogsTable
+  FoodHistoryTableName:
+    Value: !Ref FoodHistoryTable

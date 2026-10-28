@@ -137,17 +137,19 @@ async function updateFood(id, data) {
 }
 
 /**
- * Remove um alimento. Lança FoodNotFoundError se o alimento não existe.
+ * Remove um alimento e devolve a versão apagada. Lança FoodNotFoundError se o alimento não existe.
  */
 async function deleteFood(id) {
     try {
-        await db.send(new DeleteCommand({
+        const res = await db.send(new DeleteCommand({
             TableName: TABLES.foods,
             Key: { id },
             ConditionExpression: 'attribute_exists(#id) AND #id <> :counter',
             ExpressionAttributeNames: { '#id': 'id' },
             ExpressionAttributeValues: { ':counter': COUNTER_ID },
+            ReturnValues: 'ALL_OLD',
         }));
+        return toFood(res.Attributes);
     } catch (error) {
         if (error instanceof ConditionalCheckFailedException) throw new FoodNotFoundError();
         throw error;
