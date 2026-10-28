@@ -2,16 +2,16 @@
   <p v-if="store.selectedIngredients.length === 0" class="empty">{{ $t('balancer.empty') }}</p>
 
   <div v-else-if="fields" class="balancer-options">
-    <fieldset class="basis">
+    <fieldset v-if="priceBases.length" class="basis">
       <legend class="label">{{ $t('balancer.priceBasis') }}</legend>
       <div class="segmented" role="radiogroup">
-        <label v-for="basis in catalog.diet.priceBases" :key="basis.code" class="segment" :class="{ 'is-active': store.priceBasis === basis.code }">
+        <label v-for="basis in priceBases" :key="basis.code" class="segment" :class="{ 'is-active': store.priceBasis === basis.code }">
           <input v-model="store.priceBasis" type="radio" name="price-basis" :value="basis.code" class="visually-hidden">
           {{ basis.label }}
         </label>
       </div>
     </fieldset>
-    <div class="lot">
+    <div v-if="lotFields.length" class="lot">
       <NumberField v-for="field in lotFields" :key="field.name" :field="field" id-prefix="lot-" v-model="store.lot[field.name]" />
     </div>
   </div>
@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useDietStore } from '@/stores/dietStore';
 import { useCatalogStore } from '@/stores/catalogStore';
 import NumberField from '@/components/ui/NumberField.vue';
@@ -68,7 +68,10 @@ const catalog = useCatalogStore();
 // Ordem de exibição: preço, mínimo, máximo.
 const ORDER = ['price', 'min', 'max'];
 const lotFields = computed(() => catalog.form('dietLot')?.fields ?? []);
-const priceUnit = computed(() => catalog.diet?.priceBases.find((b) => b.code === store.priceBasis)?.unit ?? '');
+// Uma API sem bases de preço (versão anterior, durante o deploy) só entende R$/kg MS.
+const priceBases = computed(() => catalog.diet?.priceBases ?? []);
+watch(() => catalog.diet, (diet) => { if (diet && !diet.priceBases?.length) store.priceBasis = 'MS'; }, { immediate: true });
+const priceUnit = computed(() => priceBases.value.find((b) => b.code === store.priceBasis)?.unit ?? 'R$/kg MS');
 
 const fields = computed(() => {
   const form = catalog.form('dietIngredient');
