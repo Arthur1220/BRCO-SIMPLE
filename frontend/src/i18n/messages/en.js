@@ -50,9 +50,6 @@ export default {
   a11y: {
     skipToContent: 'Skip to content',
   },
-  header: {
-    tagline: 'Nutritional requirements and diets',
-  },
   footer: {
     aboutText: 'A free-access portal to optimize goat and sheep nutrition, based on Brazilian scientific research.',
     navTitle: 'Navigation',

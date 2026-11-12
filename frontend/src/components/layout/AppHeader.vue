@@ -4,7 +4,6 @@
       <router-link to="/" class="brand" :aria-label="$t('nav.home')">
         <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-name">BR-Caprinos &amp; Ovinos</span>
-        <span class="brand-tagline">{{ $t('header.tagline') }}</span>
       </router-link>
 
       <nav class="nav" :class="{ 'is-open': isMenuOpen }" :aria-label="$t('nav.main')">
@@ -102,13 +101,6 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
   white-space: nowrap;
 }
 
-.brand-tagline {
-  font-size: 0.8125rem;
-  color: var(--ink-3);
-  padding-left: 10px;
-  border-left: 1px solid var(--line-strong);
-}
-
 .nav {
   display: flex;
   align-self: stretch;
@@ -152,7 +144,6 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
 .menu-toggle { display: none; }
 
 @media (max-width: 860px) {
-  .brand-tagline { display: none; }
   .menu-toggle { display: inline-flex; }
 
   .nav {

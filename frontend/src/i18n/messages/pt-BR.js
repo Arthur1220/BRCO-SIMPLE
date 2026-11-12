@@ -50,9 +50,6 @@ export default {
   a11y: {
     skipToContent: 'Pular para o conteúdo',
   },
-  header: {
-    tagline: 'Exigências nutricionais e dietas',
-  },
   footer: {
     aboutText: 'Um portal de acesso livre para otimizar a nutrição de caprinos e ovinos, baseado em pesquisas científicas brasileiras.',
     navTitle: 'Navegação',
