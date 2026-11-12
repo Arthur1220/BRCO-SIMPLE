@@ -170,7 +170,7 @@ function buildOpenApiDocument() {
     return new OpenApiGeneratorV3(registry.definitions).generateDocument({
         openapi: '3.0.3',
         info: {
-            title: 'BRCO API v1',
+            title: 'BR-Caprinos & Ovinos API v1',
             version: '1.0.0',
             description: 'Contrato de apresentação: o backend entrega dados prontos para exibir, em pt-BR ou en.',
         },

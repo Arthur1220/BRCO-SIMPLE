@@ -89,7 +89,7 @@ export async function buildPdf(calculation, options) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...MUTED);
-  doc.text('BRCO · ' + L.brand, MARGIN + 6, 13.4);
+  doc.text('BR-Caprinos & Ovinos · ' + L.brand, MARGIN + 6, 13.4);
   y = 22;
   doc.setFontSize(17);
   doc.setTextColor(...INK);
@@ -298,5 +298,5 @@ function finish(doc, L, options, calculation) {
     doc.text(`${page}/${pages}`, doc.internal.pageSize.getWidth() - MARGIN, height - 10, { align: 'right' });
   }
   const slug = (options.title || L.defaultTitle).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
-  return { blob: doc.output('blob'), filename: `${slug || 'brco'}-${calculation.calculationId.slice(0, 8)}.pdf` };
+  return { blob: doc.output('blob'), filename: `${slug || 'br-caprinos-ovinos'}-${calculation.calculationId.slice(0, 8)}.pdf` };
 }

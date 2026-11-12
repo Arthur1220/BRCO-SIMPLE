@@ -3,8 +3,7 @@
     <div class="container header-bar">
       <router-link to="/" class="brand" :aria-label="$t('nav.home')">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">BRCO</span>
-        <span class="brand-tagline">{{ $t('header.tagline') }}</span>
+        <span class="brand-name">BR-Caprinos &amp; Ovinos</span>
       </router-link>
 
       <nav class="nav" :class="{ 'is-open': isMenuOpen }" :aria-label="$t('nav.main')">
@@ -99,13 +98,7 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
   font-weight: 600;
   font-size: 1rem;
   letter-spacing: 0.02em;
-}
-
-.brand-tagline {
-  font-size: 0.8125rem;
-  color: var(--ink-3);
-  padding-left: 10px;
-  border-left: 1px solid var(--line-strong);
+  white-space: nowrap;
 }
 
 .nav {
@@ -151,7 +144,6 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
 .menu-toggle { display: none; }
 
 @media (max-width: 860px) {
-  .brand-tagline { display: none; }
   .menu-toggle { display: inline-flex; }
 
   .nav {
@@ -172,5 +164,9 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
   .nav-link { height: 44px; padding: 0; border-bottom: 1px solid var(--line); }
   .nav-link:last-child { border-bottom: 0; }
   .nav-link.is-active::after { left: -12px; right: auto; top: 12px; bottom: 12px; width: 2px; height: auto; }
+}
+
+@media (max-width: 360px) {
+  .brand-name { font-size: 0.875rem; letter-spacing: 0; }
 }
 </style>

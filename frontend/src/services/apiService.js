@@ -59,7 +59,7 @@ export const getCalculation = async (id) => {
 export const downloadCalculationCsv = async (id) => {
   const response = await apiClient.get(`/v1/calculations/${id}/export.csv`, { responseType: 'blob' });
   const disposition = response.headers['content-disposition'] || '';
-  const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `brco-${id}.csv`;
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `br-caprinos-ovinos-${id}.csv`;
   return { blob: response.data, filename };
 };
 
