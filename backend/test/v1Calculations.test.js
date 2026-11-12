@@ -346,7 +346,7 @@ test('exportação CSV: gerada do cálculo salvo, no idioma pedido', async () =>
   const res = await server.request('GET', `/api/v1/calculations/${created.body.calculationId}/export.csv`);
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type'), /text\/csv/);
-  assert.match(res.headers.get('content-disposition'), new RegExp(`brco-requirements-${created.body.calculationId}\\.csv`));
+  assert.match(res.headers.get('content-disposition'), new RegExp(`br-caprinos-ovinos-requirements-${created.body.calculationId}\\.csv`));
   assert.ok(res.text.startsWith('Seção,Item,Código,Valor,Referência,Unidade,Status')); // fetch remove o BOM ao decodificar
   const raw = await server.rawGet(`/api/v1/calculations/${created.body.calculationId}/export.csv`);
   assert.ok(raw.text.startsWith(String.fromCharCode(0xfeff)), 'CSV deve começar com BOM UTF-8 (Excel)');

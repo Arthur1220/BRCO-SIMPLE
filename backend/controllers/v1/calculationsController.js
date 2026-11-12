@@ -66,7 +66,7 @@ async function exportCalculationCsv(req, res) {
 
     const csv = calculationToCsv(presentCalculation(record, req.locale), req.locale);
     res.set('Content-Type', 'text/csv; charset=utf-8');
-    res.set('Content-Disposition', `attachment; filename="brco-${record.type}-${record.id}.csv"`);
+    res.set('Content-Disposition', `attachment; filename="br-caprinos-ovinos-${record.type}-${record.id}.csv"`);
     res.send(csv);
 }
 

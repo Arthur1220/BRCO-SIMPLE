@@ -51,14 +51,14 @@ export default {
     skipToContent: 'Pular para o conteúdo',
   },
   header: {
-    tagline: 'Caprinos & Ovinos',
+    tagline: 'Exigências nutricionais e dietas',
   },
   footer: {
     aboutText: 'Um portal de acesso livre para otimizar a nutrição de caprinos e ovinos, baseado em pesquisas científicas brasileiras.',
     navTitle: 'Navegação',
     supportTitle: 'Apoio',
     logoAlt: 'Logo {name}',
-    copyright: 'Desenvolvido com base no livro Exigências Nutricionais de Caprinos e Ovinos (BR-Caprinos & Ovinos).',
+    copyright: 'Calculadora baseada no livro Exigências Nutricionais de Caprinos e Ovinos.',
   },
   home: {
     eyebrow: 'Baseado no livro BR-Caprinos & Ovinos',
@@ -220,7 +220,7 @@ export default {
       details: 'Todos os resultados',
     },
     l: {
-      brand: 'Exigências nutricionais de caprinos e ovinos',
+      brand: 'Calculadora de exigências e dietas',
       generatedAt: 'Gerado em',
       calculation: 'Cálculo',
       farm: 'Propriedade',
@@ -272,7 +272,7 @@ export default {
       date: 'Data',
       responsible: 'Responsável',
       sheetHint: 'Marque cada trato fornecido. Pese os alimentos na matéria natural (como estão no cocho). Ajuste se houver sobra frequente.',
-      disclaimer: 'Gerado pelo BRCO (brcosimple.netlify.app) com base no BR-Caprinos & Ovinos. Não substitui a avaliação de um zootecnista ou veterinário.',
+      disclaimer: 'Gerado pela calculadora BR-Caprinos & Ovinos (brcosimple.netlify.app), com base no livro Exigências Nutricionais de Caprinos e Ovinos. Não substitui a avaliação de um zootecnista ou veterinário.',
     },
   },
   dietResults: {
@@ -304,7 +304,7 @@ export default {
     notAvailable: 'Indisponível',
     warningsTitle: 'Avisos',
     safetyTitle: 'Travas de segurança',
-    safetyHint: 'Limites aplicados na formulação para evitar intoxicação e distúrbios. A equipe técnica do BR-CO ainda está revisando esses valores.',
+    safetyHint: 'Limites aplicados na formulação para evitar intoxicação e distúrbios. A equipe técnica do BR-Caprinos & Ovinos ainda está revisando esses valores.',
     check: 'Verificação',
     value: 'Valor na dieta',
     limit: 'Limite',

@@ -5,7 +5,7 @@
         <div class="footer-about">
           <div class="brand">
             <span class="brand-mark" aria-hidden="true"></span>
-            <span class="brand-name">BRCO</span>
+            <span class="brand-name">BR-Caprinos &amp; Ovinos</span>
           </div>
           <p>{{ $t('footer.aboutText') }}</p>
         </div>
@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <p class="footer-note">© {{ year }} BRCO · {{ $t('footer.copyright') }}</p>
+      <p class="footer-note">© {{ year }} BR-Caprinos &amp; Ovinos · {{ $t('footer.copyright') }}</p>
     </div>
   </footer>
 </template>

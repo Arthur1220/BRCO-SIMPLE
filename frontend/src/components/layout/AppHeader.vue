@@ -3,7 +3,7 @@
     <div class="container header-bar">
       <router-link to="/" class="brand" :aria-label="$t('nav.home')">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">BRCO</span>
+        <span class="brand-name">BR-Caprinos &amp; Ovinos</span>
         <span class="brand-tagline">{{ $t('header.tagline') }}</span>
       </router-link>
 
@@ -99,6 +99,7 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
   font-weight: 600;
   font-size: 1rem;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .brand-tagline {
@@ -172,5 +173,9 @@ watch(() => route.path, () => { isMenuOpen.value = false; });
   .nav-link { height: 44px; padding: 0; border-bottom: 1px solid var(--line); }
   .nav-link:last-child { border-bottom: 0; }
   .nav-link.is-active::after { left: -12px; right: auto; top: 12px; bottom: 12px; width: 2px; height: auto; }
+}
+
+@media (max-width: 360px) {
+  .brand-name { font-size: 0.875rem; letter-spacing: 0; }
 }
 </style>
