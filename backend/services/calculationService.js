@@ -21,7 +21,7 @@ const MS_REQUIRED = L(
 );
 
 // Dados opcionais do alimento que a dieta usa (travas, balanço e microminerais).
-const OPTIONAL_FOOD_FIELDS = ['EE', 'CNF', 'PDR', 'PNDR', 'NNP', 'Cu', 'Mo', 'S', 'Zn', 'Mn', 'Fe', 'Co', 'targetSpecies'];
+const OPTIONAL_FOOD_FIELDS = ['EE', 'CNF', 'NNP', 'Cu', 'Mo', 'S', 'Zn', 'Mn', 'Fe', 'Co', 'targetSpecies'];
 
 // Tipo registrado em calculation_logs (estatísticas do admin), igual ao da v0.
 function usageType(type, input) {

@@ -8,7 +8,7 @@ const { TARGET_SPECIES_CODES } = require('../catalog/dietSafety');
 
 const MESSAGES = {
     oneSource: L('Informe um alimento cadastrado (foodId) ou um alimento personalizado (custom).', 'Provide either a registered food (foodId) or a custom food (custom).'),
-    minLteMax: L('A inclusão mínima não pode ser maior que a máxima.', 'Minimum inclusion cannot exceed maximum inclusion.'),
+    minLteMax: L('A inclusão máxima não pode ser menor que a mínima (igual pode).', 'Maximum inclusion cannot be lower than the minimum (equal is fine).'),
     tooMany: L('Use no máximo {max} alimentos.', 'Use at most {max} foods.'),
     atLeastOne: L('Adicione pelo menos um alimento.', 'Add at least one food.'),
     duplicate: L('Este alimento já foi adicionado.', 'This food has already been added.'),

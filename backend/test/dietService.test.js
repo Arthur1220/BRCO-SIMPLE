@@ -143,11 +143,9 @@ test('conflito: "priorizar a nutrição" ignora os limites do usuário; "respeit
   assert.ok(realistic.safetyChecks.every((c) => SOFT.includes(c.code) || c.ok !== false));
 });
 
-test('balanço: PDR, PNDR e microminerais aparecem; micromineral sem dado fica sem fornecimento', () => {
+test('balanço: microminerais aparecem; micromineral sem dado fica sem fornecimento', () => {
   const withFractions = [silagem, milho, soja, calcario].map((f) => ({ ...f, PDR: f.PB * 0.6, PNDR: f.PB * 0.4 }));
   const { result } = calculateDiet(animal, withFractions);
-  assert.ok(result.dietBalance['PDR'].required > 0);
-  assert.ok(result.dietBalance['PNDR'].supplied > 0);
   assert.equal(result.dietBalance['Zinco'].supplied, null);
   const withZinc = calculateDiet(animal, withFractions.map((f) => ({ ...f, Zn: 30 }))).result;
   assert.ok(Math.abs(withZinc.dietBalance['Zinco'].supplied - withZinc.dietSupply['Consumo Estimado (g)'] / 1000 * 30) < 0.05);
@@ -172,8 +170,30 @@ test('custo: aponta o limite do usuário que encarece e o preço em que um alime
   assert.ok(percentOf(cheaper, 'Farelo de trigo') > 0);
 });
 
-test('PDR/PNDR: fora da formulação por padrão (aguardando revisão técnica)', () => {
-  assert.equal(DIET_SAFETY.proteinFractionsInFormulation, false);
+test('PDR/PNDR: fora da formulação, do balanço e do custo da dieta', () => {
+  const foods = [silagem, milho, soja, calcario];
+  const withFractions = foods.map((f) => ({ ...f, PDR: f.PB * 0.6, PNDR: f.PB * 0.4 }));
+  const plain = calculateDiet(animal, foods).result;
+  const fractions = calculateDiet(animal, withFractions).result;
+  // Ter ou não PDR/PNDR no alimento não muda a dieta.
+  assert.deepEqual(fractions.optimizedIngredients.map((i) => i.percent), plain.optimizedIngredients.map((i) => i.percent));
+  assert.deepEqual(fractions.dietBalance, plain.dietBalance);
+  assert.ok(!('PDR' in fractions.dietBalance) && !('PNDR' in fractions.dietBalance));
+  assert.ok(!Object.keys(fractions.dietSupply).some((k) => /PN?DR/.test(k)));
+  assert.ok(fractions.costInsights.limiting.every((item) => !['PDR', 'PNDR'].includes(item.code)));
+  assert.ok(fractions.warnings.every((w) => w.code !== 'protein_fractions_not_evaluated'));
+});
+
+test('PDR/PNDR: continuam nas exigências, iguais às de calculateAllRequirements', () => {
+  for (const a of [animal, goat, { ...goat, sexoId: 1 }]) {
+    const { animalRequirements } = calculateDiet(a, [silagem, milho, soja, calcario]);
+    const requirements = calculateAllRequirements(a);
+    assert.deepEqual(animalRequirements, requirements);
+    const pdr = requirements['Proteína degradável no rúmen'].valor_requerido;
+    const pndr = requirements['Proteína não degradável no rúmen'].valor_requerido;
+    assert.ok(pdr > 0 && pndr > 0);
+    assert.ok(Math.abs(requirements['Proteína bruta 1'].valor_requerido - (pdr + pndr)) <= 0.011);
+  }
 });
 
 test('arredondamento: trava no limite não aparece como fora (Ca:P = 2,00, não 1,99)', () => {
@@ -220,4 +240,9 @@ test('teto: é preferência; quando os alimentos forçam excesso, a dieta sai se
   const pb = result.dietBalance['Proteína Bruta'];
   assert.ok(pb.supplied <= pb.required * 1.2 + 0.05);
   assert.equal(checkOf(result, 'pb_max').ok, false);   // o excesso continua visível nas travas
+});
+
+test('limites: mínimo igual ao máximo fixa o alimento nessa porcentagem', () => {
+  const { result } = calculateDiet(animal, [silagem, milho, { ...soja, min: 25, max: 25 }, calcario]);
+  assert.ok(Math.abs(percentOf(result, 'Farelo de soja') - 25) < 0.01);
 });

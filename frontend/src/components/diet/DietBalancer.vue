@@ -43,7 +43,12 @@
               :step="field.step"
               :min="field.min"
               :max="field.max"
+              :class="{ 'is-invalid': isLimit(field) && store.hasMaxBelowMin(item) }"
+              :aria-invalid="isLimit(field) && store.hasMaxBelowMin(item)"
             >
+            <small v-if="field.name === 'max' && store.hasMaxBelowMin(item)" class="field-error limit-error">
+              {{ $t('balancer.maxBelowMinShort') }}
+            </small>
           </td>
           <td class="right">
             <button type="button" class="btn btn-ghost btn-icon btn-sm" :aria-label="`${$t('common.remove')} ${item.name}`" @click="store.removeIngredient(index)">
@@ -67,6 +72,7 @@ const catalog = useCatalogStore();
 
 // Ordem de exibição: preço, mínimo, máximo.
 const ORDER = ['price', 'min', 'max'];
+const isLimit = (field) => field.name === 'min' || field.name === 'max';
 const lotFields = computed(() => catalog.form('dietLot')?.fields ?? []);
 // Uma API sem bases de preço (versão anterior, durante o deploy) só entende R$/kg MS.
 const priceBases = computed(() => catalog.diet?.priceBases ?? []);
@@ -90,6 +96,8 @@ const fields = computed(() => {
 .food-name { font-weight: 500; margin-right: 8px; }
 
 .input-sm { height: 34px; max-width: 120px; font-size: 0.875rem; }
+.input-sm.is-invalid { border-color: var(--danger); }
+.limit-error { display: block; margin-top: 4px; max-width: 120px; }
 
 .balancer-options {
   display: flex;

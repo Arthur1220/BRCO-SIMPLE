@@ -44,6 +44,14 @@ export const useDietStore = defineStore('diet', () => {
     return selectedIngredients.value.reduce((sum, item) => sum + (Number(item.percent) || 0), 0);
   });
 
+  // Inclusão: mínimo igual ao máximo pode (fixa o alimento); só o máximo abaixo do mínimo é erro.
+  // Campo vazio usa o padrão do alimento, então só compara quando os dois foram preenchidos.
+  const isFilled = (value) => value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value));
+  function hasMaxBelowMin(item) {
+    return isFilled(item.min) && isFilled(item.max) && Number(item.max) < Number(item.min);
+  }
+  const hasInvalidLimits = computed(() => selectedIngredients.value.some(hasMaxBelowMin));
+
   // --- ACTIONS ---
 
   // Navegação
@@ -152,6 +160,10 @@ export const useDietStore = defineStore('diet', () => {
   // CÁLCULO PRINCIPAL
   async function performDietCalculation() {
     if (!animalData.value) return;
+    if (hasInvalidLimits.value) {
+      error.value = t('balancer.maxBelowMin');
+      return;
+    }
 
     isLoading.value = true;
     error.value = null;
@@ -243,6 +255,8 @@ export const useDietStore = defineStore('diet', () => {
 
     // Getters
     totalPercent,
+    hasInvalidLimits,
+    hasMaxBelowMin,
 
     // Actions
     nextStep,

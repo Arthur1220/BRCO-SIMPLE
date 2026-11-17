@@ -125,8 +125,6 @@ const ndtOutputs = [
 const DIET_BALANCE = [
     { key: 'Proteína Bruta', code: 'pb', label: L('Proteína bruta', 'Crude protein') },
     { key: 'NDT', code: 'ndt', label: L('Nutrientes digestíveis totais', 'Total digestible nutrients') },
-    { key: 'PDR', code: 'pdr', label: L('Proteína degradável no rúmen', 'Rumen-degradable protein') },
-    { key: 'PNDR', code: 'pndr', label: L('Proteína não degradável no rúmen', 'Rumen-undegradable protein') },
     { key: 'Cálcio', code: 'ca', label: L('Cálcio', 'Calcium') },
     { key: 'Fósforo', code: 'p', label: L('Fósforo', 'Phosphorus') },
     { key: 'Cobre', code: 'cu', label: L('Cobre', 'Copper') },
@@ -148,8 +146,6 @@ const COST_INSIGHTS = {
 const NUTRIENT_SHORT = {
     PB: L('proteína bruta', 'crude protein'),
     NDT: L('NDT', 'TDN'),
-    PDR: L('PDR', 'RDP'),
-    PNDR: L('PNDR', 'RUP'),
 };
 
 const BALANCE_STATUS = {

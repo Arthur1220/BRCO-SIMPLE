@@ -149,7 +149,7 @@ test('diet: solução ótima com kg, custo e status do balanço calculados no se
   const expectedKg = Math.round(solution.totals.intakeKgPerDay * soja.percent / 100 * 1000) / 1000;
   assert.ok(Math.abs(soja.kgPerDay - expectedKg) <= 0.002);
 
-  assert.deepEqual(solution.balance.map((b) => b.code), ['pb', 'ndt', 'pdr', 'pndr', 'ca', 'p', 'cu', 'zn', 'mn', 'fe', 'co']);
+  assert.deepEqual(solution.balance.map((b) => b.code), ['pb', 'ndt', 'ca', 'p', 'cu', 'zn', 'mn', 'fe', 'co']);
   assert.equal(solution.balance.find((b) => b.code === 'zn').supplied, null); // nenhum alimento com Zn
   assert.ok(solution.balance.every((b) => ['ideal', 'deficit', 'excess', 'info'].includes(b.status)));
   assert.equal(res.body.requirements.highlights[0].code, 'cms_g_d');
@@ -257,7 +257,7 @@ test('diet: conflito devolve as duas opções para o usuário escolher', async (
   assert.equal(res.status, 201);
   assert.equal(res.body.status, 'conflict');
   assert.deepEqual(res.body.options.map((o) => o.code), ['ideal', 'realistic']);
-  assert.ok(res.body.options.every((o) => o.label && o.description && o.solution.balance.length === 11));
+  assert.ok(res.body.options.every((o) => o.label && o.description && o.solution.balance.length === 9));
 });
 
 test('diet: alimento personalizado em g/kg MS (mesma unidade do banco)', async () => {
@@ -293,6 +293,10 @@ test('diet: validações (alimento inexistente, duplicado, fonte, limites, quant
 
   const limits = await post([{ foodId: foodIds.milho, min: 60, max: 40 }]);
   assert.equal(limits.body.error.fields[0].code, 'min_lte_max');
+
+  // Mínimo igual ao máximo é aceito e fixa o alimento nessa porcentagem.
+  const fixed = await post([{ foodId: foodIds.milho, min: 30, max: 30 }]);
+  assert.notEqual(fixed.status, 400);
 
   const tooMany = await post(Array.from({ length: 11 }, () => ({ foodId: foodIds.milho })));
   assert.equal(tooMany.body.error.fields[0].path, 'ingredients');

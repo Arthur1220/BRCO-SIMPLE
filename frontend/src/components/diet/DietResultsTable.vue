@@ -224,8 +224,8 @@ const hasInsights = computed(() => {
   return Boolean(insights && (insights.limiting.length || insights.unusedFoods.length));
 });
 
-// O selo considera só o que a formulação busca atender (PB, NDT, Ca e P). PDR, PNDR e
-// microminerais aparecem no balanço como informação (ver proteinFractionsInFormulation).
+// O selo considera só o que a formulação busca atender (PB, NDT, Ca e P). Microminerais
+// aparecem no balanço como informação. PDR e PNDR ficam só nas exigências do animal.
 const FORMULATED = new Set(['pb', 'ndt', 'ca', 'p']);
 const balanceOk = computed(() => solution.value.balance.every((item) => !FORMULATED.has(item.code) || item.status !== 'deficit'));
 

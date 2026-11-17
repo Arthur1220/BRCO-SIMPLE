@@ -189,6 +189,8 @@ export default {
     empty: 'No feeds selected.',
     food: 'Feed',
     priceBasis: 'Prices entered per',
+    maxBelowMin: 'Maximum inclusion cannot be lower than the minimum. Minimum equal to maximum is fine: it fixes the feed at that percentage.',
+    maxBelowMinShort: 'Below the minimum',
   },
   pdf: {
     button: 'Generate PDF',
