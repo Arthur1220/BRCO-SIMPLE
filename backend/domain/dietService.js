@@ -39,8 +39,6 @@ function composition(ing) {
         P: optionalNumber(ing.P) ?? 0,
         EE: optionalNumber(ing.EE),
         CNF: optionalNumber(ing.CNF),
-        PDR: optionalNumber(ing.PDR),
-        PNDR: optionalNumber(ing.PNDR),
         Cu: optionalNumber(ing.Cu),
         Mo: optionalNumber(ing.Mo),
         S: optionalNumber(ing.S),
@@ -138,9 +136,6 @@ function buildModel(prepared, targets, { strictNutrients, limits, safety }) {
     if (strictNutrients) {
         model.constraints.PB = { min: targets.PB };
         model.constraints.NDT = { min: targets.NDT };
-        // PDR e PNDR só entram quando todos os alimentos têm o dado (targets.PDR definido).
-        if (targets.PDR !== undefined) model.constraints.PDR = { min: targets.PDR };
-        if (targets.PNDR !== undefined) model.constraints.PNDR = { min: targets.PNDR };
     }
 
     for (const [code, def] of Object.entries(safety)) {
@@ -153,8 +148,6 @@ function buildModel(prepared, targets, { strictNutrients, limits, safety }) {
             weight: 1,
             PB: toPercent(comp.PB),
             NDT: toPercent(comp.NDT),
-            PDR: toPercent(comp.PDR ?? 0),
-            PNDR: toPercent(comp.PNDR ?? 0),
             cost: Number(ing.price) > 0 ? Number(ing.price) : 0.001,
         };
 
@@ -323,7 +316,7 @@ function processSolution(solution, prepared, requirements, targetCMS_g, status, 
     const isFeasible = Boolean(solution);
     const supply = {
         'Consumo Estimado (g)': 0, 'Proteína Bruta (g)': 0, 'NDT (g)': 0, 'Cálcio (g)': 0, 'Fósforo (g)': 0, 'Custo Total': 0,
-        'PDR (g)': 0, 'PNDR (g)': 0, 'FDN (g)': 0,
+        'FDN (g)': 0,
     };
 
     // Frações exatas do solver: balanço e travas usam estas; só a porcentagem exibida é
@@ -346,8 +339,6 @@ function processSolution(solution, prepared, requirements, targetCMS_g, status, 
         supply['NDT (g)'] += amount_g * (toPercent(comp.NDT) / 100);
         supply['Cálcio (g)'] += amount_g * (toPercent(comp.Ca) / 100);
         supply['Fósforo (g)'] += amount_g * (toPercent(comp.P) / 100);
-        supply['PDR (g)'] += amount_g * (toPercent(comp.PDR ?? 0) / 100);
-        supply['PNDR (g)'] += amount_g * (toPercent(comp.PNDR ?? 0) / 100);
         supply['FDN (g)'] += amount_g * (toPercent(comp.FDN) / 100);
         supply['Custo Total'] += (amount_g / 1000) * Number(ing.price || 0);
     });
@@ -393,8 +384,6 @@ function processSolution(solution, prepared, requirements, targetCMS_g, status, 
         dietBalance: {
             'Proteína Bruta': line(targetPB_g, supply['Proteína Bruta (g)']),
             'NDT': line(targetNDT_g, supply['NDT (g)']),
-            'PDR': line(dietaryRequirement(requirements, 'Proteína degradável no rúmen'), supply['PDR (g)']),
-            'PNDR': line(dietaryRequirement(requirements, 'Proteína não degradável no rúmen'), supply['PNDR (g)']),
             'Cálcio': line(reqCa, supply['Cálcio (g)']),
             'Fósforo': line(reqP, supply['Fósforo (g)']),
             ...microBalance,
@@ -421,8 +410,7 @@ function costInsights(prepared, targets, options, solution, cmsKg) {
     const perDay = (cost) => (cost === null ? null : round((cost - baseCost) * cmsKg, 3));
     const limiting = [];
 
-    for (const code of ['PB', 'NDT', 'PDR', 'PNDR']) {
-        if (targets[code] === undefined) continue;
+    for (const code of ['PB', 'NDT']) {
         const delta = perDay(costOf(prepared, { ...targets, [code]: targets[code] * 1.01 }, options));
         if (delta !== null && delta > 0.0005) limiting.push({ kind: 'nutrient', code, deltaPerDay: delta });
     }
@@ -522,21 +510,6 @@ function calculateDiet(animalInput, ingredients) {
     const noPrices = withoutPrice.length === prepared.filter((p) => !p.blocked).length;
     if (noPrices) globalWarnings.push(warning('prices_missing_all'));
     else if (withoutPrice.length > 0) globalWarnings.push(warning('prices_missing', { foods: withoutPrice }));
-
-    // PDR e PNDR mínimos só quando todos os alimentos têm os dois dados e a exigência existe.
-    const reqPDR = dietaryRequirement(requirements, 'Proteína degradável no rúmen');
-    const reqPNDR = dietaryRequirement(requirements, 'Proteína não degradável no rúmen');
-    const withoutProteinFractions = prepared
-        .filter((p) => p.comp.PDR === null || p.comp.PNDR === null)
-        .map((p) => p.ing.name);
-    if (!DIET_SAFETY.proteinFractionsInFormulation) {
-        // Só no balanço (ver catalog/dietSafety).
-    } else if (reqPDR !== null && reqPNDR !== null && withoutProteinFractions.length === 0) {
-        targets.PDR = (reqPDR / targetCMS_g) * 100;
-        targets.PNDR = (reqPNDR / targetCMS_g) * 100;
-    } else if (withoutProteinFractions.length > 0) {
-        globalWarnings.push(warning('protein_fractions_not_evaluated', { foods: withoutProteinFractions }));
-    }
 
     const safety = safetyConstraints(context);
     const infeasibleWarnings = (blocking, strict) => {

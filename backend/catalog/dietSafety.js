@@ -20,15 +20,11 @@ const DIET_SAFETY = {
     sulfurMaxPercent: 0.3,       // Enxofre total (polioencefalomalácia)
     concentrateAdaptationPercent: 60, // Acima disso, a dieta exige adaptação
     maleUrolithiasisConcentratePercent: 50, // Macho com muito concentrado: cloreto de amônio
-    fdnIntakeMaxPercentBW: 1.4,
+    fdnIntakeMaxPercentBW: 1.4,  // Consumo de FDN (% do peso vivo) acima do qual o enchimento limita a ingestão
     // Teto de PB e NDT em relação à exigência (1,10 = até 10% acima). A formulação só
     // tinha mínimos: sem preço (ou com concentrado barato) o excesso ficava solto.
     pbMaxOfRequirement: 1.10,
     ndtMaxOfRequirement: 1.10,
-    // PDR e PNDR mínimos como restrição da formulação. Desligado até a revisão técnica:
-    // com a PNDR do BR-CO, dietas comuns passam a exigir muito farelo e PB bem acima do
-    // necessário. Ligado ou não, PDR e PNDR sempre aparecem no balanço.
-    proteinFractionsInFormulation: false,  // Consumo de FDN (% do peso vivo) acima do qual o enchimento limita a ingestão
 };
 
 // PB equivalente da ureia (g/kg MS): 1% de ureia na MS = 2,81% de PB vinda de NNP.
@@ -132,13 +128,6 @@ const DIET_WARNINGS = {
         message: L(
             'Sem preço: {foods}. Esses alimentos entram como se fossem de graça, o que favorece o uso deles na dieta.',
             'No price: {foods}. These foods count as free, which favors them in the diet.'
-        ),
-    },
-    protein_fractions_not_evaluated: {
-        severity: 'warning',
-        message: L(
-            'PDR e PNDR não entraram na formulação porque faltam esses dados em: {foods}. Só a proteína bruta foi atendida.',
-            'RDP and RUP were not used in the formulation because these data are missing for: {foods}. Only crude protein was met.'
         ),
     },
     intake_fill: {
