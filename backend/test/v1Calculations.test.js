@@ -294,6 +294,10 @@ test('diet: validações (alimento inexistente, duplicado, fonte, limites, quant
   const limits = await post([{ foodId: foodIds.milho, min: 60, max: 40 }]);
   assert.equal(limits.body.error.fields[0].code, 'min_lte_max');
 
+  // Mínimo igual ao máximo é aceito e fixa o alimento nessa porcentagem.
+  const fixed = await post([{ foodId: foodIds.milho, min: 30, max: 30 }]);
+  assert.notEqual(fixed.status, 400);
+
   const tooMany = await post(Array.from({ length: 11 }, () => ({ foodId: foodIds.milho })));
   assert.equal(tooMany.body.error.fields[0].path, 'ingredients');
 

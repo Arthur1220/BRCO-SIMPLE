@@ -53,7 +53,7 @@
         <span class="small muted">{{ $t('diet.autoAdjust') }}</span>
         <div class="cluster">
           <button type="button" class="btn btn-ghost" @click="store.prevStep()">{{ $t('common.back') }}</button>
-          <button type="button" class="btn btn-primary" :disabled="store.isLoading" @click="store.performDietCalculation">
+          <button type="button" class="btn btn-primary" :disabled="store.isLoading || store.hasInvalidLimits" @click="store.performDietCalculation">
             <span v-if="store.isLoading" class="spinner" aria-hidden="true"></span>
             {{ store.isLoading ? $t('common.calculating') : $t('diet.calculate') }}
           </button>

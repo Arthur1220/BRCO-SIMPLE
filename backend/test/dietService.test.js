@@ -241,3 +241,8 @@ test('teto: é preferência; quando os alimentos forçam excesso, a dieta sai se
   assert.ok(pb.supplied <= pb.required * 1.2 + 0.05);
   assert.equal(checkOf(result, 'pb_max').ok, false);   // o excesso continua visível nas travas
 });
+
+test('limites: mínimo igual ao máximo fixa o alimento nessa porcentagem', () => {
+  const { result } = calculateDiet(animal, [silagem, milho, { ...soja, min: 25, max: 25 }, calcario]);
+  assert.ok(Math.abs(percentOf(result, 'Farelo de soja') - 25) < 0.01);
+});

@@ -189,6 +189,8 @@ export default {
     empty: 'Nenhum alimento selecionado.',
     food: 'Alimento',
     priceBasis: 'Preços informados por',
+    maxBelowMin: 'A inclusão máxima não pode ser menor que a mínima. Mínimo igual ao máximo pode: fixa o alimento nessa porcentagem.',
+    maxBelowMinShort: 'Menor que o mínimo',
   },
   pdf: {
     button: 'Gerar PDF',

@@ -77,3 +77,25 @@ test('sem fonte de cálcio, macho não recebe dieta e o motivo aparece', async (
   await modal.getByRole('button', { name: 'Voltar e ajustar os alimentos' }).click();
   await expect(modal).toBeHidden();
 });
+
+test('inclusão: máximo abaixo do mínimo bloqueia; mínimo igual ao máximo fixa o alimento', async ({ page }) => {
+  await fillAnimal(page);
+  await chooseFoods(page, ['Silagem de milho', 'Milho fubá', 'Farelo de soja', 'Calcáreo']);
+  const calculate = page.getByRole('button', { name: 'Calcular dieta' });
+  const min = page.getByLabel('Inclusão mínima · Farelo de soja');
+  const max = page.getByLabel('Inclusão máxima · Farelo de soja');
+
+  await min.fill('25');
+  await max.fill('20');
+  await expect(page.getByText('Menor que o mínimo')).toBeVisible();
+  await expect(max).toHaveAttribute('aria-invalid', 'true');
+  await expect(calculate).toBeDisabled();
+
+  await max.fill('25');
+  await expect(page.getByText('Menor que o mínimo')).toBeHidden();
+  await expect(calculate).toBeEnabled();
+  await calculate.click();
+
+  await expect(page.getByRole('heading', { name: 'Dieta formulada' })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Farelo de soja/ }).first()).toContainText(/25(,0+)?\s?%/);
+});
